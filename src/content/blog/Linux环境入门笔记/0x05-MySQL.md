@@ -1,3 +1,9 @@
+---
+title: '0x05-MySQL'
+description: ''
+pubDate: 2026-02-20
+---
+
 # 0x05-MySQL
 
 [【mysql部署】在ubuntu22.04上安装和配置mysql教程_ubuntu22.04安装mysql-CSDN博客](https://blog.csdn.net/weixin_53459689/article/details/136199813?ops_request_misc=%257B%2522request%255Fid%2522%253A%25222f9adf2d38978862b3ae9153296f98f0%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=2f9adf2d38978862b3ae9153296f98f0&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-136199813-null-null.142^v102^pc_search_result_base2&utm_term=ubuntu22.04%E5%AE%89%E8%A3%85mysql&spm=1018.2226.3001.4187)

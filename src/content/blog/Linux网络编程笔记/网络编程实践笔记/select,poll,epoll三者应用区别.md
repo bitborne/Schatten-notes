@@ -1,3 +1,9 @@
+---
+title: 'select,poll,epoll三者应用区别'
+description: ''
+pubDate: 2026-02-20
+---
+
 # select/poll/epoll
 
 # 网络的应用

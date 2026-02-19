@@ -1,3 +1,9 @@
+---
+title: '0x00-开发环境：Ubuntu22.04'
+description: ''
+pubDate: 2026-02-20
+---
+
 # 0x00-开发环境：Ubuntu22.04
 
 # <u><font style="color:#DF2A3F;">最重要：安装后拍摄快照</font></u>

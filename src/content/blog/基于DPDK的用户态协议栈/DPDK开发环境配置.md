@@ -1,3 +1,9 @@
+---
+title: 'DPDK开发环境配置'
+description: ''
+pubDate: 2026-02-20
+---
+
 # DPDK环境配置
 
 # 多队列网卡

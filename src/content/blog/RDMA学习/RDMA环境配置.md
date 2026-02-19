@@ -1,3 +1,9 @@
+---
+title: 'RDMA环境配置'
+description: ''
+pubDate: 2026-02-20
+---
+
 ## SoftiWARP 如何实现软件模拟 RDMA 网卡
 
 根据博客https://github.com/animeshtrivedi/blog/blob/master/post/2019-06-26-siw.md，SoftiWARP (siw) 的核心实现原理是：
