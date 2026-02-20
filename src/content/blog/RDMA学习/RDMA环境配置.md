@@ -4,7 +4,11 @@ description: ''
 pubDate: 2026-02-20
 ---
 
-## SoftiWARP 如何实现软件模拟 RDMA 网卡
+## Soft-iWARP 如何实现软件模拟 RDMA 网卡
+
+> [!WARNING]
+>
+> Soft-iWARP 方案较落后, 性能也不如 Soft-RoCE 方案, 两种环境配置的方法类似, 后文将补充 Soft-RoCE 配置步骤
 
 根据博客https://github.com/animeshtrivedi/blog/blob/master/post/2019-06-26-siw.md，SoftiWARP (siw) 的核心实现原理是：
 
@@ -83,9 +87,31 @@ rping -c -a 172.20.10.2 -v
 
 
 
+## Soft-RoCE 模拟 RDMA 网卡环境配置
 
+```c
+# 1. 安装相关包
+sudo pacman -S rdma-core
 
+# 2. 加载 siw 内核模块
+sudo modprobe rdma_rxe
 
+# 3. 查看网络接口（选择你要绑定的网卡，如 wlp0s20f3, lo, virbr0）
+ip addr
+
+# 4. 创建 SoftiWARP 设备（将普通网卡模拟为 RDMA 设备）
+sudo rdma link add rxe_0 type rxe netdev virbr0  # 替换为你的网卡名
+
+# 5. 验证设备
+ibv_devices        # 应该能看到 siw0
+ibv_devinfo siw0   # 查看详细信息
+rdma link show     # 查看 RDMA 链接状态
+```
+
+<img src="RDMA环境配置.assets/image-20260221013812817.png" alt="image-20260221013812817" style="zoom:67%;" />
+
+> 测试方法同上
+>
 
 
 
