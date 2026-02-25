@@ -47,40 +47,53 @@ const posts = (await getCollection('blog')).sort(
 				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 			}
 
-			/* Hero Section 增强方案 */
+			/* ===== 极光之夜配色变量 ===== */
+			:root {
+				--aurora-green: #39ff14;
+				--aurora-cyan: #00f5d4;
+				--aurora-blue: #00bbf9;
+				--aurora-purple: #9b5de5;
+				--aurora-bg: #1a1423;
+			}
+
+			/* Hero Section - 极光之夜 */
 			.hero {
 				padding: 12rem 0 8rem;
 				position: relative;
 				overflow: hidden;
-				background: 
-					radial-gradient(at 0% 0%, rgba(0, 243, 255, 0.12) 0, transparent 40%),
-					radial-gradient(at 100% 0%, rgba(213, 0, 249, 0.1) 0, transparent 40%),
-					radial-gradient(at 50% 50%, rgba(10, 12, 20, 1) 0, transparent 100%);
+				background:
+					radial-gradient(at 0% 20%, rgba(57, 255, 20, 0.1) 0, transparent 50%),
+					radial-gradient(at 100% 0%, rgba(0, 245, 212, 0.08) 0, transparent 45%),
+					radial-gradient(at 50% 100%, rgba(155, 93, 229, 0.1) 0, transparent 50%),
+					radial-gradient(at 80% 80%, rgba(0, 187, 249, 0.06) 0, transparent 40%),
+					var(--aurora-bg);
 			}
 
-			/* 科技感网格背景装饰 */
+			/* 科技感网格背景装饰 - 极光色系 */
 			.hero::before {
 				content: '';
 				position: absolute;
 				inset: 0;
-				background-image: 
-					linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+				background-image:
+					linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(0, 245, 212, 0.02) 1px, transparent 1px);
 				background-size: 60px 60px;
 				-webkit-mask-image: radial-gradient(circle at 50% 40%, black, transparent 90%);
 				mask-image: radial-gradient(circle at 50% 40%, black, transparent 90%);
 				pointer-events: none;
 			}
 
-			/* 扫描线效果 */
+			/* 扫描线效果 - 极光渐变 */
 			.hero::after {
 				content: '';
 				position: absolute;
 				top: 0; left: 0; right: 0; height: 100%;
-				background: linear-gradient(to bottom, 
-					transparent 0%, 
-					rgba(0, 243, 255, 0.05) 50%, 
-					transparent 50.5%);
+				background: linear-gradient(to bottom,
+					transparent 0%,
+					rgba(57, 255, 20, 0.02) 30%,
+					rgba(0, 245, 212, 0.02) 50%,
+					rgba(155, 93, 229, 0.02) 70%,
+					transparent 100%);
 				background-size: 100% 200%;
 				animation: scan 8s linear infinite;
 				pointer-events: none;
@@ -101,13 +114,15 @@ const posts = (await getCollection('blog')).sort(
 
 			.hero-subtitle {
 				font-family: 'Cascadia Code', monospace;
-				color: var(--primary-cyan);
+				background: linear-gradient(90deg, var(--aurora-green), var(--aurora-cyan));
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
 				font-size: 0.85rem;
 				letter-spacing: 0.4em;
 				margin-bottom: 2rem;
 				display: block;
-				text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-				opacity: 0.8;
+				filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.3));
+				opacity: 0.9;
 			}
 
 			.hero-title {
@@ -120,10 +135,10 @@ const posts = (await getCollection('blog')).sort(
 			}
 
 			.title-gradient {
-				background: linear-gradient(135deg, #fff 20%, var(--primary-cyan) 50%, var(--primary-blue) 80%);
+				background: linear-gradient(135deg, #fff 0%, var(--aurora-green) 30%, var(--aurora-cyan) 60%, var(--aurora-blue) 100%);
 				-webkit-background-clip: text;
 				-webkit-text-fill-color: transparent;
-				filter: drop-shadow(0 0 30px rgba(0, 243, 255, 0.15));
+				filter: drop-shadow(0 0 40px rgba(57, 255, 20, 0.2));
 			}
 
 			.hero-description {
@@ -132,7 +147,7 @@ const posts = (await getCollection('blog')).sort(
 				line-height: 1.8;
 				margin-bottom: 4rem;
 				max-width: 650px;
-				border-left: 2px solid rgba(0, 243, 255, 0.1);
+				border-left: 2px solid rgba(255, 0, 110, 0.2);
 				padding-left: 1.5rem;
 			}
 
@@ -166,26 +181,30 @@ const posts = (await getCollection('blog')).sort(
 
 			.btn:hover::before { left: 100%; }
 
+			/* 主按钮 - 极光渐变 */
 			.btn:first-child {
-				background: var(--primary-cyan);
+				background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
 				color: #000;
-				box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+				box-shadow: 0 0 25px rgba(57, 255, 20, 0.3);
+				border: none;
 			}
 
 			.btn:first-child:hover {
 				transform: translateY(-3px);
-				box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+				box-shadow: 0 0 40px rgba(57, 255, 20, 0.5), 0 0 60px rgba(0, 245, 212, 0.3);
 			}
 
+			/* 次按钮 - 紫色边框 */
 			.btn-secondary {
-				background: rgba(255, 255, 255, 0.03);
+				background: rgba(155, 93, 229, 0.05);
 				color: #fff;
-				border: 1px solid rgba(255, 255, 255, 0.1);
+				border: 1px solid rgba(155, 93, 229, 0.3);
 			}
 
 			.btn-secondary:hover {
-				background: rgba(255, 255, 255, 0.06);
-				border-color: var(--primary-cyan);
+				background: rgba(155, 93, 229, 0.1);
+				border-color: var(--aurora-purple);
+				box-shadow: 0 0 20px rgba(155, 93, 229, 0.3);
 				transform: translateY(-3px);
 			}
 
@@ -248,11 +267,11 @@ const posts = (await getCollection('blog')).sort(
 				display: inline-block;
 				width: 2px;
 				height: 1.2em;
-				background-color: var(--primary-cyan);
+				background-color: var(--aurora-green);
 				margin-left: 2px;
 				vertical-align: middle;
 				animation: cursorBlink 1s step-end infinite;
-				box-shadow: 0 0 8px var(--primary-cyan);
+				box-shadow: 0 0 8px var(--aurora-green);
 			}
 
 			.typewriter-cursor.typing {
@@ -288,9 +307,11 @@ const posts = (await getCollection('blog')).sort(
 
 			.section-title::before {
 				content: '//';
-				color: var(--primary-cyan);
+				background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
 				font-size: 1.2rem;
-				opacity: 0.6;
+				opacity: 0.9;
 			}
 
 			/* 文章列表卡片：极致玻璃质感 */
@@ -314,7 +335,7 @@ const posts = (await getCollection('blog')).sort(
 				position: absolute;
 				inset: 0;
 				border-radius: inherit;
-				background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(0, 243, 255, 0.08), transparent 40%);
+				background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(57, 255, 20, 0.12), transparent 45%);
 				opacity: 0;
 				transition: opacity 0.3s;
 				pointer-events: none;
@@ -322,9 +343,9 @@ const posts = (await getCollection('blog')).sort(
 
 			.post-item:hover {
 				background: rgba(255, 255, 255, 0.03);
-				border-color: rgba(0, 243, 255, 0.15);
+				border-color: rgba(57, 255, 20, 0.25);
 				transform: scale(1.02) translateX(5px);
-				box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+				box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(57, 255, 20, 0.1);
 			}
 
 			.post-item:hover::after { opacity: 1; }
@@ -346,7 +367,7 @@ const posts = (await getCollection('blog')).sort(
 				transition: var(--transition-base);
 			}
 
-			.post-item:hover .post-title { color: var(--primary-cyan); }
+			.post-item:hover .post-title { color: var(--aurora-green); }
 
 			.post-description {
 				font-size: 1rem;
@@ -383,13 +404,13 @@ const posts = (await getCollection('blog')).sort(
 			.expertise-card:hover {
 				transform: translateY(-10px);
 				background: rgba(255, 255, 255, 0.04);
-				border-color: var(--accent-color, var(--primary-cyan));
-				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+				border-color: var(--accent-color, var(--neon-cyan));
+				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 40px var(--glow-color, rgba(0, 243, 255, 0.15));
 			}
 
-			.expertise-card.ebpf { --accent-color: var(--primary-cyan); }
-			.expertise-card.network { --accent-color: var(--primary-blue); }
-			.expertise-card.io { --accent-color: var(--primary-purple); }
+			.expertise-card.ebpf { --accent-color: var(--aurora-green); --glow-color: rgba(57, 255, 20, 0.2); }
+			.expertise-card.network { --accent-color: var(--aurora-cyan); --glow-color: rgba(0, 245, 212, 0.2); }
+			.expertise-card.io { --accent-color: var(--aurora-blue); --glow-color: rgba(0, 187, 249, 0.2); }
 
 			.expertise-icon {
 				font-size: 0.75rem;
@@ -526,6 +547,14 @@ const posts = (await getCollection('blog')).sort(
 				}
 			}
 
+			// 极光之夜色系
+			const neonColors = [
+				{ r: 57, g: 255, b: 20 },    // 极光绿
+				{ r: 0, g: 245, b: 212 },    // 冰蓝
+				{ r: 0, g: 187, b: 249 },    // 天蓝
+				{ r: 155, g: 93, b: 229 }    // 极光紫
+			];
+
 			class Particle {
 				constructor() {
 					this.x = Math.random() * canvas.width;
@@ -535,6 +564,7 @@ const posts = (await getCollection('blog')).sort(
 					this.size = Math.random() * 2 + 1;
 					this.baseX = this.x;
 					this.baseY = this.y;
+					this.color = neonColors[Math.floor(Math.random() * neonColors.length)];
 				}
 
 				update() {
@@ -564,7 +594,7 @@ const posts = (await getCollection('blog')).sort(
 				draw() {
 					ctx.beginPath();
 					ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-					ctx.fillStyle = 'rgba(0, 243, 255, 0.5)';
+					ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.5)`;
 					ctx.fill();
 				}
 			}
@@ -586,9 +616,15 @@ const posts = (await getCollection('blog')).sort(
 						let distance = Math.sqrt(dx * dx + dy * dy);
 
 						if (distance < maxDistance) {
-							const opacity = (1 - distance / maxDistance) * 0.3;
+							const opacity = (1 - distance / maxDistance) * 0.25;
+							// 混合两个粒子的颜色
+							const c1 = particles[i].color;
+							const c2 = particles[j].color;
+							const r = Math.round((c1.r + c2.r) / 2);
+							const g = Math.round((c1.g + c2.g) / 2);
+							const b = Math.round((c1.b + c2.b) / 2);
 							ctx.beginPath();
-							ctx.strokeStyle = `rgba(0, 243, 255, ${opacity})`;
+							ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
 							ctx.lineWidth = 1;
 							ctx.moveTo(particles[i].x, particles[i].y);
 							ctx.lineTo(particles[j].x, particles[j].y);

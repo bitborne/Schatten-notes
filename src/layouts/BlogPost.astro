@@ -16,6 +16,36 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		<BaseHead title={title} description={description} />
 		<link rel="stylesheet" href="/src/styles/phycat-abyss.css" />
 		<style>
+			/* ===== 莫兰迪配色变量（关于页面） ===== */
+			.morandi-theme {
+				--morandi-blue: #6b8cae;
+				--morandi-green: #8faa8f;
+				--morandi-purple: #a68fac;
+				--morandi-warm: #b8a090;
+				--morandi-cool: #7a8b99;
+			}
+
+			.morandi-theme .article-container {
+				background:
+					radial-gradient(at 0% 0%, rgba(107, 140, 174, 0.08) 0, transparent 50%),
+					radial-gradient(at 100% 100%, rgba(143, 170, 143, 0.06) 0, transparent 50%),
+					var(--bg-abyss);
+			}
+
+			.morandi-theme .back-link:hover {
+				color: var(--morandi-blue);
+			}
+
+			.morandi-theme .article-title {
+				background: linear-gradient(135deg, #e8e8e8 0%, var(--morandi-blue) 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+			}
+
+			.morandi-theme .text-muted {
+				color: var(--morandi-cool);
+			}
+
 			.article-container {
 				background-color: var(--bg-abyss);
 				min-height: 100vh;
@@ -108,7 +138,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 	</head>
 
 	<body>
-		<div class="article-container">
+		<div class={`article-container ${title === 'About Me' ? 'morandi-theme' : ''}`}>
 			<Header />
 
 			<main>

@@ -73,6 +73,73 @@ import HeaderLink from './HeaderLink.astro';
 		padding: 0.8rem 1.5rem;
 	}
 
+	/* 主题配色 */
+	/* 极光之夜主题（首页） */
+	.site-header.theme-neon.scrolled {
+		border-bottom-color: rgba(57, 255, 20, 0.2);
+	}
+
+	.site-header.theme-neon .logo-prefix,
+	.site-header.theme-neon .logo-cursor {
+		color: #39ff14;
+		text-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+	}
+
+	.site-header.theme-neon .main-nav :global(a:hover),
+	.site-header.theme-neon .main-nav :global(a.active) {
+		color: #39ff14;
+		background: rgba(57, 255, 20, 0.08);
+	}
+
+	/* 森林绿主题（分类列表页） */
+	.site-header.theme-forest.scrolled {
+		border-bottom-color: rgba(77, 182, 172, 0.2);
+	}
+
+	.site-header.theme-forest .logo-prefix,
+	.site-header.theme-forest .logo-cursor {
+		color: #4db6ac;
+		text-shadow: 0 0 10px rgba(77, 182, 172, 0.4);
+	}
+
+	.site-header.theme-forest .main-nav :global(a:hover),
+	.site-header.theme-forest .main-nav :global(a.active) {
+		color: #4db6ac;
+		background: rgba(77, 182, 172, 0.08);
+	}
+
+	.site-header.theme-amber.scrolled {
+		border-bottom-color: rgba(255, 179, 71, 0.2);
+	}
+
+	.site-header.theme-amber .logo-prefix,
+	.site-header.theme-amber .logo-cursor {
+		color: #ffb347;
+		text-shadow: 0 0 10px rgba(255, 179, 71, 0.4);
+	}
+
+	.site-header.theme-amber .main-nav :global(a:hover),
+	.site-header.theme-amber .main-nav :global(a.active) {
+		color: #ffb347;
+		background: rgba(255, 179, 71, 0.08);
+	}
+
+	.site-header.theme-morandi.scrolled {
+		border-bottom-color: rgba(107, 140, 174, 0.2);
+	}
+
+	.site-header.theme-morandi .logo-prefix,
+	.site-header.theme-morandi .logo-cursor {
+		color: #6b8cae;
+		text-shadow: 0 0 10px rgba(107, 140, 174, 0.3);
+	}
+
+	.site-header.theme-morandi .main-nav :global(a:hover),
+	.site-header.theme-morandi .main-nav :global(a.active) {
+		color: #6b8cae;
+		background: rgba(107, 140, 174, 0.08);
+	}
+
 	/* Logo Style */
 	.logo-link {
 		display: flex;
@@ -189,17 +256,31 @@ import HeaderLink from './HeaderLink.astro';
 </style>
 
 <script>
-	const menuToggle = document.getElementById('menuToggle');
-	const mobileMenu = document.getElementById('mobileMenu');
-
-	menuToggle?.addEventListener('click', () => {
-		mobileMenu?.classList.toggle('open');
-	});
-</script>
-
-<script>
-	// 滚动效果
+	// 页面主题色配置
+	const path = window.location.pathname;
 	const header = document.querySelector('.site-header');
+	const logoPrefix = document.querySelector('.logo-prefix');
+	const logoCursor = document.querySelector('.logo-cursor');
+
+	// 根据页面设置主题色
+	if (path === '/' || path === '/index.html') {
+		// 首页 - 极光之夜
+		header?.classList.add('theme-neon');
+	} else if (path === '/blog' || path === '/blog/') {
+		// 归档页 - 琥珀金
+		header?.classList.add('theme-amber');
+	} else if (path.startsWith('/blog/category/')) {
+		// 分类列表页 - 森林绿
+		header?.classList.add('theme-forest');
+	} else if (path.startsWith('/blog/')) {
+		// 文章详情页 - 莫兰迪
+		header?.classList.add('theme-morandi');
+	} else if (path.startsWith('/about')) {
+		// 关于页 - 莫兰迪
+		header?.classList.add('theme-morandi');
+	}
+
+	// 滚动效果
 	window.addEventListener('scroll', () => {
 		if (window.scrollY > 50) {
 			header?.classList.add('scrolled');

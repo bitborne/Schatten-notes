@@ -44,6 +44,13 @@ const categories = Object.keys(categoryData).sort();
 				50% { opacity: 0.6; }
 			}
 
+				/* ===== 琥珀金配色变量 ===== */
+			:root {
+				--amber-gold: #ffb347;
+				--amber-dark: #d4af37;
+				--amber-bronze: #cd7f32;
+			}
+
 			/* 噪点覆盖 */
 			.noise-overlay {
 				position: fixed;
@@ -82,34 +89,37 @@ const categories = Object.keys(categoryData).sort();
 			.stagger-5 { transition-delay: 0.5s; }
 			.stagger-6 { transition-delay: 0.6s; }
 
-			/* Header Section */
+		/* Header Section - 琥珀金主题 */
 			.archive-header {
 				padding: 10rem 0 6rem;
-				background: var(--bg-abyss);
 				position: relative;
 				overflow: hidden;
+				background:
+					radial-gradient(at 20% 20%, rgba(255, 179, 71, 0.15) 0, transparent 50%),
+					radial-gradient(at 80% 80%, rgba(212, 175, 55, 0.1) 0, transparent 50%),
+					var(--bg-abyss);
 			}
 
-			/* 动态网格背景 */
+			/* 动态网格背景 - 金色 */
 			.archive-header::before {
 				content: '';
 				position: absolute;
 				inset: 0;
-				background-image: 
-					linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+				background-image:
+					linear-gradient(rgba(255, 179, 71, 0.04) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
 				background-size: 50px 50px;
 				-webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
 				mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
 				animation: gridPulse 4s ease-in-out infinite;
 			}
 
-			/* 扫描线 */
+			/* 扫描线 - 金色 */
 			.archive-header::after {
 				content: '';
 				position: absolute;
 				top: 0; left: 0; width: 100%; height: 100%;
-				background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.05), transparent);
+				background: linear-gradient(to bottom, transparent, rgba(255, 179, 71, 0.04), transparent);
 				background-size: 100% 400%;
 				animation: scan 10s linear infinite;
 				pointer-events: none;
@@ -125,12 +135,12 @@ const categories = Object.keys(categoryData).sort();
 
 			.header-subtitle {
 				font-family: 'Cascadia Code', monospace;
-				color: var(--primary-cyan);
+				color: var(--amber-gold);
 				font-size: 0.9rem;
 				letter-spacing: 0.4em;
 				margin-bottom: 1.5rem;
 				display: block;
-				text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+				text-shadow: 0 0 10px rgba(255, 179, 71, 0.4);
 			}
 
 			.header-title {
@@ -139,9 +149,10 @@ const categories = Object.keys(categoryData).sort();
 				margin: 0;
 				color: var(--text-primary);
 				letter-spacing: -0.03em;
-				background: linear-gradient(to right, #fff, var(--primary-cyan));
+				background: linear-gradient(135deg, #fff 0%, var(--amber-gold) 50%, var(--amber-dark) 100%);
 				-webkit-background-clip: text;
 				-webkit-text-fill-color: transparent;
+				filter: drop-shadow(0 0 30px rgba(255, 179, 71, 0.2));
 			}
 
 			/* Folder Grid */
@@ -176,16 +187,16 @@ const categories = Object.keys(categoryData).sort();
 				content: '';
 				position: absolute;
 				top: 0; left: 0; width: 100%; height: 2px;
-				background: linear-gradient(90deg, transparent, var(--primary-cyan), transparent);
+				background: linear-gradient(90deg, transparent, var(--amber-gold), transparent);
 				transform: translateX(-100%);
 				transition: 0.5s;
 			}
 
 			.folder-card:hover {
 				background: rgba(255, 255, 255, 0.03);
-				border-color: rgba(0, 243, 255, 0.2);
+				border-color: rgba(255, 179, 71, 0.25);
 				transform: translateY(-10px) scale(1.02);
-				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 243, 255, 0.1);
+				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 179, 71, 0.15);
 			}
 
 			.folder-card:hover::before {
@@ -198,17 +209,17 @@ const categories = Object.keys(categoryData).sort();
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				background: rgba(0, 243, 255, 0.05);
-				border: 1px solid rgba(0, 243, 255, 0.1);
+				background: rgba(255, 179, 71, 0.05);
+				border: 1px solid rgba(255, 179, 71, 0.15);
 				border-radius: var(--radius-md);
-				color: var(--primary-cyan);
+				color: var(--amber-gold);
 				transition: var(--transition-base);
 			}
 
 			.folder-card:hover .folder-icon {
-				background: var(--primary-cyan);
+				background: var(--amber-gold);
 				color: #000;
-				box-shadow: 0 0 20px var(--primary-cyan);
+				box-shadow: 0 0 25px var(--amber-gold);
 			}
 
 			.folder-info h2 {
@@ -330,6 +341,13 @@ const categories = Object.keys(categoryData).sort();
 				}
 			}
 
+			// 琥珀金色系
+			const amberColors = [
+				{ r: 255, g: 179, b: 71 },   // 琥珀
+				{ r: 212, g: 175, b: 55 },   // 暗金
+				{ r: 205, g: 127, b: 50 }    // 青铜
+			];
+
 			class Particle {
 				constructor() {
 					this.x = Math.random() * canvas.width;
@@ -337,6 +355,7 @@ const categories = Object.keys(categoryData).sort();
 					this.vx = (Math.random() - 0.5) * 0.5;
 					this.vy = (Math.random() - 0.5) * 0.5;
 					this.size = Math.random() * 2 + 1;
+					this.color = amberColors[Math.floor(Math.random() * amberColors.length)];
 				}
 
 				update() {
@@ -363,7 +382,7 @@ const categories = Object.keys(categoryData).sort();
 				draw() {
 					ctx.beginPath();
 					ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-					ctx.fillStyle = 'rgba(0, 243, 255, 0.5)';
+					ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.5)`;
 					ctx.fill();
 				}
 			}
@@ -385,9 +404,15 @@ const categories = Object.keys(categoryData).sort();
 						let distance = Math.sqrt(dx * dx + dy * dy);
 
 						if (distance < maxDistance) {
-							const opacity = (1 - distance / maxDistance) * 0.3;
+							const opacity = (1 - distance / maxDistance) * 0.25;
+							// 混合两个粒子的颜色
+							const c1 = particles[i].color;
+							const c2 = particles[j].color;
+							const r = Math.round((c1.r + c2.r) / 2);
+							const g = Math.round((c1.g + c2.g) / 2);
+							const b = Math.round((c1.b + c2.b) / 2);
 							ctx.beginPath();
-							ctx.strokeStyle = `rgba(0, 243, 255, ${opacity})`;
+							ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
 							ctx.lineWidth = 1;
 							ctx.moveTo(particles[i].x, particles[i].y);
 							ctx.lineTo(particles[j].x, particles[j].y);

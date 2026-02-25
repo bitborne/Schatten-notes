@@ -33,10 +33,46 @@ const { posts } = Astro.props;
 	<head>
 		<BaseHead title={`${category} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 		<style>
+			/* ===== 森林绿配色变量 ===== */
+			:root {
+				--forest-green: #2d5016;
+				--forest-light: #4a7c2e;
+				--forest-bright: #7cb342;
+				--forest-cyan: #4db6ac;
+				--forest-bg: #0d1a0d;
+			}
+
 			.category-header {
-				padding: 6rem 0 3rem;
-				border-bottom: 1px solid var(--border-color);
-				background: var(--bg-abyss);
+				padding: 10rem 0 4rem;
+				position: relative;
+				overflow: hidden;
+				background:
+					radial-gradient(at 0% 0%, rgba(77, 182, 172, 0.1) 0, transparent 50%),
+					radial-gradient(at 100% 100%, rgba(124, 179, 66, 0.08) 0, transparent 45%),
+					linear-gradient(180deg, var(--forest-bg) 0%, var(--bg-abyss) 100%);
+			}
+
+			/* 森林网格背景 */
+			.category-header::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background-image:
+					linear-gradient(rgba(77, 182, 172, 0.04) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(124, 179, 66, 0.03) 1px, transparent 1px);
+				background-size: 40px 40px;
+				-webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+				mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+				pointer-events: none;
+			}
+
+			/* 微光效果 */
+			.category-header::after {
+				content: '';
+				position: absolute;
+				top: 0; left: 0; right: 0; bottom: 0;
+				background: radial-gradient(circle at 30% 30%, rgba(77, 182, 172, 0.1), transparent 40%);
+				pointer-events: none;
 			}
 
 			.header-container {
@@ -56,14 +92,22 @@ const { posts } = Astro.props;
 			}
 
 			.breadcrumb a {
-				color: var(--primary-cyan);
+				color: var(--forest-cyan);
+				text-shadow: 0 0 10px rgba(77, 182, 172, 0.3);
+			}
+
+			.breadcrumb span:last-child {
+				color: var(--forest-bright);
 			}
 
 			.category-title {
-				font-size: 2.5rem;
+				font-size: 3rem;
 				font-weight: 800;
-				color: var(--text-primary);
 				margin: 0;
+				background: linear-gradient(135deg, #fff 0%, var(--forest-cyan) 50%, var(--forest-bright) 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				filter: drop-shadow(0 0 20px rgba(77, 182, 172, 0.2));
 			}
 
 			.main-content {
@@ -83,23 +127,40 @@ const { posts } = Astro.props;
 				grid-template-columns: auto 1fr;
 				gap: 2.5rem;
 				padding: 2rem;
-				background: var(--bg-surface);
-				border: 1px solid var(--border-color);
+				background: rgba(13, 26, 13, 0.5);
+				border: 1px solid rgba(77, 182, 172, 0.1);
 				border-radius: var(--radius-md);
-				transition: var(--transition-base);
+				transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 				text-decoration: none;
+				position: relative;
+				overflow: hidden;
+			}
+
+			.post-item::before {
+				content: '';
+				position: absolute;
+				top: 0; left: 0; width: 3px; height: 100%;
+				background: linear-gradient(180deg, var(--forest-cyan), var(--forest-bright));
+				transform: scaleY(0);
+				transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 			}
 
 			.post-item:hover {
-				border-color: var(--primary-cyan);
+				border-color: rgba(77, 182, 172, 0.3);
 				transform: translateX(10px);
-				box-shadow: var(--glow-cyan);
+				box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(77, 182, 172, 0.1);
+				background: rgba(13, 26, 13, 0.7);
+			}
+
+			.post-item:hover::before {
+				transform: scaleY(1);
 			}
 
 			.post-date {
 				font-family: 'Cascadia Code', monospace;
 				font-size: 0.85rem;
-				color: var(--text-muted);
+				color: var(--forest-cyan);
+				opacity: 0.7;
 				padding-top: 0.4rem;
 				white-space: nowrap;
 			}
@@ -108,11 +169,12 @@ const { posts } = Astro.props;
 				font-size: 1.4rem;
 				color: var(--text-primary);
 				margin-bottom: 0.8rem;
-				transition: var(--transition-base);
+				transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 			}
 
 			.post-item:hover .post-title {
-				color: var(--primary-cyan);
+				color: var(--forest-bright);
+				text-shadow: 0 0 20px rgba(124, 179, 66, 0.3);
 			}
 
 			.post-excerpt {
