@@ -65,7 +65,7 @@ ibv_devinfo siw0   # 查看详细信息
 rdma link show     # 查看 RDMA 链接状态
 ```
 
-<img src="RDMA环境配置.assets/image-20260219004849622.png" alt="image-20260219004849622" style="zoom:50%;" />
+![image-20260219004849622](RDMA环境配置.assets/image-20260219004849622.png)
 
 ## 测试验证
 
@@ -83,7 +83,7 @@ rping -s -a 172.20.10.2 -v
 rping -c -a 172.20.10.2 -v
 ```
 
-<img src="RDMA环境配置.assets/image-20260219004659044.png" alt="image-20260219004659044" style="zoom: 33%;" />
+![image-20260219004659044](RDMA环境配置.assets/image-20260219004659044.png)
 
 
 
@@ -108,7 +108,7 @@ ibv_devinfo siw0   # 查看详细信息
 rdma link show     # 查看 RDMA 链接状态
 ```
 
-<img src="RDMA环境配置.assets/image-20260221013812817.png" alt="image-20260221013812817" style="zoom:67%;" />
+![image-20260221013812817](RDMA环境配置.assets/image-20260221013812817.png)
 
 > 测试方法同上
 >

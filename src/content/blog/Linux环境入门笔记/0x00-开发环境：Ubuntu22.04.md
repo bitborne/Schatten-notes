@@ -22,7 +22,7 @@ pubDate: 2026-02-20
 `sudo passwd root`
 
 # 安装 openssh-server
-**<font style="color:#DF2A3F;">安装后，找到 ssh 配置文件：</font>**`**<font style="color:#DF2A3F;">vim /etc/ssh/sshd_config</font>**`
+**<font style="color:#DF2A3F;">安装后，找到 ssh 配置文件：</font>**`vim /etc/ssh/sshd_config`
 
 **<font style="color:#DF2A3F;">将 PermitRootLogin 后改为 yes</font>**
 
