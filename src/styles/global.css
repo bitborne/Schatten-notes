@@ -5,241 +5,186 @@
 
 /* ========== 颜色变量 - 深邃实验室配色 ========== */
 :root {
-	/* 主色调 - 电光青与极客紫 */
 	--primary-cyan: #00f3ff;
 	--primary-blue: #2979ff;
 	--primary-purple: #d500f9;
 	--primary-green: #addb67;
+	--primary-orange: #ffb86c;
+	--primary-red: #ff5555;
 	
-	/* 深度背景 */
-	--bg-abyss: #0f111a;            /* 核心背景 */
-	--bg-surface: #161925;          /* 卡片/表面 */
+	--bg-abyss: #0f111a;
+	--bg-surface: #161925;
 	--bg-header: rgba(15, 17, 26, 0.85);
 	
-	/* 文字色 */
-	--text-primary: #d6deeb;        /* 冰蓝白 */
-	--text-secondary: #7e8c9f;      /* 蓝灰 */
-	--text-muted: #4b5563;          /* 暗灰 */
+	--text-primary: #d6deeb;
+	--text-secondary: #7e8c9f;
+	--text-muted: #4b5563;
 
-	/* 功能色 */
 	--accent: var(--primary-cyan);
 	--border-color: rgba(0, 243, 255, 0.1);
 	--border-hover: rgba(0, 243, 255, 0.3);
 	
-	/* 阴影与光晕 */
 	--glow-cyan: 0 0 15px rgba(0, 243, 255, 0.2);
-	--glow-cyan-strong: 0 0 25px rgba(0, 243, 255, 0.4);
-	--shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.3);
-
-	/* 圆角 - 减少圆度增加精细感 */
 	--radius-sm: 4px;
 	--radius-md: 8px;
 	--radius-lg: 12px;
 
-	/* 过渡 */
 	--transition-base: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ========== 基础样式 ========== */
-* {
-	box-sizing: border-box;
-}
-
-html {
-	scroll-behavior: smooth;
-	background-color: var(--bg-abyss);
-}
-
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background-color: var(--bg-abyss); }
 body {
 	font-family: 'LXGW WenKai', 'Cascadia Code', -apple-system, sans-serif;
-	margin: 0;
-	padding: 0;
+	margin: 0; padding: 0;
 	background: var(--bg-abyss);
 	color: var(--text-primary);
 	font-size: 16px;
 	line-height: 1.7;
-	-webkit-font-smoothing: antialiased;
 }
 
-/* ========== 链接样式 ========== */
-a {
-	color: var(--primary-cyan);
-	text-decoration: none;
-	transition: var(--transition-base);
+/* 彻底移除所有链接下划线 */
+a, a:hover, a:visited, a:active {
+	text-decoration: none !important;
+	color: inherit;
 }
 
-a:hover {
-	text-shadow: var(--glow-cyan);
-	opacity: 0.9;
-}
-
-/* ========== 排版样式 ========== */
-h1, h2, h3, h4, h5, h6 {
-	margin: 0 0 1rem 0;
-	color: var(--text-primary);
-	line-height: 1.2;
-	font-weight: 700;
-	letter-spacing: -0.02em;
-}
-
-h1 { font-size: 2.8rem; }
-h2 { font-size: 2rem; border-left: 4px solid var(--primary-cyan); padding-left: 0.6em; margin-top: 2em; }
-h3 { font-size: 1.5rem; color: var(--primary-blue); }
-
+/* ========== 排版修复 ========== */
+h1, h2, h3, h4 { color: var(--text-primary); margin-bottom: 1rem; }
+h2 { border-left: 4px solid var(--primary-cyan); padding-left: 0.6em; margin-top: 2em; }
 p { margin-bottom: 1.5em; color: var(--text-secondary); }
 
-/* ========== 代码样式 ========== */
-/* 行内代码 */
-code {
-	font-family: 'Cascadia Code', monospace;
-	padding: 0.2em 0.4em;
-	background: rgba(0, 243, 255, 0.08);
-	border: 1px solid rgba(0, 243, 255, 0.15);
-	border-radius: var(--radius-sm);
-	font-size: 0.9em;
-	color: var(--primary-cyan);
-	word-break: break-word;
+/* 图片布局修复 */
+#write p:has(img) { text-align: center !important; line-height: 0 !important; margin: 2.5rem 0 !important; }
+#write img {
+	display: inline-block !important;
+	max-width: 100% !important;
+	height: auto !important;
+	border-radius: var(--radius-md);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* 代码块窗口化 (Mac Style) - 强力重置动态效果 */
-pre, pre:hover {
+/* ========== 代码样式：极致纯净极客版 ========== */
+
+/* 1. 行内代码 (Inline Code) - 仅限文本流中的 code */
+#write :not(pre) > code {
+	font-family: 'Cascadia Code', monospace !important;
+	padding: 0.2em 0.4em !important;
+	background: rgba(0, 243, 255, 0.08) !important;
+	border: 1px solid rgba(0, 243, 255, 0.15) !important;
+	border-radius: var(--radius-sm) !important;
+	color: var(--primary-cyan) !important;
+	transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+#write :not(pre) > code:hover {
+	background: var(--primary-cyan) !important;
+	color: #fff !important;
+	transform: scale(1.05) !important;
+	box-shadow: 0 0 15px rgba(0, 243, 255, 0.5) !important;
+	display: inline-block !important;
+}
+
+/* 2. 大型代码块 (Large Code Block) - 坚如磐石 */
+#write pre.astro-code,
+pre.astro-code {
 	position: relative !important;
-	padding: 3rem 1.5rem 1.5rem !important;
+	padding: 2.5rem 0 0 0 !important;
 	border-radius: 12px !important;
-	background: #0f111a !important;
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
-	overflow-x: auto !important;
-	margin: 2rem 0 !important;
-	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
-	transform: none !important; /* 禁用所有位移动画 */
+	background-color: #0f111a !important; 
+	border: 1px solid rgba(255, 255, 255, 0.1) !important;
+	margin: 2.5rem 0 !important;
+	box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5) !important;
+	overflow: hidden !important;
+	transform: none !important;
 	transition: none !important;
 }
 
-/* 窗口头部条 */
-pre::before {
-	content: "" !important;
+/* 暴力重置：强制清除大代码块内部所有层级的背景和动效 */
+#write pre.astro-code *,
+pre.astro-code * {
+	background: transparent !important;
+	background-color: transparent !important;
+	box-shadow: none !important;
+	transform: none !important;
+	transition: none !important;
+	border: none !important;
+}
+
+/* 内部滚动层专用样式 */
+pre.astro-code code {
+	display: block !important;
+	overflow-x: auto !important;
+	padding: 1.5rem !important;
+	font-size: 0.9rem !important;
+	line-height: 1.4 !important;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* 滚动条美化 */
+pre.astro-code code::-webkit-scrollbar { height: 8px; }
+pre.astro-code code::-webkit-scrollbar-track { background: transparent !important; }
+pre.astro-code code::-webkit-scrollbar-thumb { 
+	background: rgba(255, 255, 255, 0.1) !important; 
+	border-radius: 10px !important;
+}
+
+/* 窗口标题栏 - 保持极简 BASH/C 标识 */
+pre.astro-code::before {
+	content: attr(data-language) !important;
 	position: absolute !important;
-	top: 0 !important;
-	left: 0 !important;
-	width: 100% !important;
-	height: 2.2rem !important;
-	background: rgba(255, 255, 255, 0.03) !important;
+	top: 0 !important; left: 0 !important; right: 0 !important;
+	height: 2.5rem !important;
+	background: #1a1d27 !important;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-	border-radius: 12px 12px 0 0 !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: flex-end !important;
 	padding-right: 1.2rem !important;
 	font-family: 'Cascadia Code', monospace !important;
-	font-size: 0.7rem !important;
-	color: rgba(255, 255, 255, 0.2) !important;
+	font-size: 0.75rem !important;
+	color: rgba(0, 243, 255, 0.5) !important;
 	text-transform: uppercase !important;
+	z-index: 10 !important;
 }
 
-/* 语言展示兜底逻辑 */
-pre[class*="language-c"]::before { content: "c" !important; }
-pre[class*="language-cpp"]::before { content: "cpp" !important; }
-pre[class*="language-python"]::before { content: "python" !important; }
-pre[class*="language-js"]::before { content: "javascript" !important; }
-pre[class*="language-ts"]::before { content: "typescript" !important; }
-pre[class*="language-go"]::before { content: "go" !important; }
-pre[class*="language-rust"]::before { content: "rust" !important; }
-pre[class*="language-bash"]::before { content: "shell" !important; }
-pre[class*="language-json"]::before { content: "json" !important; }
-
-/* 绘制三个控制点 (红黄绿) */
-pre::after {
+/* 窗口三个控制点 */
+pre.astro-code::after {
 	content: "" !important;
 	position: absolute !important;
-	top: 0.85rem !important;
-	left: 1rem !important;
-	width: 10px !important;
-	height: 10px !important;
+	top: 0.85rem !important; left: 1.2rem !important;
+	width: 10px !important; height: 10px !important;
 	border-radius: 50% !important;
 	background: #ff5f56 !important;
 	box-shadow: 18px 0 0 #ffbd2e, 36px 0 0 #27c93f !important;
+	z-index: 11 !important;
 }
 
-/* 重置代码块内部样式 */
-pre code {
-	background: transparent !important;
-	border: none !important;
-	padding: 0 !important;
-	font-size: 0.9rem !important;
-	color: #d6deeb !important;
-	display: block !important;
-	line-height: 1.6 !important;
-	font-family: 'Cascadia Code', monospace !important;
+/* ========== 引用块与列表 ========== */
+#write blockquote {
+	position: relative !important;
+	margin: 2rem 0 !important;
+	padding: 1.2rem 1.5rem 1.2rem 3.5rem !important;
+	background: rgba(41, 121, 255, 0.05) !important;
+	border: 1px solid rgba(41, 121, 255, 0.1) !important;
+	border-left: 4px solid var(--primary-blue) !important;
+	border-radius: var(--radius-md) !important;
 }
+#write blockquote::before { content: "💡"; position: absolute; left: 1rem; top: 1.2rem; font-size: 1.5rem; }
+#write li:before { border-left: none !important; }
 
-/* ========== 按钮样式 ========== */
-.btn {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.7em 1.8em;
-	background: transparent;
-	color: var(--primary-cyan);
-	border: 1px solid var(--primary-cyan);
-	border-radius: var(--radius-sm);
-	font-weight: 600;
-	cursor: pointer;
-	transition: var(--transition-base);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	font-size: 0.9rem;
-}
-
-.btn:hover {
-	background: rgba(0, 243, 255, 0.1);
-	box-shadow: var(--glow-cyan);
-	transform: translateY(-1px);
-}
-
-.btn-secondary {
-	color: var(--primary-purple);
-	border-color: var(--primary-purple);
-}
-
-.btn-secondary:hover {
-	background: rgba(213, 0, 249, 0.1);
-	box-shadow: 0 0 15px rgba(213, 0, 249, 0.2);
-}
+/* 警告框转换样式 */
+.markdown-alert { padding: 1.2rem 1.5rem !important; border-left-width: 4px !important; margin: 2rem 0 !important; border-radius: var(--radius-md) !important; background: rgba(255,255,255,0.02) !important; }
+.markdown-alert-note { border-color: var(--primary-blue) !important; background: rgba(41, 121, 255, 0.05) !important; }
+.markdown-alert-warning { border-color: var(--primary-orange) !important; background: rgba(255, 184, 108, 0.05) !important; }
+.markdown-alert-important { border-color: var(--primary-purple) !important; background: rgba(213, 0, 249, 0.05) !important; }
 
 /* ========== 布局容器 ========== */
-main {
-	width: 100%;
-	max-width: 1000px;
-	margin: 0 auto;
-	padding: 4em 1.5em;
-}
-
-.container {
-	max-width: 1100px;
-	margin: 0 auto;
-	padding: 0 1.5em;
-}
-
-/* ========== 滚动条 ========== */
+main { width: 100%; max-width: 1000px; margin: 0 auto; padding: 4em 1.5em; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-abyss); }
 ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--primary-cyan); }
-
-/* ========== 通用工具类 ========== */
-.text-gradient {
-	background: linear-gradient(90deg, var(--primary-cyan), var(--primary-blue));
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
-}
-
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	border: 0;
-}

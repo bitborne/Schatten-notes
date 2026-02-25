@@ -150,5 +150,35 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 
 			<Footer />
 		</div>
+
+		<script>
+			// 自动转换 GFM 警告框标记
+			function transformAlerts() {
+				const blocks = document.querySelectorAll('#write blockquote');
+				blocks.forEach(block => {
+					const firstP = block.querySelector('p');
+					if (!firstP) return;
+
+					const content = firstP.textContent || '';
+					const match = content.match(/^\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]/i);
+					
+					if (match) {
+						const type = match[1].toLowerCase();
+						block.classList.add('markdown-alert', `markdown-alert-${type}`);
+						
+						// 移除标记文本
+						firstP.innerHTML = firstP.innerHTML.replace(/^\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\]/i, '').trim();
+						
+						// 如果移除后 p 为空，则删除该 p
+						if (!firstP.textContent?.trim() && !firstP.querySelector('img')) {
+							firstP.remove();
+						}
+					}
+				});
+			}
+
+			// 初始化执行
+			transformAlerts();
+		</script>
 	</body>
 </html>

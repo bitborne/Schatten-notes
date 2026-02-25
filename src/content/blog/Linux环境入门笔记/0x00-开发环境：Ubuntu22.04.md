@@ -52,13 +52,14 @@ pubDate: 2026-02-20
 # VSCode 远程连接
 [VS Code 远程连接 SSH 服务器_vscode连接ssh远程服务器-CSDN博客](https://blog.csdn.net/qq_42417071/article/details/138501026)
 
-## <font style="color:#DF2A3F;">如果想免密登录:</font>
+## 如果想免密登录
+
 ![1751967446701-5da1f438-909d-4aca-a629-6803bb7d1aca.jpeg](./img/tnEuXpOskL_LnS8H/1751967446701-5da1f438-909d-4aca-a629-6803bb7d1aca-131697.jpeg)
 
 # <font style="color:#DF2A3F;">再拍一个快照: 环境配置完成</font>
 # 给 Linux 换上 zsh+oh-my-zsh
 
-> [!WARNING]
+> [!NOTE]
 >
 > 都2025年了, 换用fish吧
 
