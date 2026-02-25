@@ -10,7 +10,7 @@ const posts = await getCollection('blog');
 // 按第一层文件夹分组
 const categoryData = posts.reduce((acc, post) => {
 	const parts = post.id.split('/');
-	// 如果在根目录，则归类为 'Uncategorized'，否则取第一层目录名
+	// 如果在根目录，则归类为 'Notes'，否则取第一层目录名
 	const folder = parts.length > 1 ? parts[0] : 'Notes';
 	if (!acc[folder]) {
 		acc[folder] = {
@@ -34,98 +34,162 @@ const categories = Object.keys(categoryData).sort();
 	<head>
 		<BaseHead title={`归档 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 		<style>
-			/* Header Section */
-			.archive-header {
-				padding: 8rem 0 4rem;
-				background: var(--bg-abyss);
-				background-image: 
-					linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-				background-size: 40px 40px;
-				border-bottom: 1px solid var(--border-color);
-				position: relative;
+			@keyframes fadeInScale {
+				from { opacity: 0; transform: scale(0.95) translateY(20px); }
+				to { opacity: 1; transform: scale(1) translateY(0); }
 			}
 
+			@keyframes gridPulse {
+				0%, 100% { opacity: 0.3; }
+				50% { opacity: 0.6; }
+			}
+
+			/* 噪点覆盖 */
+			.noise-overlay {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				pointer-events: none;
+				opacity: 0.04;
+				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+			}
+
+			/* Header Section */
+			.archive-header {
+				padding: 10rem 0 6rem;
+				background: var(--bg-abyss);
+				position: relative;
+				overflow: hidden;
+			}
+
+			/* 动态网格背景 */
+			.archive-header::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background-image: 
+					linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+				background-size: 50px 50px;
+				-webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+				mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+				animation: gridPulse 4s ease-in-out infinite;
+			}
+
+			/* 扫描线 */
 			.archive-header::after {
 				content: '';
 				position: absolute;
-				bottom: -1px;
-				left: 0;
-				width: 100%;
-				height: 100px;
-				background: linear-gradient(to top, var(--bg-abyss), transparent);
+				top: 0; left: 0; width: 100%; height: 100%;
+				background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.05), transparent);
+				background-size: 100% 400%;
+				animation: scan 10s linear infinite;
+				pointer-events: none;
 			}
 
 			.header-container {
-				max-width: 1000px;
+				max-width: 1100px;
 				margin: 0 auto;
 				padding: 0 1.5rem;
+				position: relative;
+				z-index: 2;
 			}
 
 			.header-subtitle {
 				font-family: 'Cascadia Code', monospace;
 				color: var(--primary-cyan);
 				font-size: 0.9rem;
-				letter-spacing: 0.2em;
-				margin-bottom: 1rem;
+				letter-spacing: 0.4em;
+				margin-bottom: 1.5rem;
 				display: block;
+				text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
 			}
 
 			.header-title {
-				font-size: 3rem;
+				font-size: 4rem;
 				font-weight: 800;
 				margin: 0;
 				color: var(--text-primary);
+				letter-spacing: -0.03em;
+				background: linear-gradient(to right, #fff, var(--primary-cyan));
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
 			}
 
 			/* Folder Grid */
 			.archive-main {
-				max-width: 1000px;
+				max-width: 1100px;
 				margin: 0 auto;
-				padding: 4rem 1.5rem;
+				padding: 4rem 1.5rem 10rem;
 			}
 
 			.folder-grid {
 				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-				gap: 2rem;
+				grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+				gap: 2.5rem;
 			}
 
 			.folder-card {
-				background: var(--bg-surface);
-				border: 1px solid var(--border-color);
-				border-radius: var(--radius-md);
-				padding: 2rem;
+				background: rgba(255, 255, 255, 0.015);
+				border: 1px solid rgba(255, 255, 255, 0.05);
+				border-radius: var(--radius-lg);
+				padding: 2.5rem;
 				display: flex;
 				flex-direction: column;
-				gap: 1.5rem;
-				transition: var(--transition-base);
+				gap: 2rem;
+				transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 				text-decoration: none;
 				position: relative;
 				overflow: hidden;
+				backdrop-filter: blur(10px);
+				opacity: 0; /* 初始隐藏，配合脚本动效 */
+				animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+			}
+
+			.folder-card::before {
+				content: '';
+				position: absolute;
+				top: 0; left: 0; width: 100%; height: 2px;
+				background: linear-gradient(90deg, transparent, var(--primary-cyan), transparent);
+				transform: translateX(-100%);
+				transition: 0.5s;
 			}
 
 			.folder-card:hover {
-				border-color: var(--primary-cyan);
-				transform: translateY(-5px);
-				box-shadow: var(--glow-cyan);
+				background: rgba(255, 255, 255, 0.03);
+				border-color: rgba(0, 243, 255, 0.2);
+				transform: translateY(-10px) scale(1.02);
+				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 243, 255, 0.1);
+			}
+
+			.folder-card:hover::before {
+				transform: translateX(100%);
 			}
 
 			.folder-icon {
-				width: 48px;
-				height: 48px;
+				width: 56px;
+				height: 56px;
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				background: rgba(0, 243, 255, 0.05);
-				border-radius: var(--radius-sm);
+				border: 1px solid rgba(0, 243, 255, 0.1);
+				border-radius: var(--radius-md);
 				color: var(--primary-cyan);
+				transition: var(--transition-base);
+			}
+
+			.folder-card:hover .folder-icon {
+				background: var(--primary-cyan);
+				color: #000;
+				box-shadow: 0 0 20px var(--primary-cyan);
 			}
 
 			.folder-info h2 {
-				font-size: 1.25rem;
-				margin-bottom: 0.5rem;
+				font-size: 1.5rem;
+				margin-bottom: 0.8rem;
 				color: var(--text-primary);
+				font-weight: 700;
 			}
 
 			.folder-meta {
@@ -133,7 +197,7 @@ const categories = Object.keys(categoryData).sort();
 				align-items: center;
 				gap: 1rem;
 				font-family: 'Cascadia Code', monospace;
-				font-size: 0.8rem;
+				font-size: 0.85rem;
 				color: var(--text-muted);
 			}
 
@@ -150,27 +214,34 @@ const categories = Object.keys(categoryData).sort();
 				font-size: 0.8rem;
 				color: var(--text-muted);
 				font-family: 'Cascadia Code', monospace;
+				padding-top: 1.5rem;
+				border-top: 1px solid rgba(255, 255, 255, 0.05);
 			}
 
 			.explore-text {
 				color: var(--primary-cyan);
-				opacity: 0;
-				transform: translateX(-10px);
+				opacity: 0.6;
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
 				transition: var(--transition-base);
 			}
 
 			.folder-card:hover .explore-text {
 				opacity: 1;
-				transform: translateX(0);
+				gap: 1rem;
 			}
 
 			@media (max-width: 768px) {
-				.header-title { font-size: 2.2rem; }
+				.archive-header { padding: 8rem 0 4rem; }
+				.header-title { font-size: 2.8rem; }
 				.folder-grid { grid-template-columns: 1fr; }
+				.archive-main { padding-bottom: 5rem; }
 			}
 		</style>
 	</head>
 	<body>
+		<div class="noise-overlay"></div>
 		<Header />
 
 		<div class="archive-header">
@@ -182,10 +253,14 @@ const categories = Object.keys(categoryData).sort();
 
 		<main class="archive-main">
 			<div class="folder-grid">
-				{categories.map(category => (
-					<a href={`/blog/category/${category}`} class="folder-card">
+				{categories.map((category, index) => (
+					<a 
+						href={`/blog/category/${category}`} 
+						class="folder-card"
+						style={`animation-delay: ${index * 0.1}s`}
+					>
 						<div class="folder-icon">
-							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 								<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
 							</svg>
 						</div>
@@ -197,7 +272,13 @@ const categories = Object.keys(categoryData).sort();
 						</div>
 						<div class="folder-footer">
 							<span>LAST_MOD: {categoryData[category].latestDate.toISOString().split('T')[0]}</span>
-							<span class="explore-text">EXPLORE_DIR -></span>
+							<span class="explore-text">
+								READ_DIR 
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+									<line x1="5" y1="12" x2="19" y2="12"></line>
+									<polyline points="12 5 19 12 12 19"></polyline>
+								</svg>
+							</span>
 						</div>
 					</a>
 				))}

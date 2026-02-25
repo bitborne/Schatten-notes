@@ -47,19 +47,30 @@ import HeaderLink from './HeaderLink.astro';
 		top: 0;
 		z-index: 1000;
 		background: var(--bg-header);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
 		border-bottom: 1px solid var(--border-color);
-		transition: var(--transition-base);
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.site-header.scrolled {
+		background: rgba(10, 12, 20, 0.95);
+		border-bottom-color: rgba(0, 243, 255, 0.15);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 	}
 
 	.header-container {
 		max-width: 1200px;
 		margin: 0 auto;
-		padding: 1rem 1.5rem;
+		padding: 1.25rem 1.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.site-header.scrolled .header-container {
+		padding: 0.8rem 1.5rem;
 	}
 
 	/* Logo Style */

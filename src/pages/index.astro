@@ -16,16 +16,46 @@ const posts = (await getCollection('blog')).sort(
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
+			/* 全局动画定义 */
+			@keyframes scan {
+				0% { transform: translateY(-100%); }
+				100% { transform: translateY(100%); }
+			}
+
+			@keyframes float {
+				0%, 100% { transform: translateY(0); }
+				50% { transform: translateY(-10px); }
+			}
+
+			@keyframes fadeIn {
+				from { opacity: 0; transform: translateY(20px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+
+			@keyframes pulse-glow {
+				0%, 100% { opacity: 0.3; }
+				50% { opacity: 0.6; }
+			}
+
+			/* 噪音纹理蒙版 */
+			.noise-overlay {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				pointer-events: none;
+				opacity: 0.04;
+				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+			}
+
 			/* Hero Section 增强方案 */
 			.hero {
-				padding: 10rem 0 6rem;
+				padding: 12rem 0 8rem;
 				position: relative;
 				overflow: hidden;
-				/* 多层光晕背景 */
 				background: 
 					radial-gradient(at 0% 0%, rgba(0, 243, 255, 0.12) 0, transparent 40%),
 					radial-gradient(at 100% 0%, rgba(213, 0, 249, 0.1) 0, transparent 40%),
-					radial-gradient(at 50% 50%, rgba(41, 121, 255, 0.05) 0, transparent 50%);
+					radial-gradient(at 50% 50%, rgba(10, 12, 20, 1) 0, transparent 100%);
 			}
 
 			/* 科技感网格背景装饰 */
@@ -34,53 +64,76 @@ const posts = (await getCollection('blog')).sort(
 				position: absolute;
 				inset: 0;
 				background-image: 
-					linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-				background-size: 50px 50px;
-				-webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
-				mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
+					linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+				background-size: 60px 60px;
+				-webkit-mask-image: radial-gradient(circle at 50% 40%, black, transparent 90%);
+				mask-image: radial-gradient(circle at 50% 40%, black, transparent 90%);
 				pointer-events: none;
 			}
 
+			/* 扫描线效果 */
+			.hero::after {
+				content: '';
+				position: absolute;
+				top: 0; left: 0; right: 0; height: 100%;
+				background: linear-gradient(to bottom, 
+					transparent 0%, 
+					rgba(0, 243, 255, 0.05) 50%, 
+					transparent 50.5%);
+				background-size: 100% 200%;
+				animation: scan 8s linear infinite;
+				pointer-events: none;
+				z-index: 2;
+			}
+
 			.hero-container {
-				max-width: 1000px;
+				max-width: 1100px;
 				margin: 0 auto;
 				padding: 0 1.5rem;
 				position: relative;
-				z-index: 1;
+				z-index: 10;
+			}
+
+			.hero-content {
+				animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 			}
 
 			.hero-subtitle {
 				font-family: 'Cascadia Code', monospace;
 				color: var(--primary-cyan);
 				font-size: 0.85rem;
-				letter-spacing: 0.3em;
-				margin-bottom: 1.5rem;
+				letter-spacing: 0.4em;
+				margin-bottom: 2rem;
 				display: block;
 				text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+				opacity: 0.8;
 			}
 
 			.hero-title {
-				font-size: 4rem;
-				line-height: 1.05;
+				font-size: clamp(3rem, 8vw, 4.5rem);
+				line-height: 1.1;
 				margin-bottom: 2.5rem;
 				font-weight: 800;
-				letter-spacing: -0.03em;
+				letter-spacing: -0.04em;
+				animation: float 6s ease-in-out infinite;
 			}
 
 			.title-gradient {
-				background: linear-gradient(135deg, #fff 30%, var(--primary-cyan) 70%, var(--primary-blue));
+				background: linear-gradient(135deg, #fff 20%, var(--primary-cyan) 50%, var(--primary-blue) 80%);
 				-webkit-background-clip: text;
 				-webkit-text-fill-color: transparent;
-				filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.2));
+				filter: drop-shadow(0 0 30px rgba(0, 243, 255, 0.15));
 			}
 
 			.hero-description {
-				font-size: 1.2rem;
+				font-size: 1.15rem;
 				color: var(--text-secondary);
 				line-height: 1.8;
-				margin-bottom: 3.5rem;
-				max-width: 600px;
+				margin-bottom: 4rem;
+				max-width: 650px;
+				border-left: 2px solid rgba(0, 243, 255, 0.1);
+				padding-left: 1.5rem;
 			}
 
 			.hero-actions {
@@ -88,141 +141,221 @@ const posts = (await getCollection('blog')).sort(
 				gap: 1.5rem;
 			}
 
-			/* Section Containers */
-			.section-container {
-				max-width: 1000px;
-				margin: 0 auto;
-				padding: 6rem 1.5rem;
-			}
-
-			.section-header {
-				display: flex;
-				justify-content: space-between;
+			/* 按钮样式增强 */
+			.btn {
+				padding: 0.8rem 2rem;
+				border-radius: var(--radius-sm);
+				font-weight: 600;
+				font-size: 0.95rem;
+				transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+				display: inline-flex;
 				align-items: center;
-				margin-bottom: 3rem;
-			}
-
-			.section-title {
-				font-size: 1.25rem;
-				font-family: 'Cascadia Code', monospace;
-				font-weight: 700;
-				color: var(--text-primary);
-				display: flex;
-				align-items: center;
-				gap: 1rem;
-			}
-
-			.section-title::before {
-				content: '';
-				width: 4px;
-				height: 1.5rem;
-				background: var(--primary-cyan);
-				box-shadow: 0 0 10px var(--primary-cyan);
-			}
-
-			/* 文章列表卡片：玻璃质感 */
-			.post-item {
-				display: grid;
-				grid-template-columns: auto 1fr;
-				gap: 2.5rem;
-				padding: 2rem;
-				margin-bottom: 1.5rem;
-				background: rgba(255, 255, 255, 0.02);
-				border: 1px solid rgba(255, 255, 255, 0.05);
-				border-radius: var(--radius-md);
-				transition: var(--transition-base);
+				justify-content: center;
 				text-decoration: none;
 				position: relative;
 				overflow: hidden;
 			}
 
-			.post-item::before {
+			.btn::before {
 				content: '';
 				position: absolute;
-				left: 0; top: 0; width: 2px; height: 100%;
+				top: 0; left: -100%; width: 100%; height: 100%;
+				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+				transition: 0.5s;
+			}
+
+			.btn:hover::before { left: 100%; }
+
+			.btn:first-child {
 				background: var(--primary-cyan);
+				color: #000;
+				box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+			}
+
+			.btn:first-child:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+			}
+
+			.btn-secondary {
+				background: rgba(255, 255, 255, 0.03);
+				color: #fff;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+			}
+
+			.btn-secondary:hover {
+				background: rgba(255, 255, 255, 0.06);
+				border-color: var(--primary-cyan);
+				transform: translateY(-3px);
+			}
+
+			/* Section Containers */
+			.section-container {
+				max-width: 1100px;
+				margin: 0 auto;
+				padding: 8rem 1.5rem;
+			}
+
+			.section-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-end;
+				margin-bottom: 4rem;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+				padding-bottom: 1rem;
+			}
+
+			.section-title {
+				font-size: 1.4rem;
+				font-family: 'Cascadia Code', monospace;
+				font-weight: 700;
+				color: var(--text-primary);
+				display: flex;
+				align-items: center;
+				gap: 1.2rem;
+				margin: 0;
+				border: none; /* 覆盖全局样式 */
+				padding: 0;
+			}
+
+			.section-title::before {
+				content: '//';
+				color: var(--primary-cyan);
+				font-size: 1.2rem;
+				opacity: 0.6;
+			}
+
+			/* 文章列表卡片：极致玻璃质感 */
+			.post-item {
+				display: grid;
+				grid-template-columns: 140px 1fr;
+				gap: 3rem;
+				padding: 2.5rem;
+				margin-bottom: 2rem;
+				background: rgba(255, 255, 255, 0.01);
+				border: 1px solid rgba(255, 255, 255, 0.03);
+				border-radius: var(--radius-md);
+				transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+				text-decoration: none;
+				position: relative;
+				backdrop-filter: blur(5px);
+			}
+
+			.post-item::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border-radius: inherit;
+				background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(0, 243, 255, 0.08), transparent 40%);
 				opacity: 0;
-				transition: var(--transition-base);
+				transition: opacity 0.3s;
+				pointer-events: none;
 			}
 
 			.post-item:hover {
-				background: rgba(255, 255, 255, 0.04);
-				border-color: rgba(0, 243, 255, 0.2);
-				transform: translateX(10px);
-				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+				background: rgba(255, 255, 255, 0.03);
+				border-color: rgba(0, 243, 255, 0.15);
+				transform: scale(1.02) translateX(5px);
+				box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 			}
 
-			.post-item:hover::before { opacity: 1; }
+			.post-item:hover::after { opacity: 1; }
 
 			.post-date {
 				font-family: 'Cascadia Code', monospace;
-				font-size: 0.8rem;
+				font-size: 0.85rem;
 				color: var(--text-muted);
-				padding-top: 0.4rem;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
 			}
 
 			.post-title {
-				font-size: 1.4rem;
+				font-size: 1.6rem;
 				color: var(--text-primary);
-				margin-bottom: 0.8rem;
+				margin-bottom: 1rem;
+				font-weight: 700;
 				transition: var(--transition-base);
 			}
 
 			.post-item:hover .post-title { color: var(--primary-cyan); }
 
+			.post-description {
+				font-size: 1rem;
+				color: var(--text-secondary);
+				line-height: 1.6;
+				margin: 0;
+			}
+
 			/* 专业领域展示 */
 			.expertise-grid {
 				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-				gap: 2rem;
+				grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+				gap: 2.5rem;
 			}
 
 			.expertise-card {
-				padding: 2.5rem;
-				background: rgba(255, 255, 255, 0.02);
-				border: 1px solid rgba(255, 255, 255, 0.05);
+				padding: 3rem;
+				background: rgba(255, 255, 255, 0.015);
+				border: 1px solid rgba(255, 255, 255, 0.04);
 				border-radius: var(--radius-lg);
-				transition: var(--transition-base);
+				transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 				position: relative;
+				overflow: hidden;
+			}
+
+			.expertise-card::before {
+				content: '';
+				position: absolute;
+				top: 0; left: 0; width: 100%; height: 4px;
+				background: var(--accent-color, var(--primary-cyan));
+				opacity: 0.3;
 			}
 
 			.expertise-card:hover {
-				transform: translateY(-5px);
+				transform: translateY(-10px);
 				background: rgba(255, 255, 255, 0.04);
+				border-color: var(--accent-color, var(--primary-cyan));
+				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
 			}
+
+			.expertise-card.ebpf { --accent-color: var(--primary-cyan); }
+			.expertise-card.network { --accent-color: var(--primary-blue); }
+			.expertise-card.io { --accent-color: var(--primary-purple); }
 
 			.expertise-icon {
-				font-size: 0.8rem;
+				font-size: 0.75rem;
 				font-family: 'Cascadia Code', monospace;
-				color: var(--primary-cyan);
-				margin-bottom: 1.5rem;
+				color: var(--accent-color);
+				margin-bottom: 2rem;
 				display: block;
-				opacity: 0.6;
+				letter-spacing: 0.1em;
 			}
 
-			.expertise-title { font-size: 1.5rem; margin-bottom: 1.2rem; }
-
-			/* 为不同领域添加色彩标识 */
-			.expertise-card.ebpf:hover { border-color: var(--primary-cyan); box-shadow: var(--glow-cyan); }
-			.expertise-card.network:hover { border-color: var(--primary-blue); box-shadow: 0 0 20px rgba(41, 121, 255, 0.2); }
-			.expertise-card.io:hover { border-color: var(--primary-purple); box-shadow: var(--glow-purple); }
+			.expertise-title { 
+				font-size: 1.75rem; 
+				margin-bottom: 1.5rem;
+				font-weight: 800;
+			}
 
 			.expertise-bar {
-				width: 40px; height: 2px;
-				margin-bottom: 1.5rem;
-				background: var(--primary-cyan);
+				width: 50px; height: 3px;
+				margin-bottom: 2rem;
+				background: var(--accent-color);
+				box-shadow: 0 0 10px var(--accent-color);
 			}
-			.network .expertise-bar { background: var(--primary-blue); }
-			.io .expertise-bar { background: var(--primary-purple); }
 
 			@media (max-width: 768px) {
+				.hero { padding: 8rem 0 4rem; }
 				.hero-title { font-size: 2.8rem; }
-				.post-item { grid-template-columns: 1fr; gap: 0.5rem; }
+				.post-item { grid-template-columns: 1fr; gap: 1rem; padding: 2rem; }
 				.hero-actions { flex-direction: column; }
+				.section-container { padding: 4rem 1.5rem; }
 			}
 		</style>
 	</head>
 	<body>
+		<div class="noise-overlay"></div>
 		<Header />
 		
 		<main>
@@ -247,7 +380,7 @@ const posts = (await getCollection('blog')).sort(
 			<section class="section-container">
 				<div class="section-header">
 					<h2 class="section-title">RECENT_LOGS</h2>
-					<a href="/blog" style="font-size: 0.8rem; color: var(--primary-cyan); font-family: 'Cascadia Code';">VIEW_ALL_POSTS -></a>
+					<a href="/blog" style="font-size: 0.85rem; color: var(--primary-cyan); font-family: 'Cascadia Code'; font-weight: 600;">VIEW_ALL_POSTS -></a>
 				</div>
 				<div class="posts-list">
 					{posts.map((post) => (
@@ -257,7 +390,7 @@ const posts = (await getCollection('blog')).sort(
 							</div>
 							<div class="post-content">
 								<h3 class="post-title">{post.data.title}</h3>
-								<p style="font-size: 0.95rem; margin: 0;">{post.data.description || 'No metadata provided.'}</p>
+								<p class="post-description">{post.data.description || 'No metadata provided.'}</p>
 							</div>
 						</a>
 					))}
@@ -273,24 +406,38 @@ const posts = (await getCollection('blog')).sort(
 						<span class="expertise-icon">PATH: /sys/kernel/debug/tracing</span>
 						<div class="expertise-bar"></div>
 						<h3 class="expertise-title">eBPF & Tracing</h3>
-						<p style="font-size: 0.9rem; color: var(--text-secondary);">内核级观测与 XDP 高性能处理。通过代码直接与内核对话。</p>
+						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">内核级观测与 XDP 高性能处理。通过代码直接与内核对话。</p>
 					</div>
 					<div class="expertise-card network">
 						<span class="expertise-icon">PATH: /dev/infiniband/uverbs</span>
 						<div class="expertise-bar"></div>
 						<h3 class="expertise-title">Kernel Network</h3>
-						<p style="font-size: 0.9rem; color: var(--text-secondary);">深入 RDMA、DPDK 等用户态协议栈，挑战数据包吞吐的极限。</p>
+						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">深入 RDMA、DPDK 等用户态协议栈，挑战数据包吞吐的极限。</p>
 					</div>
 					<div class="expertise-card io">
 						<span class="expertise-icon">PATH: /include/linux/io_uring.h</span>
 						<div class="expertise-bar"></div>
 						<h3 class="expertise-title">Async I/O</h3>
-						<p style="font-size: 0.9rem; color: var(--text-secondary);">专注 io_uring、异步协程调度与高性能并发模型的设计与实现。</p>
+						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">专注 io_uring、异步协程调度与高性能并发模型的设计与实现。</p>
 					</div>
 				</div>
 			</section>
 		</main>
 
 		<Footer />
+
+		<script>
+			// 简单的鼠标跟随光效
+			const items = document.querySelectorAll('.post-item');
+			items.forEach(item => {
+				item.addEventListener('mousemove', (e) => {
+					const rect = item.getBoundingClientRect();
+					const x = ((e.clientX - rect.left) / rect.width) * 100;
+					const y = ((e.clientY - rect.top) / rect.height) * 100;
+					item.style.setProperty('--x', `${x}%`);
+					item.style.setProperty('--y', `${y}%`);
+				});
+			});
+		</script>
 	</body>
 </html>
