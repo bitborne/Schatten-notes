@@ -3,47 +3,252 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getCollection } from 'astro:content';
+import FormattedDate from '../components/FormattedDate.astro';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+).slice(0, 4);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<style>
+			/* Hero Section */
+			.hero {
+				padding: 8rem 0 4rem;
+				background: radial-gradient(circle at 90% 10%, rgba(0, 243, 255, 0.05) 0%, transparent 40%);
+				position: relative;
+				overflow: hidden;
+			}
+
+			.hero-container {
+				max-width: 1000px;
+				margin: 0 auto;
+				padding: 0 1.5rem;
+			}
+
+			.hero-content {
+				max-width: 700px;
+			}
+
+			.hero-subtitle {
+				font-family: 'Cascadia Code', monospace;
+				color: var(--primary-cyan);
+				font-size: 0.9rem;
+				letter-spacing: 0.1em;
+				margin-bottom: 1.5rem;
+				display: block;
+			}
+
+			.hero-title {
+				font-size: 3.5rem;
+				line-height: 1.1;
+				margin-bottom: 2rem;
+				font-weight: 800;
+				color: var(--text-primary);
+			}
+
+			.hero-description {
+				font-size: 1.15rem;
+				color: var(--text-secondary);
+				line-height: 1.8;
+				margin-bottom: 3rem;
+			}
+
+			.hero-actions {
+				display: flex;
+				gap: 1.5rem;
+			}
+
+			/* Posts Section */
+			.section-container {
+				max-width: 1000px;
+				margin: 0 auto;
+				padding: 6rem 1.5rem;
+			}
+
+			.section-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-end;
+				margin-bottom: 3rem;
+				border-bottom: 1px solid var(--border-color);
+				padding-bottom: 1rem;
+			}
+
+			.section-title {
+				font-size: 1.5rem;
+				font-family: 'Cascadia Code', monospace;
+				font-weight: 700;
+				margin: 0;
+			}
+
+			.section-link {
+				font-size: 0.9rem;
+				color: var(--text-secondary);
+			}
+
+			.posts-list {
+				display: flex;
+				flex-direction: column;
+				gap: 1.5rem;
+			}
+
+			.post-item {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 2rem;
+				padding: 1.5rem;
+				background: var(--bg-surface);
+				border: 1px solid var(--border-color);
+				border-radius: var(--radius-md);
+				transition: var(--transition-base);
+				text-decoration: none;
+			}
+
+			.post-item:hover {
+				border-color: var(--primary-cyan);
+				transform: translateX(8px);
+				box-shadow: var(--glow-cyan);
+			}
+
+			.post-date {
+				font-family: 'Cascadia Code', monospace;
+				font-size: 0.85rem;
+				color: var(--text-muted);
+				padding-top: 0.3rem;
+			}
+
+			.post-title {
+				font-size: 1.25rem;
+				color: var(--text-primary);
+				margin-bottom: 0.5rem;
+				transition: var(--transition-base);
+			}
+
+			.post-item:hover .post-title {
+				color: var(--primary-cyan);
+			}
+
+			.post-excerpt {
+				color: var(--text-secondary);
+				font-size: 0.95rem;
+				margin: 0;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+			}
+
+			/* Expertise Section */
+			.expertise-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 2rem;
+			}
+
+			.expertise-card {
+				padding: 2rem;
+				background: var(--bg-surface);
+				border: 1px solid var(--border-color);
+				border-radius: var(--radius-md);
+			}
+
+			.expertise-icon {
+				color: var(--primary-cyan);
+				font-family: 'Cascadia Code', monospace;
+				font-weight: 700;
+				font-size: 1.2rem;
+				margin-bottom: 1rem;
+				display: block;
+			}
+
+			.expertise-title {
+				font-size: 1.2rem;
+				margin-bottom: 1rem;
+			}
+
+			.expertise-desc {
+				font-size: 0.9rem;
+				color: var(--text-secondary);
+				line-height: 1.6;
+				margin: 0;
+			}
+
+			@media (max-width: 768px) {
+				.hero-title { font-size: 2.5rem; }
+				.post-item { grid-template-columns: 1fr; gap: 0.5rem; }
+				.hero-actions { flex-direction: column; }
+			}
+		</style>
 	</head>
 	<body>
 		<Header />
+		
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero">
+				<div class="hero-container">
+					<div class="hero-content">
+						<span class="hero-subtitle">SYSTEM_INITIALIZING... DONE</span>
+						<h1 class="hero-title">Tracing the Kernel,<br>One Syscall at a Time.</h1>
+						<p class="hero-description">
+							我是 Schatten，专注于 Linux 内核观测、高性能网络协议栈与系统底层调优。这里是我记录技术攻坚、分享底层洞察的实验室。
+						</p>
+						<div class="hero-actions">
+							<a href="/blog" class="btn">读取文章库</a>
+							<a href="/about" class="btn btn-secondary">核心配置</a>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="section-container">
+				<div class="section-header">
+					<h2 class="section-title">RECENT_LOGS</h2>
+					<a href="/blog" class="section-link">VIEW_ALL_POSTS -></a>
+				</div>
+				<div class="posts-list">
+					{posts.map((post) => (
+						<a href={`/blog/${post.id}/`} class="post-item">
+							<div class="post-date">
+								<FormattedDate date={post.data.pubDate} />
+							</div>
+							<div class="post-content">
+								<h3 class="post-title">{post.data.title}</h3>
+								<p class="post-excerpt">{post.data.description || 'No metadata description provided.'}</p>
+							</div>
+						</a>
+					))}
+				</div>
+			</section>
+
+			<section class="section-container">
+				<div class="section-header">
+					<h2 class="section-title">EXPERTISE_DOMAINS</h2>
+				</div>
+				<div class="expertise-grid">
+					<div class="expertise-card">
+						<span class="expertise-icon">01.</span>
+						<h3 class="expertise-title">eBPF & Tracing</h3>
+						<p class="expertise-desc">利用 eBPF 实现内核级观测与 XDP 高性能数据包处理。</p>
+					</div>
+					<div class="expertise-card">
+						<span class="expertise-icon">02.</span>
+						<h3 class="expertise-title">Kernel Network</h3>
+						<p class="expertise-desc">深入 RDMA、DPDK 等用户态协议栈，探索网络吞吐极限。</p>
+					</div>
+					<div class="expertise-card">
+						<span class="expertise-icon">03.</span>
+						<h3 class="expertise-title">Async I/O</h3>
+						<p class="expertise-desc">专注 io_uring、协程调度与高性能并发模型的设计与实现。</p>
+					</div>
+				</div>
+			</section>
 		</main>
+
 		<Footer />
 	</body>
 </html>

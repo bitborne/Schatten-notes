@@ -1,3 +1,9 @@
+---
+title: 'eBPF验证器'
+description: ''
+pubDate: 2026-02-23
+---
+
 # eBPF Verifier 实战案例：两个高性能优化故事
 
 ## 案例一：数据库监控工具的 1000% 性能提升

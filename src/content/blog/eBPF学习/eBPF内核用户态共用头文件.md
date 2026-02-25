@@ -1,3 +1,9 @@
+---
+title: 'eBPF内核用户态共用头文件'
+description: ''
+pubDate: 2026-02-23
+---
+
 # `common.h`怎样防止重定义?
 
 ## 问题

@@ -1,0 +1,163 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../../components/BaseHead.astro';
+import Footer from '../../../components/Footer.astro';
+import Header from '../../../components/Header.astro';
+import FormattedDate from '../../../components/FormattedDate.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../../consts';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	const categories = [...new Set(posts.map(post => {
+		const parts = post.id.split('/');
+		return parts.length > 1 ? parts[0] : 'Notes';
+	}))];
+	
+	return categories.map(category => ({
+		params: { category },
+		props: { 
+			posts: posts.filter(post => {
+				const folder = post.id.split('/').length > 1 ? post.id.split('/')[0] : 'Notes';
+				return folder === category;
+			}).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+		}
+	}));
+}
+
+const { category } = Astro.params;
+const { posts } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`${category} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<style>
+			.category-header {
+				padding: 6rem 0 3rem;
+				border-bottom: 1px solid var(--border-color);
+				background: var(--bg-abyss);
+			}
+
+			.header-container {
+				max-width: 1000px;
+				margin: 0 auto;
+				padding: 0 1.5rem;
+			}
+
+			.breadcrumb {
+				font-family: 'Cascadia Code', monospace;
+				font-size: 0.85rem;
+				color: var(--text-muted);
+				margin-bottom: 1.5rem;
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+			}
+
+			.breadcrumb a {
+				color: var(--primary-cyan);
+			}
+
+			.category-title {
+				font-size: 2.5rem;
+				font-weight: 800;
+				color: var(--text-primary);
+				margin: 0;
+			}
+
+			.main-content {
+				max-width: 1000px;
+				margin: 0 auto;
+				padding: 4rem 1.5rem;
+			}
+
+			.posts-list {
+				display: flex;
+				flex-direction: column;
+				gap: 1.5rem;
+			}
+
+			.post-item {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 2.5rem;
+				padding: 2rem;
+				background: var(--bg-surface);
+				border: 1px solid var(--border-color);
+				border-radius: var(--radius-md);
+				transition: var(--transition-base);
+				text-decoration: none;
+			}
+
+			.post-item:hover {
+				border-color: var(--primary-cyan);
+				transform: translateX(10px);
+				box-shadow: var(--glow-cyan);
+			}
+
+			.post-date {
+				font-family: 'Cascadia Code', monospace;
+				font-size: 0.85rem;
+				color: var(--text-muted);
+				padding-top: 0.4rem;
+				white-space: nowrap;
+			}
+
+			.post-title {
+				font-size: 1.4rem;
+				color: var(--text-primary);
+				margin-bottom: 0.8rem;
+				transition: var(--transition-base);
+			}
+
+			.post-item:hover .post-title {
+				color: var(--primary-cyan);
+			}
+
+			.post-excerpt {
+				color: var(--text-secondary);
+				font-size: 1rem;
+				line-height: 1.6;
+				margin: 0;
+			}
+
+			@media (max-width: 768px) {
+				.post-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.5rem; }
+				.category-title { font-size: 2rem; }
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		
+		<div class="category-header">
+			<div class="header-container">
+				<nav class="breadcrumb">
+					<a href="/blog">ARCHIVE</a>
+					<span>/</span>
+					<span>{category.toUpperCase()}</span>
+				</nav>
+				<h1 class="category-title">{category}</h1>
+			</div>
+		</div>
+
+		<main class="main-content">
+			<div class="posts-list">
+				{posts.map((post) => (
+					<a href={`/blog/${post.id}/`} class="post-item">
+						<div class="post-date">
+							<FormattedDate date={post.data.pubDate} />
+						</div>
+						<div class="post-content">
+							<h2 class="post-title">{post.data.title}</h2>
+							<p class="post-excerpt">{post.data.description || 'No summary available for this entry.'}</p>
+						</div>
+					</a>
+				))}
+			</div>
+		</main>
+
+		<Footer />
+	</body>
+</html>

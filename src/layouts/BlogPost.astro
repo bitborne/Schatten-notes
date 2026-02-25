@@ -11,76 +11,144 @@ type Props = CollectionEntry<'blog'>['data'];
 const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 ---
 
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<BaseHead title={title} description={description} />
+		<link rel="stylesheet" href="/src/styles/phycat-abyss.css" />
 		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
+			.article-container {
+				background-color: var(--bg-abyss);
+				min-height: 100vh;
 			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
+
+			.article-header {
+				padding: 6rem 0 3rem;
+				max-width: 900px;
 				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
+				padding-left: 1.5rem;
+				padding-right: 1.5rem;
 			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
+
+			.back-link {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				font-family: 'Cascadia Code', monospace;
+				font-size: 0.85rem;
+				color: var(--text-muted);
+				margin-bottom: 2rem;
+				transition: var(--transition-base);
 			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
+
+			.back-link:hover {
+				color: var(--primary-cyan);
 			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
+
+			.title-section {
+				margin-bottom: 2rem;
 			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+
+			.article-title {
+				font-size: 3rem;
+				font-weight: 800;
+				line-height: 1.1;
+				margin-bottom: 1.5rem;
+				color: var(--text-primary);
 			}
-			.last-updated-on {
-				font-style: italic;
+
+			.article-meta {
+				display: flex;
+				align-items: center;
+				gap: 1.5rem;
+				font-family: 'Cascadia Code', monospace;
+				font-size: 0.9rem;
+				color: var(--text-secondary);
+			}
+
+			.meta-item {
+				display: flex;
+				align-items: center;
+				gap: 0.4rem;
+			}
+
+			.hero-image {
+				max-width: 1000px;
+				margin: 0 auto 4rem;
+				border-radius: var(--radius-md);
+				overflow: hidden;
+				border: 1px solid var(--border-color);
+				box-shadow: var(--shadow-soft);
+			}
+
+			.hero-image img {
+				width: 100%;
+				height: auto;
+				display: block;
+			}
+
+			.article-content {
+				max-width: 900px;
+				margin: 0 auto;
+				padding: 0 1.5rem 6rem;
+			}
+
+			/* Typora Abyss Content Overrides */
+			#write {
+				background: transparent !important;
+				padding: 0 !important;
+				box-shadow: none !important;
+				color: var(--text-primary) !important;
+			}
+
+			:global(.prose) {
+				font-size: 1.1rem;
+				line-height: 1.8;
 			}
 		</style>
 	</head>
 
 	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
+		<div class="article-container">
+			<Header />
+
+			<main>
+				<article>
+					<header class="article-header">
+						<a href="/blog" class="back-link">
+							<span>&lt;--</span> RETURN_TO_ARCHIVE
+						</a>
+						<div class="title-section">
+							<h1 class="article-title">{title}</h1>
+							<div class="article-meta">
+								<div class="meta-item">
+									<span class="text-muted">PUBLISHED:</span>
+									<FormattedDate date={pubDate} />
+								</div>
+								{updatedDate && (
+									<div class="meta-item">
+										<span class="text-muted">UPDATED:</span>
+										<FormattedDate date={updatedDate} />
 									</div>
-								)
-							}
+								)}
+							</div>
 						</div>
-						<h1>{title}</h1>
-						<hr />
+					</header>
+
+					{heroImage && (
+						<div class="hero-image">
+							<Image width={1000} height={500} src={heroImage} alt={title} />
+						</div>
+					)}
+
+					<div class="article-content">
+						<div id="write" class="prose">
+							<slot />
+						</div>
 					</div>
-					<slot />
-				</div>
-			</article>
-		</main>
-		<Footer />
+				</article>
+			</main>
+
+			<Footer />
+		</div>
 	</body>
 </html>
