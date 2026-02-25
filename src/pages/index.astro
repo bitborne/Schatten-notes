@@ -196,6 +196,74 @@ const posts = (await getCollection('blog')).sort(
 				padding: 8rem 1.5rem;
 			}
 
+			/* 滚动触发动画基础类 */
+			.reveal {
+				opacity: 0;
+				transform: translateY(30px);
+				transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			.reveal.active {
+				opacity: 1;
+				transform: translateY(0);
+			}
+
+			/* 交错动画延迟 */
+			.stagger-1 { transition-delay: 0.1s; }
+			.stagger-2 { transition-delay: 0.2s; }
+			.stagger-3 { transition-delay: 0.3s; }
+			.stagger-4 { transition-delay: 0.4s; }
+
+			/* 粒子画布 */
+			#particle-canvas {
+				position: absolute;
+				inset: 0;
+				z-index: 1;
+				pointer-events: none;
+			}
+
+			/* 磁吸按钮 */
+			.magnetic-btn {
+				transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+			}
+
+			/* 打字机效果 */
+			.typewriter-container {
+				font-size: 1.15rem;
+				color: var(--text-secondary);
+				line-height: 1.8;
+				margin-bottom: 4rem;
+				max-width: 650px;
+				border-left: 2px solid rgba(0, 243, 255, 0.1);
+				padding-left: 1.5rem;
+				font-family: 'Cascadia Code', monospace;
+				min-height: 3.5em;
+			}
+
+			.typewriter-text {
+				display: inline;
+			}
+
+			.typewriter-cursor {
+				display: inline-block;
+				width: 2px;
+				height: 1.2em;
+				background-color: var(--primary-cyan);
+				margin-left: 2px;
+				vertical-align: middle;
+				animation: cursorBlink 1s step-end infinite;
+				box-shadow: 0 0 8px var(--primary-cyan);
+			}
+
+			.typewriter-cursor.typing {
+				animation: none;
+			}
+
+			@keyframes cursorBlink {
+				0%, 50% { opacity: 1; }
+				51%, 100% { opacity: 0; }
+			}
+
 			.section-header {
 				display: flex;
 				justify-content: space-between;
@@ -360,31 +428,34 @@ const posts = (await getCollection('blog')).sort(
 		
 		<main>
 			<section class="hero">
+				<canvas id="particle-canvas"></canvas>
 				<div class="hero-container">
 					<div class="hero-content">
 						<span class="hero-subtitle">CONNECTED // KERNEL_SPACE</span>
 						<h1 class="hero-title">
 							<span class="title-gradient">Tracing the Kernel,<br>One Syscall at a Time.</span>
 						</h1>
-						<p class="hero-description">
-							专注于 Linux 内核观测、高性能网络协议栈与系统底层调优。记录技术攻坚，探索底层极限。
-						</p>
+						<div class="typewriter-container">
+							<span class="typewriter-prefix" style="color: var(--primary-cyan); opacity: 0.7;">$ </span>
+							<span class="typewriter-text"></span>
+							<span class="typewriter-cursor"></span>
+						</div>
 						<div class="hero-actions">
-							<a href="/blog" class="btn">读取文章库</a>
-							<a href="/about" class="btn btn-secondary">核心配置</a>
+							<a href="/blog" class="btn magnetic-btn">读取文章库</a>
+							<a href="/about" class="btn btn-secondary magnetic-btn">核心配置</a>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			<section class="section-container">
+			<section class="section-container reveal">
 				<div class="section-header">
 					<h2 class="section-title">RECENT_LOGS</h2>
 					<a href="/blog" style="font-size: 0.85rem; color: var(--primary-cyan); font-family: 'Cascadia Code'; font-weight: 600;">VIEW_ALL_POSTS -></a>
 				</div>
 				<div class="posts-list">
-					{posts.map((post) => (
-						<a href={`/blog/${post.id}/`} class="post-item">
+					{posts.map((post, index) => (
+						<a href={`/blog/${post.id}/`} class={`post-item reveal stagger-${Math.min(index + 1, 4)}`}>
 							<div class="post-date">
 								<FormattedDate date={post.data.pubDate} />
 							</div>
@@ -397,24 +468,24 @@ const posts = (await getCollection('blog')).sort(
 				</div>
 			</section>
 
-			<section class="section-container">
+			<section class="section-container reveal">
 				<div class="section-header">
 					<h2 class="section-title">EXPERTISE_DOMAINS</h2>
 				</div>
 				<div class="expertise-grid">
-					<div class="expertise-card ebpf">
+					<div class="expertise-card ebpf reveal stagger-1">
 						<span class="expertise-icon">PATH: /sys/kernel/debug/tracing</span>
 						<div class="expertise-bar"></div>
 						<h3 class="expertise-title">eBPF & Tracing</h3>
 						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">内核级观测与 XDP 高性能处理。通过代码直接与内核对话。</p>
 					</div>
-					<div class="expertise-card network">
+					<div class="expertise-card network reveal stagger-2">
 						<span class="expertise-icon">PATH: /dev/infiniband/uverbs</span>
 						<div class="expertise-bar"></div>
 						<h3 class="expertise-title">Kernel Network</h3>
 						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">深入 RDMA、DPDK 等用户态协议栈，挑战数据包吞吐的极限。</p>
 					</div>
-					<div class="expertise-card io">
+					<div class="expertise-card io reveal stagger-3">
 						<span class="expertise-icon">PATH: /include/linux/io_uring.h</span>
 						<div class="expertise-bar"></div>
 						<h3 class="expertise-title">Async I/O</h3>
@@ -438,6 +509,225 @@ const posts = (await getCollection('blog')).sort(
 					item.style.setProperty('--y', `${y}%`);
 				});
 			});
+
+			// ===== 粒子网络背景动画 =====
+			const canvas = document.getElementById('particle-canvas');
+			const ctx = canvas.getContext('2d');
+			let particles = [];
+			let mouse = { x: null, y: null, radius: 150 };
+			let animationId = null;
+			let isActive = true;
+
+			function resizeCanvas() {
+				const hero = document.querySelector('.hero');
+				if (hero) {
+					canvas.width = hero.offsetWidth;
+					canvas.height = hero.offsetHeight;
+				}
+			}
+
+			class Particle {
+				constructor() {
+					this.x = Math.random() * canvas.width;
+					this.y = Math.random() * canvas.height;
+					this.vx = (Math.random() - 0.5) * 0.5;
+					this.vy = (Math.random() - 0.5) * 0.5;
+					this.size = Math.random() * 2 + 1;
+					this.baseX = this.x;
+					this.baseY = this.y;
+				}
+
+				update() {
+					// 基础移动
+					this.x += this.vx;
+					this.y += this.vy;
+
+					// 边界检测
+					if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+					if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+					// 鼠标交互
+					if (mouse.x != null) {
+						let dx = mouse.x - this.x;
+						let dy = mouse.y - this.y;
+						let distance = Math.sqrt(dx * dx + dy * dy);
+						if (distance < mouse.radius) {
+							const force = (mouse.radius - distance) / mouse.radius;
+							const directionX = dx / distance;
+							const directionY = dy / distance;
+							this.x -= directionX * force * 2;
+							this.y -= directionY * force * 2;
+						}
+					}
+				}
+
+				draw() {
+					ctx.beginPath();
+					ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+					ctx.fillStyle = 'rgba(0, 243, 255, 0.5)';
+					ctx.fill();
+				}
+			}
+
+			function initParticles() {
+				particles = [];
+				const particleCount = Math.min(60, Math.floor((canvas.width * canvas.height) / 15000));
+				for (let i = 0; i < particleCount; i++) {
+					particles.push(new Particle());
+				}
+			}
+
+			function connectParticles() {
+				const maxDistance = 120;
+				for (let i = 0; i < particles.length; i++) {
+					for (let j = i + 1; j < particles.length; j++) {
+						let dx = particles[i].x - particles[j].x;
+						let dy = particles[i].y - particles[j].y;
+						let distance = Math.sqrt(dx * dx + dy * dy);
+
+						if (distance < maxDistance) {
+							const opacity = (1 - distance / maxDistance) * 0.3;
+							ctx.beginPath();
+							ctx.strokeStyle = `rgba(0, 243, 255, ${opacity})`;
+							ctx.lineWidth = 1;
+							ctx.moveTo(particles[i].x, particles[i].y);
+							ctx.lineTo(particles[j].x, particles[j].y);
+							ctx.stroke();
+						}
+					}
+				}
+			}
+
+			function animateParticles() {
+				if (!isActive) return;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				particles.forEach(particle => {
+					particle.update();
+					particle.draw();
+				});
+
+				connectParticles();
+				animationId = requestAnimationFrame(animateParticles);
+			}
+
+			// 鼠标事件
+			const hero = document.querySelector('.hero');
+			hero.addEventListener('mousemove', (e) => {
+				const rect = hero.getBoundingClientRect();
+				mouse.x = e.clientX - rect.left;
+				mouse.y = e.clientY - rect.top;
+			});
+
+			hero.addEventListener('mouseleave', () => {
+				mouse.x = null;
+				mouse.y = null;
+			});
+
+			// 初始化
+			resizeCanvas();
+			initParticles();
+			animateParticles();
+
+			window.addEventListener('resize', () => {
+				resizeCanvas();
+				initParticles();
+			});
+
+			// 页面可见性控制
+			document.addEventListener('visibilitychange', () => {
+				isActive = document.visibilityState === 'visible';
+				if (isActive && !animationId) animateParticles();
+			});
+
+			// ===== 滚动触发动画 =====
+			const revealElements = document.querySelectorAll('.reveal');
+
+			const revealObserver = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('active');
+						revealObserver.unobserve(entry.target);
+					}
+				});
+			}, {
+				threshold: 0.1,
+				rootMargin: '0px 0px -50px 0px'
+			});
+
+			revealElements.forEach(el => revealObserver.observe(el));
+
+			// ===== 磁吸按钮效果 =====
+			const magneticBtns = document.querySelectorAll('.magnetic-btn');
+
+			magneticBtns.forEach(btn => {
+				btn.addEventListener('mousemove', (e) => {
+					const rect = btn.getBoundingClientRect();
+					const x = e.clientX - rect.left - rect.width / 2;
+					const y = e.clientY - rect.top - rect.height / 2;
+
+					btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+				});
+
+				btn.addEventListener('mouseleave', () => {
+					btn.style.transform = 'translate(0, 0)';
+				});
+			});
+
+			// ===== 打字机效果 =====
+			const typewriterText = document.querySelector('.typewriter-text');
+			const typewriterCursor = document.querySelector('.typewriter-cursor');
+
+			const textArray = [
+				'专注于 Linux 内核观测、高性能网络协议栈与系统底层调优。',
+				'Researching eBPF, RDMA, io_uring...',
+				'Tracing the Kernel, One Syscall at a Time.',
+				'探索底层极限，记录技术攻坚。'
+			];
+
+			let textIndex = 0;
+			let charIndex = 0;
+			let isDeleting = false;
+			let isWaiting = false;
+
+			function typeWriter() {
+				const currentText = textArray[textIndex];
+
+				if (isWaiting) {
+					setTimeout(typeWriter, 2000);
+					isWaiting = false;
+					return;
+				}
+
+				if (isDeleting) {
+					typewriterText.textContent = currentText.substring(0, charIndex - 1);
+					charIndex--;
+					typewriterCursor.classList.add('typing');
+				} else {
+					typewriterText.textContent = currentText.substring(0, charIndex + 1);
+					charIndex++;
+					typewriterCursor.classList.add('typing');
+				}
+
+				let typeSpeed = isDeleting ? 30 : 80;
+
+				if (!isDeleting && charIndex === currentText.length) {
+					typeSpeed = 2000;
+					isWaiting = true;
+					isDeleting = true;
+					typewriterCursor.classList.remove('typing');
+				} else if (isDeleting && charIndex === 0) {
+					isDeleting = false;
+					textIndex = (textIndex + 1) % textArray.length;
+					typeSpeed = 500;
+					typewriterCursor.classList.remove('typing');
+				}
+
+				setTimeout(typeWriter, typeSpeed);
+			}
+
+			// 延迟启动打字机效果
+			setTimeout(typeWriter, 1000);
 		</script>
 	</body>
 </html>

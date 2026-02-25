@@ -54,6 +54,34 @@ const categories = Object.keys(categoryData).sort();
 				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 			}
 
+			/* 粒子画布 */
+			#particle-canvas {
+				position: absolute;
+				inset: 0;
+				z-index: 1;
+				pointer-events: none;
+			}
+
+			/* 滚动触发动画 */
+			.reveal {
+				opacity: 0;
+				transform: translateY(30px) scale(0.95);
+				transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			.reveal.active {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+			}
+
+			/* 交错延迟 */
+			.stagger-1 { transition-delay: 0.1s; }
+			.stagger-2 { transition-delay: 0.2s; }
+			.stagger-3 { transition-delay: 0.3s; }
+			.stagger-4 { transition-delay: 0.4s; }
+			.stagger-5 { transition-delay: 0.5s; }
+			.stagger-6 { transition-delay: 0.6s; }
+
 			/* Header Section */
 			.archive-header {
 				padding: 10rem 0 6rem;
@@ -142,8 +170,6 @@ const categories = Object.keys(categoryData).sort();
 				position: relative;
 				overflow: hidden;
 				backdrop-filter: blur(10px);
-				opacity: 0; /* 初始隐藏，配合脚本动效 */
-				animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 			}
 
 			.folder-card::before {
@@ -245,6 +271,7 @@ const categories = Object.keys(categoryData).sort();
 		<Header />
 
 		<div class="archive-header">
+			<canvas id="particle-canvas"></canvas>
 			<div class="header-container">
 				<span class="header-subtitle">FILE_SYSTEM / VOL_01</span>
 				<h1 class="header-title">Archives.</h1>
@@ -254,10 +281,9 @@ const categories = Object.keys(categoryData).sort();
 		<main class="archive-main">
 			<div class="folder-grid">
 				{categories.map((category, index) => (
-					<a 
-						href={`/blog/category/${category}`} 
-						class="folder-card"
-						style={`animation-delay: ${index * 0.1}s`}
+					<a
+						href={`/blog/category/${category}`}
+						class={`folder-card reveal stagger-${Math.min(index + 1, 6)}`}
 					>
 						<div class="folder-icon">
 							<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -286,5 +312,146 @@ const categories = Object.keys(categoryData).sort();
 		</main>
 
 		<Footer />
+
+		<script>
+			// ===== 粒子网络背景动画 =====
+			const canvas = document.getElementById('particle-canvas');
+			const ctx = canvas.getContext('2d');
+			let particles = [];
+			let mouse = { x: null, y: null, radius: 150 };
+			let animationId = null;
+			let isActive = true;
+
+			function resizeCanvas() {
+				const header = document.querySelector('.archive-header');
+				if (header) {
+					canvas.width = header.offsetWidth;
+					canvas.height = header.offsetHeight;
+				}
+			}
+
+			class Particle {
+				constructor() {
+					this.x = Math.random() * canvas.width;
+					this.y = Math.random() * canvas.height;
+					this.vx = (Math.random() - 0.5) * 0.5;
+					this.vy = (Math.random() - 0.5) * 0.5;
+					this.size = Math.random() * 2 + 1;
+				}
+
+				update() {
+					this.x += this.vx;
+					this.y += this.vy;
+
+					if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+					if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+					if (mouse.x != null) {
+						let dx = mouse.x - this.x;
+						let dy = mouse.y - this.y;
+						let distance = Math.sqrt(dx * dx + dy * dy);
+						if (distance < mouse.radius) {
+							const force = (mouse.radius - distance) / mouse.radius;
+							const directionX = dx / distance;
+							const directionY = dy / distance;
+							this.x -= directionX * force * 2;
+							this.y -= directionY * force * 2;
+						}
+					}
+				}
+
+				draw() {
+					ctx.beginPath();
+					ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+					ctx.fillStyle = 'rgba(0, 243, 255, 0.5)';
+					ctx.fill();
+				}
+			}
+
+			function initParticles() {
+				particles = [];
+				const particleCount = Math.min(50, Math.floor((canvas.width * canvas.height) / 15000));
+				for (let i = 0; i < particleCount; i++) {
+					particles.push(new Particle());
+				}
+			}
+
+			function connectParticles() {
+				const maxDistance = 100;
+				for (let i = 0; i < particles.length; i++) {
+					for (let j = i + 1; j < particles.length; j++) {
+						let dx = particles[i].x - particles[j].x;
+						let dy = particles[i].y - particles[j].y;
+						let distance = Math.sqrt(dx * dx + dy * dy);
+
+						if (distance < maxDistance) {
+							const opacity = (1 - distance / maxDistance) * 0.3;
+							ctx.beginPath();
+							ctx.strokeStyle = `rgba(0, 243, 255, ${opacity})`;
+							ctx.lineWidth = 1;
+							ctx.moveTo(particles[i].x, particles[i].y);
+							ctx.lineTo(particles[j].x, particles[j].y);
+							ctx.stroke();
+						}
+					}
+				}
+			}
+
+			function animateParticles() {
+				if (!isActive) return;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				particles.forEach(particle => {
+					particle.update();
+					particle.draw();
+				});
+
+				connectParticles();
+				animationId = requestAnimationFrame(animateParticles);
+			}
+
+			const header = document.querySelector('.archive-header');
+			header.addEventListener('mousemove', (e) => {
+				const rect = header.getBoundingClientRect();
+				mouse.x = e.clientX - rect.left;
+				mouse.y = e.clientY - rect.top;
+			});
+
+			header.addEventListener('mouseleave', () => {
+				mouse.x = null;
+				mouse.y = null;
+			});
+
+			resizeCanvas();
+			initParticles();
+			animateParticles();
+
+			window.addEventListener('resize', () => {
+				resizeCanvas();
+				initParticles();
+			});
+
+			document.addEventListener('visibilitychange', () => {
+				isActive = document.visibilityState === 'visible';
+				if (isActive && !animationId) animateParticles();
+			});
+
+			// ===== 滚动触发动画 =====
+			const revealElements = document.querySelectorAll('.reveal');
+
+			const revealObserver = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('active');
+						revealObserver.unobserve(entry.target);
+					}
+				});
+			}, {
+				threshold: 0.1,
+				rootMargin: '0px 0px -50px 0px'
+			});
+
+			revealElements.forEach(el => revealObserver.observe(el));
+		</script>
 	</body>
 </html>

@@ -126,6 +126,23 @@ const { posts } = Astro.props;
 				.post-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.5rem; }
 				.category-title { font-size: 2rem; }
 			}
+
+			/* 滚动触发动画 */
+			.reveal {
+				opacity: 0;
+				transform: translateY(30px);
+				transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			.reveal.active {
+				opacity: 1;
+				transform: translateY(0);
+			}
+
+			.stagger-1 { transition-delay: 0.1s; }
+			.stagger-2 { transition-delay: 0.2s; }
+			.stagger-3 { transition-delay: 0.3s; }
+			.stagger-4 { transition-delay: 0.4s; }
 		</style>
 	</head>
 	<body>
@@ -144,8 +161,8 @@ const { posts } = Astro.props;
 
 		<main class="main-content">
 			<div class="posts-list">
-				{posts.map((post) => (
-					<a href={`/blog/${post.id}/`} class="post-item">
+				{posts.map((post, index) => (
+					<a href={`/blog/${post.id}/`} class={`post-item reveal stagger-${Math.min(index % 4 + 1, 4)}`}>
 						<div class="post-date">
 							<FormattedDate date={post.data.pubDate} />
 						</div>
@@ -159,5 +176,24 @@ const { posts } = Astro.props;
 		</main>
 
 		<Footer />
+
+		<script>
+			// ===== 滚动触发动画 =====
+			const revealElements = document.querySelectorAll('.reveal');
+
+			const revealObserver = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('active');
+						revealObserver.unobserve(entry.target);
+					}
+				});
+			}, {
+				threshold: 0.1,
+				rootMargin: '0px 0px -50px 0px'
+			});
+
+			revealElements.forEach(el => revealObserver.observe(el));
+		</script>
 	</body>
 </html>
