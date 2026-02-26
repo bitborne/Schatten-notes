@@ -102,36 +102,189 @@ const posts = (await getCollection('blog')).sort(
 			}
 
 			/* 故障艺术解码标题 - 增强对比度 */
+			/* ===== 打字机效果副标题 ===== */
 			.hero-subtitle {
 				font-family: 'Cascadia Code', monospace;
-				font-size: 0.85rem;
-				color: #22d3ee;
-				letter-spacing: 0.4em;
-				text-transform: uppercase;
+				font-size: 0.9rem;
+				letter-spacing: 0.2em;
 				margin-bottom: 2rem;
-				opacity: 0;
-				animation: fadeIn 1s ease forwards 0.5s;
-				text-shadow:
-					0 0 10px rgba(34, 211, 238, 0.5),
-					0 0 20px rgba(34, 211, 238, 0.3),
-					0 0 40px rgba(34, 211, 238, 0.1);
+				min-height: 1.5em;
+				display: inline-flex;
+				align-items: center;
+				gap: 0.2em;
+			}
+
+			/* 粉紫色渐变文字 */
+			.typewriter-text {
+				background: linear-gradient(135deg, #e0aaff 0%, #c77dff 50%, #9d4edd 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+				text-shadow: 0 0 20px rgba(157, 78, 221, 0.3);
+			}
+
+			/* Neovim样式方块光标 */
+			.typewriter-cursor {
+				display: inline-block;
+				width: 10px;
+				height: 1.2em;
+				background: linear-gradient(180deg, #00f3ff 0%, #c77dff 100%);
+				animation: cursorBlink 1s step-end infinite, cursorGlow 2s ease-in-out infinite;
+				vertical-align: text-bottom;
+				margin-left: 2px;
+			}
+
+			@keyframes cursorBlink {
+				0%, 50% { opacity: 1; }
+				51%, 100% { opacity: 0; }
+			}
+
+			@keyframes cursorGlow {
+				0%, 100% {
+					box-shadow:
+						0 0 5px #00f3ff,
+						0 0 10px #00f3ff,
+						0 0 20px rgba(199, 125, 255, 0.5);
+				}
+				50% {
+					box-shadow:
+						0 0 10px #c77dff,
+						0 0 20px #c77dff,
+						0 0 30px rgba(0, 243, 255, 0.5);
+				}
+			}
+
+			.typewriter-cursor.typing {
+				animation: cursorGlow 2s ease-in-out infinite;
+				opacity: 1;
+			}
+
+			.typewriter-cursor.finished {
+				animation: cursorBlink 1.2s step-end infinite, cursorGlow 2s ease-in-out infinite;
 			}
 
 			@keyframes fadeIn {
 				to { opacity: 1; }
 			}
 
+			/* ===== CRT故障艺术标题 ===== */
 			.hero-title {
 				font-size: clamp(3rem, 10vw, 6rem);
 				font-weight: 800;
 				line-height: 1.1;
 				margin-bottom: 2rem;
 				position: relative;
+				/* 多层文字阴影确保与背景分离 */
+				text-shadow:
+					0 0 20px rgba(0, 0, 0, 0.8),
+					0 0 40px rgba(0, 0, 0, 0.6),
+					0 0 60px rgba(0, 0, 0, 0.4),
+					0 4px 8px rgba(0, 0, 0, 0.9);
+			}
+
+			/* ===== 常驻RGB分离效果（故障跳变风格） ===== */
+			.hero-title::before,
+			.hero-title::after {
+				content: attr(data-text);
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				pointer-events: none;
+				mix-blend-mode: screen;
+				transition: opacity 0.3s;
+				/* 解码完成前完全隐藏 */
+				opacity: 0;
+			}
+
+			/* 解码完成后显示RGB分离 */
+			.hero-title.decoded::before,
+			.hero-title.decoded::after {
+				opacity: 0.6;
+			}
+
+			/* 红色通道 - 上半部分 */
+			.hero-title::before {
+				color: #ff2a6d;
+				clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+				animation: rgbGlitchRed 0.15s steps(2) infinite;
+			}
+
+			/* 蓝色通道 - 下半部分 */
+			.hero-title::after {
+				color: #05d9e8;
+				clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+				animation: rgbGlitchBlue 0.12s steps(2) infinite;
+			}
+
+			/* 故障跳变动画 - 快速不规则 */
+			@keyframes rgbGlitchRed {
+				0%, 100% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) - 3px)) translateY(calc(var(--rgb-offset-y, 0px) - 1px));
+				}
+				25% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) - 6px)) translateY(calc(var(--rgb-offset-y, 0px) + 2px));
+				}
+				50% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) - 2px)) translateY(calc(var(--rgb-offset-y, 0px) - 2px));
+				}
+				75% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) - 5px)) translateY(calc(var(--rgb-offset-y, 0px) + 1px));
+				}
+			}
+
+			@keyframes rgbGlitchBlue {
+				0%, 100% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) + 3px)) translateY(calc(var(--rgb-offset-y, 0px) + 1px));
+				}
+				20% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) + 5px)) translateY(calc(var(--rgb-offset-y, 0px) - 2px));
+				}
+				40% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) + 2px)) translateY(calc(var(--rgb-offset-y, 0px) + 2px));
+				}
+				60% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) + 6px)) translateY(calc(var(--rgb-offset-y, 0px) - 1px));
+				}
+				80% {
+					transform: translateX(calc(var(--rgb-offset-x, 0px) + 4px)) translateY(calc(var(--rgb-offset-y, 0px) + 1px));
+				}
+			}
+
+			/* Hover时的强烈RGB分离 */
+			.hero-title.decoded:hover::before {
+				animation: rgbGlitchRedHover 0.1s steps(1) infinite;
+			}
+			.hero-title.decoded:hover::after {
+				animation: rgbGlitchBlueHover 0.08s steps(1) infinite;
+			}
+
+			@keyframes rgbGlitchRedHover {
+				0%, 100% { transform: translateX(calc(var(--rgb-offset-x, 0px) - 5px)); clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%); }
+				25% { transform: translateX(calc(var(--rgb-offset-x, 0px) - 8px)); clip-path: polygon(0 5%, 100% 5%, 100% 50%, 0 50%); }
+				50% { transform: translateX(calc(var(--rgb-offset-x, 0px) - 3px)); clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%); }
+				75% { transform: translateX(calc(var(--rgb-offset-x, 0px) - 6px)); clip-path: polygon(0 10%, 100% 10%, 100% 55%, 0 55%); }
+			}
+
+			@keyframes rgbGlitchBlueHover {
+				0%, 100% { transform: translateX(calc(var(--rgb-offset-x, 0px) + 5px)); clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%); }
+				20% { transform: translateX(calc(var(--rgb-offset-x, 0px) + 7px)); clip-path: polygon(0 50%, 100% 50%, 100% 95%, 0 95%); }
+				40% { transform: translateX(calc(var(--rgb-offset-x, 0px) + 4px)); clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%); }
+				60% { transform: translateX(calc(var(--rgb-offset-x, 0px) + 9px)); clip-path: polygon(0 45%, 100% 45%, 100% 90%, 0 90%); }
+				80% { transform: translateX(calc(var(--rgb-offset-x, 0px) + 6px)); clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%); }
 			}
 
 			.hero-title .char {
 				display: inline-block;
-				background: linear-gradient(135deg, var(--text-primary) 0%, var(--liquid-purple) 50%, var(--liquid-pink) 100%);
+				background: linear-gradient(
+					135deg,
+					#ffffff 0%,
+					#e0e0ff 25%,
+					var(--liquid-purple) 50%,
+					var(--liquid-pink) 75%,
+					#ffffff 100%
+				);
 				background-size: 200% 200%;
 				-webkit-background-clip: text;
 				-webkit-text-fill-color: transparent;
@@ -139,6 +292,11 @@ const posts = (await getCollection('blog')).sort(
 				opacity: 0;
 				transform: translateY(20px) scale(0.9);
 				filter: blur(10px);
+				/* 字符级内发光 */
+				text-shadow:
+					0 0 30px rgba(99, 102, 241, 0.5),
+					0 0 60px rgba(99, 102, 241, 0.3),
+					0 0 90px rgba(99, 102, 241, 0.1);
 			}
 
 			.hero-title .char.decoded {
@@ -146,26 +304,42 @@ const posts = (await getCollection('blog')).sort(
 				transform: translateY(0) scale(1);
 				filter: blur(0);
 				transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-				text-shadow:
-					0 0 20px rgba(99, 102, 241, 0.3),
-					0 0 40px rgba(99, 102, 241, 0.1);
-				-webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+			}
+
+			/* 持续轻微扫描线效果 */
+			.hero-title .char.decoded::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: repeating-linear-gradient(
+					transparent,
+					transparent 2px,
+					rgba(0, 243, 255, 0.03) 2px,
+					rgba(0, 243, 255, 0.03) 4px
+				);
+				pointer-events: none;
+				animation: scanline 8s linear infinite;
+			}
+
+			@keyframes scanline {
+				0% { transform: translateY(-100%); }
+				100% { transform: translateY(100%); }
 			}
 
 			/* 故障效果 */
 			.hero-title .char.glitch {
-				animation: glitch 0.3s ease;
+				animation: charGlitch 0.3s ease;
 			}
 
-			@keyframes glitch {
-				0%, 100% { transform: translate(0); }
-				20% { transform: translate(-2px, 2px); }
-				40% { transform: translate(2px, -2px); }
-				60% { transform: translate(-2px, -2px); }
-				80% { transform: translate(2px, 2px); }
+			@keyframes charGlitch {
+				0%, 100% { transform: translate(0); filter: none; }
+				20% { transform: translate(-3px, 2px); filter: hue-rotate(90deg); }
+				40% { transform: translate(3px, -2px); filter: hue-rotate(-90deg); }
+				60% { transform: translate(-3px, -2px); filter: brightness(1.5); }
+				80% { transform: translate(3px, 2px); filter: contrast(1.5); }
 			}
 
-			/* 玻璃拟态描述卡片 - 增强对比度 */
+			/* ===== 玻璃拟态描述卡片 - 动态流光边框 ===== */
 			.hero-description {
 				max-width: 600px;
 				margin: 0 auto 3rem;
@@ -173,44 +347,116 @@ const posts = (await getCollection('blog')).sort(
 				background: rgba(15, 13, 26, 0.7);
 				backdrop-filter: blur(20px);
 				-webkit-backdrop-filter: blur(20px);
-				border: 1px solid rgba(99, 102, 241, 0.2);
 				border-radius: 24px;
 				position: relative;
 				overflow: hidden;
 				box-shadow:
 					0 8px 32px rgba(0, 0, 0, 0.4),
 					inset 0 1px 0 rgba(255, 255, 255, 0.05);
+				/* 流光边框 */
+				border: 1px solid transparent;
+				background-clip: padding-box;
 			}
 
+			/* 流光边框伪元素 */
 			.hero-description::before {
 				content: '';
+				position: absolute;
+				inset: -2px;
+				background: conic-gradient(
+					from 0deg,
+					transparent 0%,
+					rgba(99, 102, 241, 0.6) 10%,
+					rgba(236, 72, 153, 0.6) 25%,
+					rgba(6, 182, 212, 0.6) 40%,
+					transparent 50%,
+					transparent 100%
+				);
+				border-radius: 26px;
+				z-index: -1;
+				animation: borderRotate 4s linear infinite;
+				opacity: 0.6;
+				transition: opacity 0.3s;
+			}
+
+			.hero-description:hover::before {
+				opacity: 1;
+				animation-duration: 2s;
+			}
+
+			@keyframes borderRotate {
+				from { transform: rotate(0deg); }
+				to { transform: rotate(360deg); }
+			}
+
+			/* 遮罩层创建边框效果 */
+			.hero-description::after {
+				content: '';
+				position: absolute;
+				inset: 1px;
+				background: rgba(15, 13, 26, 0.9);
+				border-radius: 23px;
+				z-index: -1;
+			}
+
+			/* 内部光泽扫过效果 */
+			.hero-description .shine-effect {
 				position: absolute;
 				top: 0;
 				left: -100%;
 				width: 100%;
 				height: 100%;
-				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-				transition: left 0.5s;
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgba(255, 255, 255, 0.08),
+					transparent
+				);
+				transition: left 0.6s;
+				pointer-events: none;
 			}
 
-			.hero-description:hover::before {
+			.hero-description:hover .shine-effect {
 				left: 100%;
 			}
 
 			.hero-description p {
 				margin: 0;
 				font-size: 1.15rem;
-				color: #e2e8f0;
+				color: #f1f5f9;
 				line-height: 1.8;
-				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+				/* 多层文字阴影增强可读性 */
+				text-shadow:
+					0 0 10px rgba(0, 0, 0, 0.8),
+					0 1px 2px rgba(0, 0, 0, 0.9),
+					0 2px 4px rgba(0, 0, 0, 0.7);
+				position: relative;
+				z-index: 1;
 			}
 
-			/* 磁吸按钮组 */
+			/* ===== Hero 内部层次结构 ===== */
+			.hero-subtitle {
+				will-change: transform, opacity;
+			}
+
+			.hero-title {
+				will-change: transform, opacity;
+			}
+
+			.hero-description {
+				will-change: transform, opacity, filter;
+			}
+
 			.hero-actions {
 				display: flex;
 				gap: 1.5rem;
 				justify-content: center;
 				perspective: 1000px;
+				will-change: transform, opacity;
+			}
+
+			.magnetic-btn {
+				will-change: transform;
 			}
 
 			.magnetic-btn {
@@ -301,21 +547,37 @@ const posts = (await getCollection('blog')).sort(
 				font-weight: 700;
 				display: flex;
 				align-items: center;
-				gap: 1rem;
+				gap: 0.75rem;
 				margin: 0;
+				position: relative;
 			}
 
+			/* 简洁的章节指示点 */
 			.section-title::before {
 				content: '';
 				display: inline-block;
-				width: 8px;
-				height: 8px;
-				border-radius: 50%;
+				width: 6px;
+				height: 6px;
 				background: linear-gradient(135deg, var(--liquid-purple), var(--liquid-pink));
-				box-shadow: 0 0 15px var(--liquid-purple);
+				border-radius: 50%;
+				box-shadow:
+					0 0 8px var(--liquid-purple),
+					0 0 16px var(--liquid-pink);
+				animation: dotPulse 2s ease-in-out infinite;
 			}
 
-			/* 3D 倾斜卡片 */
+			@keyframes dotPulse {
+				0%, 100% {
+					transform: scale(1);
+					opacity: 0.8;
+				}
+				50% {
+					transform: scale(1.3);
+					opacity: 1;
+				}
+			}
+
+			/* 3D 倾斜卡片 - 增强版 */
 			.posts-grid {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -326,7 +588,6 @@ const posts = (await getCollection('blog')).sort(
 			.tilt-card {
 				background: var(--glass-bg);
 				backdrop-filter: blur(20px);
-				border: 1px solid var(--glass-border);
 				border-radius: 20px;
 				padding: 2rem;
 				text-decoration: none;
@@ -338,23 +599,80 @@ const posts = (await getCollection('blog')).sort(
 				transform-style: preserve-3d;
 				position: relative;
 				overflow: hidden;
+				border: 1px solid transparent;
+				background-clip: padding-box;
 			}
 
+			/* 动态流光边框 */
 			.tilt-card::before {
 				content: '';
 				position: absolute;
-				inset: 0;
-				background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.15), transparent 50%);
+				inset: -1px;
+				background: conic-gradient(
+					from calc(var(--rotation, 0deg)),
+					transparent 0%,
+					rgba(99, 102, 241, 0.4) 20%,
+					rgba(236, 72, 153, 0.4) 40%,
+					rgba(6, 182, 212, 0.4) 60%,
+					transparent 80%
+				);
+				border-radius: 21px;
+				z-index: -1;
 				opacity: 0;
 				transition: opacity 0.3s;
 			}
 
 			.tilt-card:hover::before {
 				opacity: 1;
+				animation: cardBorderRotate 3s linear infinite;
+			}
+
+			@keyframes cardBorderRotate {
+				from { --rotation: 0deg; }
+				to { --rotation: 360deg; }
+			}
+
+			@property --rotation {
+				syntax: '<angle>';
+				initial-value: 0deg;
+				inherits: false;
+			}
+
+			/* 内部遮罩 */
+			.tilt-card::after {
+				content: '';
+				position: absolute;
+				inset: 1px;
+				background: var(--glass-bg);
+				backdrop-filter: blur(20px);
+				border-radius: 19px;
+				z-index: -1;
+			}
+
+			/* 鼠标跟随光晕 */
+			.tilt-card .card-glow {
+				position: absolute;
+				inset: 0;
+				background: radial-gradient(
+					circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+					rgba(99, 102, 241, 0.2),
+					transparent 50%
+				);
+				opacity: 0;
+				transition: opacity 0.3s;
+				pointer-events: none;
+				border-radius: 20px;
+			}
+
+			.tilt-card:hover .card-glow {
+				opacity: 1;
 			}
 
 			.tilt-card:hover {
-				box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), 0 0 30px rgba(99, 102, 241, 0.1);
+				box-shadow:
+					0 25px 50px rgba(0, 0, 0, 0.3),
+					0 0 40px rgba(99, 102, 241, 0.15),
+					0 0 80px rgba(99, 102, 241, 0.05);
 			}
 
 			.post-date {
@@ -382,7 +700,7 @@ const posts = (await getCollection('blog')).sort(
 				margin: 0;
 			}
 
-			/* 技能气泡 */
+			/* 技能气泡 - 增强版 */
 			.skills-bubbles {
 				display: flex;
 				flex-wrap: wrap;
@@ -400,15 +718,89 @@ const posts = (await getCollection('blog')).sort(
 				color: var(--text-secondary);
 				transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 				cursor: default;
+				position: relative;
+				overflow: hidden;
+				opacity: 0;
+				transform: translateY(30px);
+			}
+
+			.skill-bubble.revealed {
+				opacity: 1;
+				transform: translateY(0);
+			}
+
+			/* 气泡内部流光 */
+			.skill-bubble::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(
+					90deg,
+					transparent,
+					rgba(255, 255, 255, 0.1),
+					transparent
+				);
+				transition: left 0.5s;
+			}
+
+			.skill-bubble:hover::before {
+				left: 100%;
 			}
 
 			.skill-bubble:hover {
-				transform: translateY(-3px) scale(1.05);
-				background: rgba(99, 102, 241, 0.1);
+				transform: translateY(-5px) scale(1.08);
+				background: rgba(99, 102, 241, 0.15);
 				border-color: var(--liquid-purple);
 				color: var(--liquid-purple);
-				box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+				box-shadow:
+					0 15px 40px rgba(99, 102, 241, 0.25),
+					0 0 20px rgba(99, 102, 241, 0.1);
 			}
+
+			/* ===== 优雅Reveal动画 ===== */
+			.reveal-up {
+				opacity: 0;
+				transform: translateY(40px);
+				transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			.reveal-up.revealed {
+				opacity: 1;
+				transform: translateY(0);
+			}
+
+			.reveal-left {
+				opacity: 0;
+				transform: translateX(-40px);
+				transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			.reveal-left.revealed {
+				opacity: 1;
+				transform: translateX(0);
+			}
+
+			.reveal-scale {
+				opacity: 0;
+				transform: scale(0.9);
+				transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			.reveal-scale.revealed {
+				opacity: 1;
+				transform: scale(1);
+			}
+
+			/* 错开延迟 */
+			.stagger-1 { transition-delay: 0.1s; }
+			.stagger-2 { transition-delay: 0.2s; }
+			.stagger-3 { transition-delay: 0.3s; }
+			.stagger-4 { transition-delay: 0.4s; }
+			.stagger-5 { transition-delay: 0.5s; }
+			.stagger-6 { transition-delay: 0.6s; }
 
 			/* 环境光晕层 - 修复版 */
 			.ambient-glow {
@@ -419,6 +811,41 @@ const posts = (await getCollection('blog')).sort(
 					radial-gradient(ellipse 60% 40% at 80% 60%, rgba(236, 72, 153, 0.08) 0%, transparent 60%);
 				z-index: 0;
 				pointer-events: none;
+				will-change: transform;
+			}
+
+			/* ===== 色温变化层 ===== */
+			.color-temp-layer {
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				z-index: 9998;
+				background: linear-gradient(
+					180deg,
+					transparent 0%,
+					transparent 30%,
+					rgba(236, 72, 153, 0.03) 60%,
+					rgba(245, 158, 11, 0.05) 100%
+				);
+				opacity: 0;
+				transition: opacity 0.3s;
+			}
+
+			/* ===== 景深模糊层 ===== */
+			.depth-blur-top {
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: 150px;
+				background: linear-gradient(
+					180deg,
+					var(--liquid-bg) 0%,
+					transparent 100%
+				);
+				z-index: 100;
+				pointer-events: none;
+				opacity: 0.8;
 			}
 
 			/* 网格背景纹理 */
@@ -444,6 +871,8 @@ const posts = (await getCollection('blog')).sort(
 	</head>
 	<body>
 		<div class="noise-overlay"></div>
+		<div class="color-temp-layer" id="colorTempLayer"></div>
+		<div class="depth-blur-top"></div>
 		<Header />
 
 		<main>
@@ -451,9 +880,13 @@ const posts = (await getCollection('blog')).sort(
 			<section class="hero">
 				<canvas id="fluid-canvas"></canvas>
 				<div class="hero-content">
-					<span class="hero-subtitle">System.kernel_space // Developer</span>
+					<div class="hero-subtitle" id="typewriter-container">
+						<span class="typewriter-text" id="typewriter-text"></span>
+						<span class="typewriter-cursor" id="typewriter-cursor"></span>
+					</div>
 					<h1 class="hero-title" data-text="Schatten's Lab">Schatten's Lab</h1>
-					<div class="hero-description">
+					<div class="hero-description reveal-up">
+						<div class="shine-effect"></div>
 						<p>底层技术探索者。专注于 Linux 高性能网络与系统编程。在这里记录技术攻坚，分享代码美学。</p>
 					</div>
 					<div class="hero-actions">
@@ -481,13 +914,14 @@ const posts = (await getCollection('blog')).sort(
 			<section class="section">
 				<div class="ambient-glow"></div>
 				<div class="section-container" style="position: relative; z-index: 1;">
-					<div class="section-header">
+					<div class="section-header reveal-left">
 						<h2 class="section-title">最新日志</h2>
 						<a href="/blog" style="font-size: 0.9rem; color: var(--liquid-purple); text-decoration: none;">查看全部 →</a>
 					</div>
 					<div class="posts-grid">
-						{posts.map((post) => (
-							<a href={`/blog/${post.id}/`} class="tilt-card" data-tilt>
+						{posts.map((post, index) => (
+							<a href={`/blog/${post.id}/`} class={`tilt-card reveal-up stagger-${Math.min(index + 1, 6)}`} data-tilt>
+								<div class="card-glow"></div>
 								<div class="post-date">
 									<FormattedDate date={post.data.pubDate} />
 								</div>
@@ -502,16 +936,16 @@ const posts = (await getCollection('blog')).sort(
 			<!-- 技术领域 -->
 			<section class="section" style="background: rgba(0,0,0,0.2);">
 				<div class="section-container">
-					<div class="section-header">
+					<div class="section-header reveal-left">
 						<h2 class="section-title">技术领域</h2>
 					</div>
 					<div class="skills-bubbles">
-						<span class="skill-bubble">eBPF / 内核追踪</span>
-						<span class="skill-bubble">RDMA / 高性能网络</span>
-						<span class="skill-bubble">io_uring / 异步 I/O</span>
-						<span class="skill-bubble">XDP / 数据包处理</span>
-						<span class="skill-bubble">DPDK / 用户态网络</span>
-						<span class="skill-bubble">性能调优</span>
+						<span class="skill-bubble" data-skill> eBPF / 内核追踪</span>
+						<span class="skill-bubble" data-skill> RDMA / 高性能网络</span>
+						<span class="skill-bubble" data-skill> io_uring / 异步 I/O</span>
+						<span class="skill-bubble" data-skill> XDP / 数据包处理</span>
+						<span class="skill-bubble" data-skill> DPDK / 用户态网络</span>
+						<span class="skill-bubble" data-skill> 性能调优</span>
 					</div>
 				</div>
 			</section>
@@ -520,27 +954,32 @@ const posts = (await getCollection('blog')).sort(
 		<Footer />
 
 		<script>
-			// ===== 流体Canvas背景 =====
+			// ===== 增强型流体Canvas背景 =====
 			const canvas = document.getElementById('fluid-canvas') as HTMLCanvasElement;
 			const ctx = canvas.getContext('2d')!;
 			let width: number, height: number;
 			let particles: FluidParticle[] = [];
+			let ripples: Ripple[] = [];
+			let waves: Wave[] = [];
 			let mouse = { x: 0, y: 0, active: false, timer: 0 as unknown as ReturnType<typeof setTimeout> };
 			let animationId: number;
+			let frameCount = 0;
 
-			// 配色
+			// 配色 - 降低饱和度以突出前景
 			const colors = [
-				{ r: 99, g: 102, b: 241 },   // 紫色
-				{ r: 236, g: 72, b: 153 },   // 粉色
-				{ r: 6, g: 182, b: 212 },    // 青色
-				{ r: 245, g: 158, b: 11 }    // 琥珀
+				{ r: 80, g: 82, b: 200 },    // 柔和紫色
+				{ r: 180, g: 60, b: 120 },   // 柔和粉色
+				{ r: 5, g: 150, b: 170 },    // 柔和青色
+				{ r: 200, g: 140, b: 30 }    // 柔和琥珀
 			];
 
 			function resize() {
 				width = canvas.width = window.innerWidth;
 				height = canvas.height = window.innerHeight;
+				initWaves();
 			}
 
+			// 流体粒子
 			class FluidParticle {
 				x!: number;
 				y!: number;
@@ -558,42 +997,26 @@ const posts = (await getCollection('blog')).sort(
 				reset() {
 					this.x = Math.random() * width;
 					this.y = Math.random() * height;
-					this.vx = (Math.random() - 0.5) * 0.5;
-					this.vy = (Math.random() - 0.5) * 0.5;
-					this.radius = Math.random() * 150 + 100;
+					this.vx = (Math.random() - 0.5) * 0.3;
+					this.vy = (Math.random() - 0.5) * 0.3;
+					this.radius = Math.random() * 120 + 80;
 					this.color = colors[Math.floor(Math.random() * colors.length)];
-					this.opacity = Math.random() * 0.3 + 0.1;
+					this.opacity = Math.random() * 0.15 + 0.05;
 					this.phase = Math.random() * Math.PI * 2;
 				}
 
 				update() {
-					// 基础流动
 					this.x += this.vx;
 					this.y += this.vy;
-					this.phase += 0.01;
+					this.phase += 0.008;
 
-					// 波动
-					this.x += Math.sin(this.phase) * 0.5;
-					this.y += Math.cos(this.phase * 0.7) * 0.3;
+					this.x += Math.sin(this.phase) * 0.3;
+					this.y += Math.cos(this.phase * 0.7) * 0.2;
 
-					// 边界循环
 					if (this.x < -this.radius) this.x = width + this.radius;
 					if (this.x > width + this.radius) this.x = -this.radius;
 					if (this.y < -this.radius) this.y = height + this.radius;
 					if (this.y > height + this.radius) this.y = -this.radius;
-
-					// 鼠标交互 - 涟漪效果
-					if (mouse.active) {
-						const dx = mouse.x - this.x;
-						const dy = mouse.y - this.y;
-						const dist = Math.sqrt(dx * dx + dy * dy);
-
-						if (dist < 300) {
-							const force = (300 - dist) / 300;
-							this.x -= dx * force * 0.02;
-							this.y -= dy * force * 0.02;
-						}
-					}
 				}
 
 				draw() {
@@ -601,11 +1024,9 @@ const posts = (await getCollection('blog')).sort(
 						this.x, this.y, 0,
 						this.x, this.y, this.radius
 					);
-
 					gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`);
 					gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity * 0.5})`);
 					gradient.addColorStop(1, 'transparent');
-
 					ctx.fillStyle = gradient;
 					ctx.beginPath();
 					ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -613,37 +1034,134 @@ const posts = (await getCollection('blog')).sort(
 				}
 			}
 
+			// 涟漪效果
+			class Ripple {
+				x!: number;
+				y!: number;
+				radius!: number;
+				maxRadius!: number;
+				opacity!: number;
+				color!: { r: number; g: number; b: number };
+				active!: boolean;
+
+				constructor(x: number, y: number) {
+					this.x = x;
+					this.y = y;
+					this.radius = 0;
+					this.maxRadius = 150 + Math.random() * 100;
+					this.opacity = 0.4;
+					this.color = colors[Math.floor(Math.random() * colors.length)];
+					this.active = true;
+				}
+
+				update() {
+					this.radius += 2;
+					this.opacity -= 0.008;
+					if (this.opacity <= 0) this.active = false;
+				}
+
+				draw() {
+					ctx.strokeStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`;
+					ctx.lineWidth = 2;
+					ctx.beginPath();
+					ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+					ctx.stroke();
+				}
+			}
+
+			// 音频可视化风格波形
+			class Wave {
+				y!: number;
+				amplitude!: number;
+				frequency!: number;
+				phase!: number;
+				color!: { r: number; g: number; b: number };
+
+				constructor(y: number) {
+					this.y = y;
+					this.amplitude = 5 + Math.random() * 15;
+					this.frequency = 0.01 + Math.random() * 0.02;
+					this.phase = Math.random() * Math.PI * 2;
+					this.color = colors[Math.floor(Math.random() * colors.length)];
+				}
+
+				update(time: number) {
+					this.phase += 0.02;
+				}
+
+				draw(time: number) {
+					ctx.strokeStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.15)`;
+					ctx.lineWidth = 1.5;
+					ctx.beginPath();
+
+					for (let x = 0; x < width; x += 5) {
+						const y = this.y +
+							Math.sin(x * this.frequency + this.phase + time * 0.001) * this.amplitude +
+							Math.sin(x * this.frequency * 2 + this.phase) * (this.amplitude * 0.5);
+						if (x === 0) ctx.moveTo(x, y);
+						else ctx.lineTo(x, y);
+					}
+					ctx.stroke();
+				}
+			}
+
 			function initParticles() {
 				particles = [];
-				const count = Math.min(25, Math.floor((width * height) / 40000));
+				const count = Math.min(15, Math.floor((width * height) / 60000));
 				for (let i = 0; i < count; i++) {
 					particles.push(new FluidParticle());
 				}
 			}
 
+			function initWaves() {
+				waves = [];
+				const waveCount = 5;
+				for (let i = 0; i < waveCount; i++) {
+					waves.push(new Wave(height * (0.3 + i * 0.1)));
+				}
+			}
+
 			function animate() {
-				// 使用半透明清除产生拖尾效果
-				ctx.fillStyle = 'rgba(15, 13, 26, 0.1)';
+				frameCount++;
+				const time = Date.now();
+
+				// 拖尾效果
+				ctx.fillStyle = 'rgba(15, 13, 26, 0.15)';
 				ctx.fillRect(0, 0, width, height);
 
-				// 使用 lighter 混合模式创造发光效果
+				// 流体粒子
 				ctx.globalCompositeOperation = 'lighter';
-
 				particles.forEach(p => {
 					p.update();
 					p.draw();
 				});
 
+				// 涟漪效果
+				ripples = ripples.filter(r => r.active);
+				ripples.forEach(r => {
+					r.update();
+					r.draw();
+				});
+
+				// 波形
 				ctx.globalCompositeOperation = 'source-over';
+				waves.forEach(w => {
+					w.update(time);
+					w.draw(time);
+				});
 
 				animationId = requestAnimationFrame(animate);
 			}
 
-			// 鼠标事件
+			// 鼠标移动创建涟漪
 			window.addEventListener('mousemove', (e: MouseEvent) => {
 				mouse.x = e.clientX;
 				mouse.y = e.clientY;
 				mouse.active = true;
+
+				if (frameCount % 10 === 0) {
+					ripples.push(new Ripple(e.clientX, e.clientY));
+				}
 
 				clearTimeout(mouse.timer);
 				mouse.timer = setTimeout(() => {
@@ -651,17 +1169,24 @@ const posts = (await getCollection('blog')).sort(
 				}, 100);
 			});
 
+			// 点击创建大涟漪
+			window.addEventListener('click', (e: MouseEvent) => {
+				for (let i = 0; i < 3; i++) {
+					setTimeout(() => {
+						ripples.push(new Ripple(e.clientX, e.clientY));
+					}, i * 100);
+				}
+			});
+
 			window.addEventListener('resize', () => {
 				resize();
 				initParticles();
 			});
 
-			// 初始化
 			resize();
 			initParticles();
 			animate();
 
-			// 页面可见性控制
 			document.addEventListener('visibilitychange', () => {
 				if (document.visibilityState === 'hidden') {
 					cancelAnimationFrame(animationId);
@@ -670,45 +1195,118 @@ const posts = (await getCollection('blog')).sort(
 				}
 			});
 
+			// ===== 滚动触发动画系统 =====
+			const revealElements = document.querySelectorAll('.reveal-up, .reveal-left, .reveal-scale, [data-skill]');
+
+			const revealObserver = new IntersectionObserver((entries) => {
+				entries.forEach(entry => {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('revealed');
+						revealObserver.unobserve(entry.target);
+					}
+				});
+			}, {
+				threshold: 0.1,
+				rootMargin: '0px 0px -50px 0px'
+			});
+
+			revealElements.forEach(el => revealObserver.observe(el));
+
+			// ===== 色温变化系统 =====
+			const colorTempLayer = document.getElementById('colorTempLayer');
+
+			function updateColorTemp() {
+				const scrolled = window.scrollY;
+				const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+				const progress = Math.min(scrolled / docHeight, 1);
+
+				if (colorTempLayer) {
+					// 从冷色调（蓝紫）过渡到暖色调（粉橙）
+					colorTempLayer.style.opacity = String(progress * 0.8);
+				}
+			}
+
+			window.addEventListener('scroll', updateColorTemp, { passive: true });
+
+			// ===== 打字机效果 =====
+			const typewriterText = document.getElementById('typewriter-text') as HTMLElement | null;
+			const typewriterCursor = document.getElementById('typewriter-cursor') as HTMLElement | null;
+			const subtitleText = 'System.kernel_space // Developer';
+			let typewriterIndex = 0;
+
+			function startTypewriter() {
+				if (!typewriterText || !typewriterCursor) return;
+
+				typewriterCursor.classList.add('typing');
+
+				function typeNext() {
+					if (typewriterIndex < subtitleText.length) {
+						typewriterText.textContent += subtitleText[typewriterIndex];
+						typewriterIndex++;
+						// 慢速优雅的打字速度（100-150ms随机）
+						setTimeout(typeNext, 100 + Math.random() * 50);
+					} else {
+						// 打字完成
+						typewriterCursor.classList.remove('typing');
+						typewriterCursor.classList.add('finished');
+					}
+				}
+
+				typeNext();
+			}
+
 			// ===== 故障艺术解码动画 =====
 			const title = document.querySelector('.hero-title') as HTMLElement | null;
+			let titleDecoded = false;
+
 			if (title) {
-			const text = title.dataset.text!;
-			const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+				const text = title.dataset.text!;
+				const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 
-			title.innerHTML = text.split('').map((char: string, i: number) => {
-				// if (char === ' ') return '<span class="char">&nbsp;</span>';
-				return `<span class="char" data-char="${char}" data-index="${i}">${char}</span>`;
-			}).join('');
+				title.innerHTML = text.split('').map((char: string, i: number) => {
+					return `<span class="char" data-char="${char}" data-index="${i}">${char}</span>`;
+				}).join('');
 
-			const charElements = title.querySelectorAll('.char');
+				const charElements = title.querySelectorAll('.char');
+				let decodedCount = 0;
 
-			// 依次解码每个字符
-			charElements.forEach((char: Element, index: number) => {
-				const el = char as HTMLElement;
-				const targetChar = el.dataset.char!;
-				let iterations = 0;
-				const maxIterations = 8 + Math.random() * 5;
-				const delay = 800 + index * 80;
+				// 依次解码每个字符
+				charElements.forEach((char: Element, index: number) => {
+					const el = char as HTMLElement;
+					const targetChar = el.dataset.char!;
+					let iterations = 0;
+					const maxIterations = 8 + Math.random() * 5;
+					const delay = 800 + index * 80;
 
-				setTimeout(() => {
-					const interval = setInterval(() => {
-						if (iterations >= maxIterations) {
-							el.textContent = targetChar;
-							el.classList.add('decoded');
-							// 随机添加故障效果
-							if (Math.random() > 0.7) {
-								el.classList.add('glitch');
-								setTimeout(() => el.classList.remove('glitch'), 300);
+					setTimeout(() => {
+						const interval = setInterval(() => {
+							if (iterations >= maxIterations) {
+								el.textContent = targetChar;
+								el.classList.add('decoded');
+								decodedCount++;
+
+								// 随机添加故障效果
+								if (Math.random() > 0.7) {
+									el.classList.add('glitch');
+									setTimeout(() => el.classList.remove('glitch'), 300);
+								}
+
+								// 所有字符解码完成后
+								if (decodedCount === charElements.length && !titleDecoded) {
+									titleDecoded = true;
+									// 添加解码完成类，显示RGB分离效果
+									title.classList.add('decoded');
+									setTimeout(startTypewriter, 300);
+								}
+
+								clearInterval(interval);
+							} else {
+								el.textContent = chars[Math.floor(Math.random() * chars.length)];
+								iterations++;
 							}
-							clearInterval(interval);
-						} else {
-							el.textContent = chars[Math.floor(Math.random() * chars.length)];
-							iterations++;
-						}
-					}, 50);
-				}, delay);
-			});
+						}, 50);
+					}, delay);
+				});
 			}
 
 			// ===== 3D 倾斜卡片 =====
@@ -754,35 +1352,98 @@ const posts = (await getCollection('blog')).sort(
 				});
 			});
 
-			// ===== 视差滚动效果 =====
+			// ===== 增强视差滚动效果（多层次） =====
 			const parallaxCanvas = document.getElementById('fluid-canvas') as HTMLElement;
 			const ambientGlow = document.querySelector('.ambient-glow') as HTMLElement;
 			const heroContent = document.querySelector('.hero-content') as HTMLElement;
+			const heroSubtitle = document.querySelector('.hero-subtitle') as HTMLElement;
+			const heroTitle = document.querySelector('.hero-title') as HTMLElement;
+			const heroDescription = document.querySelector('.hero-description') as HTMLElement;
+			const heroActions = document.querySelector('.hero-actions') as HTMLElement;
+			const primaryBtn = document.querySelector('.magnetic-btn-primary') as HTMLElement;
+			const secondaryBtn = document.querySelector('.magnetic-btn-secondary') as HTMLElement;
 
-			window.addEventListener('scroll', () => {
+			// 景深模糊效果
+			function updateDepthBlur() {
 				const scrolled = window.scrollY;
 				const viewportHeight = window.innerHeight;
+				const progress = Math.min(scrolled / viewportHeight, 1);
 
-				// Hero Canvas 视差 - 向上滚动时缓慢移动并淡出
-				if (parallaxCanvas && scrolled < viewportHeight) {
-					const canvasSpeed = 0.4;
-					parallaxCanvas.style.transform = `translateY(${scrolled * canvasSpeed}px)`;
-					parallaxCanvas.style.opacity = String(1 - (scrolled / viewportHeight) * 0.8);
+				// Canvas 背景 - 极慢移动（最深层）
+				if (parallaxCanvas && scrolled < viewportHeight * 1.2) {
+					parallaxCanvas.style.transform = `translateY(${scrolled * 0.08}px) scale(${1 + progress * 0.1})`;
+					parallaxCanvas.style.opacity = String(1 - progress * 0.5);
 				}
 
-				// Hero 内容视差 - 比背景移动更快，产生深度感
-				if (heroContent && scrolled < viewportHeight) {
-					const contentSpeed = 0.7;
-					heroContent.style.transform = `translateY(${scrolled * contentSpeed}px)`;
-					heroContent.style.opacity = String(1 - (scrolled / (viewportHeight * 0.6)));
-				}
-
-				// 环境光晕视差 - 反向缓慢移动
+				// 环境光晕 - 反向慢速移动
 				if (ambientGlow) {
-					const glowSpeed = -0.15;
-					ambientGlow.style.transform = `translateY(${scrolled * glowSpeed}px)`;
+					ambientGlow.style.transform = `translateY(${scrolled * -0.05}px) rotate(${scrolled * 0.02}deg)`;
 				}
+
+				// Hero 内容整体 - 中等速度
+				if (heroContent && scrolled < viewportHeight) {
+					// 整体向上移动 + 轻微透视倾斜
+					const rotateX = Math.min(scrolled / viewportHeight * 5, 5);
+					heroContent.style.transform = `translateY(${scrolled * 0.15}px) perspective(1000px) rotateX(${rotateX}deg)`;
+				}
+
+				// 副标题 - 最快移动（最先消失）
+				if (heroSubtitle && scrolled < viewportHeight * 0.6) {
+					const subtitleProgress = scrolled / (viewportHeight * 0.6);
+					heroSubtitle.style.transform = `translateY(${scrolled * 0.5}px) translateX(${subtitleProgress * -30}px)`;
+					heroSubtitle.style.opacity = String(1 - subtitleProgress);
+					heroSubtitle.style.filter = `blur(${subtitleProgress * 4}px)`;
+				}
+
+				// 主标题 - 中等速度
+				if (heroTitle && scrolled < viewportHeight * 0.8) {
+					const titleProgress = scrolled / (viewportHeight * 0.8);
+					// 标题向上 + 轻微缩小 + 模糊
+					heroTitle.style.transform = `translateY(${scrolled * 0.35}px) scale(${1 - titleProgress * 0.1})`;
+					heroTitle.style.opacity = String(1 - titleProgress * 1.2);
+					heroTitle.style.filter = `blur(${titleProgress * 6}px)`;
+				}
+
+				// 描述卡片 - 较慢移动，稍微延迟消失
+				if (heroDescription && scrolled < viewportHeight * 0.9) {
+					const descProgress = scrolled / (viewportHeight * 0.9);
+					// 向左滑出 + 模糊
+					heroDescription.style.transform = `translateY(${scrolled * 0.25}px) translateX(${descProgress * -80}px)`;
+					heroDescription.style.opacity = String(1 - descProgress * 1.3);
+					heroDescription.style.filter = `blur(${descProgress * 8}px)`;
+				}
+
+				// 按钮组 - 最慢移动，最后消失
+				if (heroActions && scrolled < viewportHeight) {
+					const actionsProgress = scrolled / viewportHeight;
+					heroActions.style.transform = `translateY(${scrolled * 0.2}px)`;
+					heroActions.style.opacity = String(1 - actionsProgress * 1.5);
+				}
+
+				// 按钮分散效果
+				if (primaryBtn && scrolled < viewportHeight) {
+					const btnProgress = scrolled / viewportHeight;
+					primaryBtn.style.transform = `translateX(${btnProgress * -60}px)`;
+				}
+				if (secondaryBtn && scrolled < viewportHeight) {
+					const btnProgress = scrolled / viewportHeight;
+					secondaryBtn.style.transform = `translateX(${btnProgress * 60}px)`;
+				}
+			}
+
+			// RGB视差跟随鼠标
+			document.addEventListener('mousemove', (e) => {
+				const x = (e.clientX / window.innerWidth - 0.5) * 4; // -2 to 2
+				const y = (e.clientY / window.innerHeight - 0.5) * 2; // -1 to 1
+
+				document.documentElement.style.setProperty('--rgb-offset-x', `${x}px`);
+				document.documentElement.style.setProperty('--rgb-offset-y', `${y}px`);
 			});
+
+			window.addEventListener('scroll', () => {
+				updateDepthBlur();
+				updateColorTemp();
+			}, { passive: true });
 
 			// ===== 平滑滚动 =====
 			const scrollIndicator = document.querySelector('.scroll-indicator');

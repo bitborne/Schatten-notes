@@ -10,294 +10,780 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 	<head>
 		<BaseHead title={`关于 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 		<style>
-			/* ===== 莫兰迪配色变量 ===== */
+			/* ===== 档案室主题 - 复古科技风 ===== */
 			:root {
-				--morandi-blue: #6b8cae;
-				--morandi-green: #8faa8f;
-				--morandi-purple: #a68fac;
-				--morandi-warm: #b8a090;
-				--morandi-cool: #7a8b99;
-				--morandi-bg: #141820;
+				--archive-bg: #0c0a12;
+				--archive-wood: #3d2f1f;
+				--archive-brass: #b8a88a;
+				--archive-paper: #e8e0d0;
+				--archive-ink: #2a2520;
+				--archive-glow: rgba(184, 168, 138, 0.3);
+				--terminal-green: #4ade80;
 			}
+
+			/* 导入字体 */
+			@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 			.about-container {
 				min-height: 100vh;
-				background:
-					radial-gradient(at 0% 0%, rgba(107, 140, 174, 0.1) 0, transparent 50%),
-					radial-gradient(at 100% 100%, rgba(143, 170, 143, 0.08) 0, transparent 50%),
-					var(--bg-abyss);
+				background: var(--archive-bg);
+				position: relative;
+				overflow-x: hidden;
 			}
 
-			/* Hero Section */
+			/* 档案室背景纹理 */
+			.about-container::before {
+				content: '';
+				position: fixed;
+				inset: 0;
+				background:
+					radial-gradient(ellipse at 20% 80%, rgba(61, 47, 31, 0.15) 0%, transparent 50%),
+					radial-gradient(ellipse at 80% 20%, rgba(184, 168, 138, 0.05) 0%, transparent 50%);
+				pointer-events: none;
+				z-index: 0;
+			}
+
+			/* 噪点覆盖 */
+			.noise-overlay {
+				position: fixed;
+				inset: 0;
+				z-index: 9999;
+				pointer-events: none;
+				opacity: 0.02;
+				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+			}
+
+			/* ===== Hero Section - 档案标签 ===== */
 			.about-hero {
-				padding: 10rem 0 6rem;
+				padding: 10rem 0 4rem;
 				position: relative;
-				overflow: hidden;
+				z-index: 1;
 			}
 
 			.hero-content {
 				max-width: 900px;
 				margin: 0 auto;
-				padding: 0 1.5rem;
-				text-align: center;
+				padding: 0 2rem;
 			}
 
-			.hero-subtitle {
-				font-family: 'Cascadia Code', monospace;
-				color: var(--morandi-cool);
-				font-size: 0.85rem;
-				letter-spacing: 0.3em;
-				margin-bottom: 1.5rem;
-				display: block;
+			/* 档案标签 */
+			.archive-label {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.75rem;
+				padding: 0.6rem 1.2rem;
+				background: linear-gradient(135deg, rgba(61, 47, 31, 0.8), rgba(42, 37, 32, 0.9));
+				border: 1px solid var(--archive-brass);
+				border-radius: 4px;
+				margin-bottom: 2rem;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: var(--archive-brass);
+				letter-spacing: 0.15em;
+				text-transform: uppercase;
+				box-shadow:
+					0 4px 20px rgba(0, 0, 0, 0.4),
+					inset 0 1px 0 rgba(255, 255, 255, 0.05);
+			}
+
+			.label-stamp {
+				width: 12px;
+				height: 12px;
+				border: 2px solid var(--archive-brass);
+				border-radius: 50%;
+				position: relative;
+			}
+
+			.label-stamp::after {
+				content: '';
+				position: absolute;
+				inset: 2px;
+				background: var(--archive-brass);
+				border-radius: 50%;
 			}
 
 			.hero-title {
-				font-size: clamp(2.5rem, 6vw, 4rem);
-				font-weight: 800;
-				margin: 0 0 1.5rem;
-				background: linear-gradient(135deg, #e8e8e8 0%, var(--morandi-blue) 60%, var(--morandi-purple) 100%);
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				filter: drop-shadow(0 0 30px rgba(107, 140, 174, 0.2));
+				font-family: 'Crimson Text', serif;
+				font-size: clamp(3rem, 7vw, 5rem);
+				font-weight: 600;
+				color: var(--archive-paper);
+				margin: 0 0 1rem;
+				letter-spacing: -0.02em;
+				line-height: 1.1;
 			}
 
-			.hero-description {
-				font-size: 1.2rem;
-				color: var(--text-secondary);
-				max-width: 600px;
+			.hero-title span {
+				font-style: italic;
+				color: var(--archive-brass);
+			}
+
+			.hero-subtitle {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 1rem;
+				color: rgba(232, 224, 208, 0.5);
+				letter-spacing: 0.05em;
+			}
+
+			/* ===== 档案柜主体 ===== */
+			.archive-cabinet {
+				max-width: 1100px;
 				margin: 0 auto;
-				line-height: 1.8;
+				padding: 2rem;
+				position: relative;
+				z-index: 1;
 			}
 
-			/* Main Content */
-			.about-content {
-				max-width: 900px;
-				margin: 0 auto;
-				padding: 0 1.5rem 8rem;
+			.cabinet-frame {
+				background: linear-gradient(180deg,
+					rgba(61, 47, 31, 0.6) 0%,
+					rgba(42, 37, 32, 0.8) 100%);
+				border: 1px solid rgba(184, 168, 138, 0.2);
+				border-radius: 12px;
+				padding: 3rem;
+				box-shadow:
+					0 30px 60px rgba(0, 0, 0, 0.5),
+					inset 0 1px 0 rgba(255, 255, 255, 0.03);
 			}
 
-			/* Section Styling */
-			.section {
-				margin-bottom: 5rem;
+			/* ===== 抽屉样式 ===== */
+			.drawer {
+				background: linear-gradient(135deg,
+					rgba(61, 47, 31, 0.4) 0%,
+					rgba(42, 37, 32, 0.6) 100%);
+				border: 1px solid rgba(184, 168, 138, 0.15);
+				border-radius: 8px;
+				margin-bottom: 1.5rem;
+				overflow: hidden;
+				transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 			}
 
-			.section-title {
-				font-size: 1.5rem;
-				font-weight: 700;
-				margin-bottom: 2rem;
+			.drawer:hover {
+				border-color: rgba(184, 168, 138, 0.3);
+				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+			}
+
+			.drawer-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 1.5rem 2rem;
+				cursor: pointer;
+				position: relative;
+				transition: background 0.3s;
+			}
+
+			.drawer-header:hover {
+				background: rgba(184, 168, 138, 0.05);
+			}
+
+			.drawer-label {
 				display: flex;
 				align-items: center;
 				gap: 1rem;
 			}
 
-			.section-title::before {
-				content: '';
-				display: inline-block;
-				width: 4px;
-				height: 1.2em;
-				background: linear-gradient(180deg, var(--morandi-blue), var(--morandi-green));
-				border-radius: 2px;
+			.drawer-number {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.8rem;
+				color: var(--archive-brass);
+				opacity: 0.6;
 			}
 
-			/* Intro Card */
-			.intro-card {
-				background: rgba(255, 255, 255, 0.02);
-				border: 1px solid rgba(107, 140, 174, 0.1);
-				border-radius: var(--radius-lg);
-				padding: 2.5rem;
-				margin-bottom: 3rem;
-				backdrop-filter: blur(10px);
-			}
-
-			.intro-text {
-				font-size: 1.1rem;
-				line-height: 2;
-				color: var(--text-secondary);
-			}
-
-			.intro-text strong {
-				color: var(--morandi-blue);
+			.drawer-title {
+				font-family: 'Crimson Text', serif;
+				font-size: 1.3rem;
 				font-weight: 600;
+				color: var(--archive-paper);
 			}
 
-			/* Skills Grid */
-			.skills-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-				gap: 1.5rem;
+			/* 抽屉把手 */
+			.drawer-handle {
+				width: 48px;
+				height: 8px;
+				background: linear-gradient(180deg,
+					var(--archive-brass) 0%,
+					rgba(184, 168, 138, 0.5) 100%);
+				border-radius: 4px;
+				position: relative;
+				box-shadow:
+					0 2px 4px rgba(0, 0, 0, 0.3),
+					inset 0 1px 0 rgba(255, 255, 255, 0.2);
+				transition: transform 0.3s;
 			}
 
-			.skill-card {
-				background: rgba(255, 255, 255, 0.015);
-				border: 1px solid rgba(143, 170, 143, 0.1);
-				border-radius: var(--radius-md);
+			.drawer-handle::before {
+				content: '';
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				width: 16px;
+				height: 16px;
+				border: 2px solid rgba(61, 47, 31, 0.8);
+				border-radius: 50%;
+				background: linear-gradient(135deg, var(--archive-brass), rgba(184, 168, 138, 0.5));
+			}
+
+			.drawer:hover .drawer-handle {
+				transform: translateY(2px);
+			}
+
+			/* 抽屉内容 */
+			.drawer-content {
+				max-height: 0;
+				overflow: hidden;
+				transition: max-height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+			}
+
+			.drawer.open .drawer-content {
+				max-height: 800px;
+			}
+
+			.drawer-inner {
+				padding: 0 2rem 2rem;
+			}
+
+			/* ===== 终端组件 ===== */
+			.terminal-window {
+				background: rgba(10, 10, 10, 0.95);
+				border: 1px solid rgba(74, 222, 128, 0.2);
+				border-radius: 8px;
+				overflow: hidden;
+				font-family: 'JetBrains Mono', monospace;
+				box-shadow:
+					0 20px 50px rgba(0, 0, 0, 0.5),
+					0 0 30px rgba(74, 222, 128, 0.05);
+			}
+
+			.terminal-header {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				padding: 0.75rem 1rem;
+				background: rgba(255, 255, 255, 0.03);
+				border-bottom: 1px solid rgba(74, 222, 128, 0.1);
+			}
+
+			.terminal-btn {
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+			}
+
+			.terminal-btn.close { background: #ff5f56; }
+			.terminal-btn.minimize { background: #ffbd2e; }
+			.terminal-btn.maximize { background: #27c93f; }
+
+			.terminal-title {
+				margin-left: 0.5rem;
+				font-size: 0.75rem;
+				color: rgba(255, 255, 255, 0.4);
+			}
+
+			.terminal-body {
 				padding: 1.5rem;
-				transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+				min-height: 200px;
 			}
 
-			.skill-card:hover {
-				transform: translateY(-5px);
-				border-color: rgba(143, 170, 143, 0.25);
-				box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-			}
-
-			.skill-name {
-				font-family: 'Cascadia Code', monospace;
-				font-size: 0.85rem;
-				color: var(--morandi-green);
+			.terminal-line {
+				display: flex;
+				align-items: flex-start;
+				gap: 0.75rem;
 				margin-bottom: 0.5rem;
-				letter-spacing: 0.05em;
-			}
-
-			.skill-tags {
-				font-size: 0.95rem;
-				color: var(--text-secondary);
+				font-size: 0.9rem;
 				line-height: 1.6;
 			}
 
-			/* Contact Section */
-			.contact-grid {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 1.5rem;
+			.terminal-prompt {
+				color: var(--terminal-green);
+				white-space: nowrap;
 			}
 
-			.contact-link {
-				display: inline-flex;
+			.terminal-input {
+				color: #fff;
+			}
+
+			.terminal-output {
+				color: rgba(255, 255, 255, 0.7);
+				margin-left: 0;
+				margin-bottom: 0.75rem;
+			}
+
+			.terminal-cursor {
+				display: inline-block;
+				width: 8px;
+				height: 1.2em;
+				background: var(--terminal-green);
+				animation: cursorBlink 1s step-end infinite;
+				vertical-align: text-bottom;
+			}
+
+			@keyframes cursorBlink {
+				0%, 50% { opacity: 1; }
+				51%, 100% { opacity: 0; }
+			}
+
+			/* 技能列表 */
+			.skill-list {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+			}
+
+			.skill-list li {
+				padding: 0.4rem 0;
+				color: rgba(255, 255, 255, 0.8);
+				border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+				display: flex;
 				align-items: center;
 				gap: 0.75rem;
-				padding: 1rem 1.5rem;
-				background: rgba(107, 140, 174, 0.05);
-				border: 1px solid rgba(107, 140, 174, 0.15);
-				border-radius: var(--radius-md);
-				color: var(--text-secondary);
-				text-decoration: none;
-				transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 			}
 
-			.contact-link:hover {
-				background: rgba(107, 140, 174, 0.1);
-				border-color: var(--morandi-blue);
-				color: var(--text-primary);
+			.skill-list li::before {
+				content: '>';
+				color: var(--terminal-green);
+				opacity: 0.6;
+			}
+
+			.skill-category {
+				color: var(--archive-brass);
+				font-weight: 500;
+				min-width: 120px;
+			}
+
+			/* ===== Git时间线 ===== */
+			.git-timeline {
+				position: relative;
+				padding-left: 2rem;
+			}
+
+			.git-timeline::before {
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 0;
+				bottom: 0;
+				width: 2px;
+				background: linear-gradient(180deg,
+					var(--archive-brass) 0%,
+					rgba(184, 168, 138, 0.3) 50%,
+					transparent 100%);
+			}
+
+			.git-commit {
+				position: relative;
+				padding: 1.5rem 0;
+				border-bottom: 1px solid rgba(184, 168, 138, 0.1);
+			}
+
+			.git-commit:last-child {
+				border-bottom: none;
+			}
+
+			.commit-dot {
+				position: absolute;
+				left: -2rem;
+				top: 1.75rem;
+				width: 12px;
+				height: 12px;
+				background: var(--archive-bg);
+				border: 2px solid var(--archive-brass);
+				border-radius: 50%;
+				transform: translateX(-5px);
+				transition: all 0.3s;
+			}
+
+			.git-commit:hover .commit-dot {
+				background: var(--archive-brass);
+				box-shadow: 0 0 15px var(--archive-glow);
+			}
+
+			.commit-hash {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: var(--archive-brass);
+				opacity: 0.7;
+				margin-bottom: 0.5rem;
+			}
+
+			.commit-message {
+				font-family: 'Crimson Text', serif;
+				font-size: 1.1rem;
+				color: var(--archive-paper);
+				margin-bottom: 0.5rem;
+				font-weight: 600;
+			}
+
+			.commit-meta {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: rgba(232, 224, 208, 0.4);
+			}
+
+			.commit-body {
+				margin-top: 0.75rem;
+				padding: 1rem;
+				background: rgba(0, 0, 0, 0.2);
+				border-radius: 6px;
+				font-size: 0.9rem;
+				color: rgba(232, 224, 208, 0.7);
+				line-height: 1.6;
+			}
+
+			/* ===== 联系抽屉 ===== */
+			.contact-cards {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				gap: 1rem;
+			}
+
+			.contact-card {
+				display: flex;
+				align-items: center;
+				gap: 1rem;
+				padding: 1.25rem;
+				background: rgba(184, 168, 138, 0.05);
+				border: 1px solid rgba(184, 168, 138, 0.1);
+				border-radius: 8px;
+				text-decoration: none;
+				transition: all 0.3s;
+			}
+
+			.contact-card:hover {
+				background: rgba(184, 168, 138, 0.1);
+				border-color: rgba(184, 168, 138, 0.25);
 				transform: translateY(-2px);
 			}
 
 			.contact-icon {
-				width: 20px;
-				height: 20px;
-				color: var(--morandi-blue);
+				width: 40px;
+				height: 40px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background: rgba(184, 168, 138, 0.1);
+				border-radius: 8px;
+				color: var(--archive-brass);
 			}
 
-			/* Footer Note */
-			.footer-note {
-				background: linear-gradient(135deg, rgba(107, 140, 174, 0.05), rgba(166, 143, 172, 0.05));
-				border: 1px solid rgba(107, 140, 174, 0.1);
-				border-radius: var(--radius-lg);
-				padding: 2rem;
+			.contact-info h4 {
+				font-family: 'Crimson Text', serif;
+				font-size: 1rem;
+				color: var(--archive-paper);
+				margin: 0 0 0.25rem;
+			}
+
+			.contact-info span {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: rgba(232, 224, 208, 0.5);
+			}
+
+			/* ===== 页脚 ===== */
+			.archive-footer {
 				text-align: center;
+				padding: 4rem 2rem;
+				color: rgba(232, 224, 208, 0.3);
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				position: relative;
+				z-index: 1;
 			}
 
-			.footer-note p {
-				margin: 0;
-				color: var(--text-secondary);
-				line-height: 1.8;
-			}
-
-			.footer-note strong {
-				color: var(--morandi-purple);
-			}
-
+			/* 响应式 */
 			@media (max-width: 768px) {
-				.about-hero { padding: 8rem 0 4rem; }
-				.hero-title { font-size: 2.2rem; }
-				.intro-card { padding: 1.5rem; }
-				.skills-grid { grid-template-columns: 1fr; }
+				.cabinet-frame {
+					padding: 1.5rem;
+				}
+
+				.drawer-header {
+					padding: 1.25rem;
+				}
+
+				.drawer-inner {
+					padding: 0 1.25rem 1.25rem;
+				}
+
+				.terminal-body {
+					padding: 1rem;
+				}
+
+				.git-timeline {
+					padding-left: 1.5rem;
+				}
+
+				.commit-dot {
+					left: -1.5rem;
+				}
 			}
 		</style>
 	</head>
 	<body>
+		<div class="noise-overlay"></div>
 		<div class="about-container">
 			<Header />
 
 			<main>
 				<section class="about-hero">
 					<div class="hero-content">
-						<span class="hero-subtitle">WHO_AM_I // DEVELOPER</span>
-						<h1 class="hero-title">Schatten</h1>
-						<!-- <p class="hero-description">
-							热爱底层技术的开发者，专注于 Linux 内核与高性能计算
-						</p> -->
+						<div class="archive-label">
+							<span class="label-stamp"></span>
+							<span>档案编号: DEV-2024-001</span>
+						</div>
+						<h1 class="hero-title">Schatten <span>//</span> Developer</h1>
+						<p class="hero-subtitle">底层技术探索者 | 档案最后更新: 2024</p>
 					</div>
 				</section>
 
-				<div class="about-content">
-					<!-- 关于我 -->
-					<section class="section">
-						<div class="intro-card">
-							<p class="intro-text">
-								我是 <strong>Schatten</strong>，一名热爱底层技术的开发者。<br><br>
-								专注于 <strong>Linux 高性能网络</strong> 和 <strong>系统级编程</strong>。
-								日常与 eBPF、RDMA、io_uring 打交道，享受从内核视角理解系统的乐趣。
-							</p>
+				<div class="archive-cabinet">
+					<div class="cabinet-frame">
+						<!-- 抽屉1: 技能终端 -->
+						<div class="drawer" data-drawer="skills">
+							<div class="drawer-header">
+								<div class="drawer-label">
+									<span class="drawer-number">01</span>
+									<h3 class="drawer-title">技术能力档案</h3>
+								</div>
+								<div class="drawer-handle"></div>
+							</div>
+							<div class="drawer-content">
+								<div class="drawer-inner">
+									<div class="terminal-window">
+										<div class="terminal-header">
+											<span class="terminal-btn close"></span>
+											<span class="terminal-btn minimize"></span>
+											<span class="terminal-btn maximize"></span>
+											<span class="terminal-title">schatten@dev:~</span>
+										</div>
+										<div class="terminal-body" id="terminalBody">
+											<div class="terminal-line">
+												<span class="terminal-prompt">schatten@dev:~$</span>
+												<span class="terminal-input" id="terminalCommand"></span>
+												<span class="terminal-cursor" id="terminalCursor"></span>
+											</div>
+											<div id="terminalOutput"></div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
-					</section>
 
-					<!-- 技术领域 -->
-					<section class="section">
-						<h2 class="section-title">技术领域</h2>
-						<div class="skills-grid">
-							<div class="skill-card">
-								<div class="skill-name">KERNEL_TRACING</div>
-								<div class="skill-tags">eBPF、BCC、bpftrace、Ftrace</div>
+						<!-- 抽屉2: Git时间线 -->
+						<div class="drawer" data-drawer="timeline">
+							<div class="drawer-header">
+								<div class="drawer-label">
+									<span class="drawer-number">02</span>
+									<h3 class="drawer-title">经历时间线</h3>
+								</div>
+								<div class="drawer-handle"></div>
 							</div>
-							<div class="skill-card">
-								<div class="skill-name">NETWORK_STACK</div>
-								<div class="skill-tags">RDMA、DPDK、XDP、内核协议栈</div>
-							</div>
-							<div class="skill-card">
-								<div class="skill-name">ASYNC_IO</div>
-								<div class="skill-tags">io_uring、AIO、事件驱动架构</div>
-							</div>
-							<div class="skill-card">
-								<div class="skill-name">PERF_TUNING</div>
-								<div class="skill-tags">性能分析、延迟优化、吞吐量调优</div>
+							<div class="drawer-content">
+								<div class="drawer-inner">
+									<div class="git-timeline">
+										<div class="git-commit">
+											<div class="commit-dot"></div>
+											<div class="commit-hash">commit a1b2c3d</div>
+											<div class="commit-message">feat: 开始系统底层探索之旅</div>
+											<div class="commit-meta">Author: Schatten &lt;schatten@dev&gt; | Date: 2020</div>
+											<div class="commit-body">
+												初识 Linux，开始系统编程学习。沉迷于指针和内存管理的世界。
+											</div>
+										</div>
+										<div class="git-commit">
+											<div class="commit-dot"></div>
+											<div class="commit-hash">commit e4f5g6h</div>
+											<div class="commit-message">feat: 深入内核世界</div>
+											<div class="commit-meta">Author: Schatten &lt;schatten@dev&gt; | Date: 2021</div>
+											<div class="commit-body">
+												学习 eBPF，开始编写内核跟踪程序。理解系统调用的本质。
+											</div>
+										</div>
+										<div class="git-commit">
+											<div class="commit-dot"></div>
+											<div class="commit-hash">commit i7j8k9l</div>
+											<div class="commit-message">feat: 高性能网络编程</div>
+											<div class="commit-meta">Author: Schatten &lt;schatten@dev&gt; | Date: 2022-2023</div>
+											<div class="commit-body">
+												深入研究 RDMA、DPDK、io_uring。追求零拷贝和微秒级延迟。
+											</div>
+										</div>
+										<div class="git-commit">
+											<div class="commit-dot"></div>
+											<div class="commit-hash">commit m0n1o2p</div>
+											<div class="commit-message">chore: 持续探索中...</div>
+											<div class="commit-meta">Author: Schatten &lt;schatten@dev&gt; | Date: 2024</div>
+											<div class="commit-body">
+												记录学习轨迹，分享技术心得。探索更多底层技术的奥秘。
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
-					</section>
 
-					<!-- 联系方式 -->
-					<section class="section">
-						<h2 class="section-title">联系方式</h2>
-						<div class="contact-grid">
-							<a href="https://github.com/bitborne" target="_blank" class="contact-link">
-								<svg class="contact-icon" viewBox="0 0 24 24" fill="currentColor">
-									<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-								</svg>
-								GitHub / bitborne
-							</a>
-							<a href="mailto:3192396192@qq.com" class="contact-link">
-								<svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<rect x="2" y="4" width="20" height="16" rx="2"/>
-									<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-								</svg>
-								3192396192@qq.com
-							</a>
+						<!-- 抽屉3: 联系方式 -->
+						<div class="drawer" data-drawer="contact">
+							<div class="drawer-header">
+								<div class="drawer-label">
+									<span class="drawer-number">03</span>
+									<h3 class="drawer-title">联系方式</h3>
+								</div>
+								<div class="drawer-handle"></div>
+							</div>
+							<div class="drawer-content">
+								<div class="drawer-inner">
+									<div class="contact-cards">
+										<a href="https://github.com/bitborne" target="_blank" class="contact-card">
+											<div class="contact-icon">
+												<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+													<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+												</svg>
+											</div>
+											<div class="contact-info">
+												<h4>GitHub</h4>
+												<span>@bitborne</span>
+											</div>
+										</a>
+										<a href="mailto:3192396192@qq.com" class="contact-card">
+											<div class="contact-icon">
+												<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+													<rect x="2" y="4" width="20" height="16" rx="2"/>
+													<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+												</svg>
+											</div>
+											<div class="contact-info">
+												<h4>Email</h4>
+												<span>3192396192@qq.com</span>
+											</div>
+										</a>
+									</div>
+								</div>
+							</div>
 						</div>
-					</section>
-
-					<!-- 关于本站 -->
-					<section class="section">
-						<div class="footer-note">
-							<p>
-								使用 <strong>Astro</strong> 构建 · 主题参考 <strong>Phycat Abyss</strong><br>
-								记录技术探索的轨迹，分享内核世界的奇妙
-							</p>
-						</div>
-					</section>
+					</div>
 				</div>
 			</main>
 
+			<div class="archive-footer">
+				<p>// ARCHIVE END // CLASSIFIED //</p>
+			</div>
+
 			<Footer />
 		</div>
+
+		<script>
+			// ===== 抽屉交互 =====
+			const drawers = document.querySelectorAll('.drawer');
+
+			drawers.forEach(drawer => {
+				const header = drawer.querySelector('.drawer-header');
+				header?.addEventListener('click', () => {
+					const isOpen = drawer.classList.contains('open');
+
+					// 关闭其他抽屉
+					drawers.forEach(d => d.classList.remove('open'));
+
+					// 切换当前抽屉
+					if (!isOpen) {
+						drawer.classList.add('open');
+
+						// 如果是技能抽屉，启动终端动画
+						if (drawer.dataset.drawer === 'skills') {
+							startTerminalAnimation();
+						}
+					}
+				});
+			});
+
+			// ===== 终端打字机动画 =====
+			let terminalStarted = false;
+
+			const skillData = [
+				{ category: 'KERNEL', items: ['eBPF', 'BCC', 'bpftrace', 'Ftrace'] },
+				{ category: 'NETWORK', items: ['RDMA', 'DPDK', 'XDP', 'io_uring'] },
+				{ category: 'SYSTEM', items: ['Linux Internals', 'Perf Tuning', 'Async I/O'] },
+				{ category: 'LANG', items: ['C/C++', 'Rust', 'Python', 'Go'] },
+			];
+
+			function startTerminalAnimation() {
+				if (terminalStarted) return;
+				terminalStarted = true;
+
+				const commandEl = document.getElementById('terminalCommand');
+				const cursorEl = document.getElementById('terminalCursor');
+				const outputEl = document.getElementById('terminalOutput');
+
+				if (!commandEl || !cursorEl || !outputEl) return;
+
+				const command = 'ls -la skills/';
+				let charIndex = 0;
+
+				// 打字输入命令
+				function typeCommand() {
+					if (charIndex < command.length) {
+						commandEl.textContent += command[charIndex];
+						charIndex++;
+						setTimeout(typeCommand, 100);
+					} else {
+						// 命令输入完成，显示输出
+						cursorEl.style.display = 'none';
+						setTimeout(showOutput, 300);
+					}
+				}
+
+				function showOutput() {
+					let skillIndex = 0;
+
+					function showNextSkill() {
+						if (skillIndex >= skillData.length) {
+							// 显示总计
+							const totalLine = document.createElement('div');
+							totalLine.className = 'terminal-line';
+							totalLine.innerHTML = `
+								<span class="terminal-output" style="margin-top: 1rem; opacity: 0.5;">
+									total ${skillData.reduce((sum, s) => sum + s.items.length, 0)} skills found
+								</span>
+							`;
+							outputEl.appendChild(totalLine);
+							return;
+						}
+
+						const skill = skillData[skillIndex];
+						const line = document.createElement('div');
+						line.className = 'terminal-line';
+						line.style.opacity = '0';
+						line.style.animation = 'fadeIn 0.3s forwards';
+						line.innerHTML = `
+							<span class="terminal-prompt">${skill.category.padEnd(10)}</span>
+							<span class="terminal-output">${skill.items.join(', ')}</span>
+						`;
+						outputEl.appendChild(line);
+
+						skillIndex++;
+						setTimeout(showNextSkill, 200);
+					}
+
+					showNextSkill();
+				}
+
+				// 开始打字
+				setTimeout(typeCommand, 500);
+			}
+
+			// 添加fadeIn动画
+			const style = document.createElement('style');
+			style.textContent = `
+				@keyframes fadeIn {
+					to { opacity: 1; }
+				}
+			`;
+			document.head.appendChild(style);
+
+			// 默认打开第一个抽屉
+			setTimeout(() => {
+				drawers[0]?.classList.add('open');
+				startTerminalAnimation();
+			}, 800);
+		</script>
 	</body>
 </html>

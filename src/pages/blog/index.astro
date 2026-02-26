@@ -16,15 +16,17 @@ const categoryData = posts.reduce((acc, post) => {
 		acc[folder] = {
 			count: 0,
 			latestDate: new Date(0),
+			posts: [],
 		};
 	}
 	acc[folder].count++;
+	acc[folder].posts.push(post);
 	const postDate = new Date(post.data.pubDate);
 	if (postDate > acc[folder].latestDate) {
 		acc[folder].latestDate = postDate;
 	}
 	return acc;
-}, {} as Record<string, { count: number; latestDate: Date }>);
+}, {} as Record<string, { count: number; latestDate: Date; posts: typeof posts }>);
 
 const categories = Object.keys(categoryData).sort();
 ---
@@ -34,22 +36,19 @@ const categories = Object.keys(categoryData).sort();
 	<head>
 		<BaseHead title={`归档 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 		<style>
-			@keyframes fadeInScale {
-				from { opacity: 0; transform: scale(0.95) translateY(20px); }
-				to { opacity: 1; transform: scale(1) translateY(0); }
-			}
-
-			@keyframes gridPulse {
-				0%, 100% { opacity: 0.3; }
-				50% { opacity: 0.6; }
-			}
-
-				/* ===== 琥珀金配色变量 ===== */
+			/* ===== 蜂巢归档页 - 星座连线主题 ===== */
 			:root {
 				--amber-gold: #ffb347;
 				--amber-dark: #d4af37;
 				--amber-bronze: #cd7f32;
+				--amber-glow: rgba(255, 179, 71, 0.4);
+				--hex-bg: #0f0d1a;
+				--hex-border: rgba(255, 179, 71, 0.15);
+				--hex-border-hover: rgba(255, 179, 71, 0.5);
 			}
+
+			/* 导入字体 */
+			@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 			/* 噪点覆盖 */
 			.noise-overlay {
@@ -57,426 +56,672 @@ const categories = Object.keys(categoryData).sort();
 				inset: 0;
 				z-index: 9999;
 				pointer-events: none;
-				opacity: 0.04;
+				opacity: 0.03;
 				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 			}
 
-			/* 粒子画布 */
-			#particle-canvas {
-				position: absolute;
+			/* 星座Canvas背景 */
+			#constellation-canvas {
+				position: fixed;
 				inset: 0;
-				z-index: 1;
+				z-index: 0;
 				pointer-events: none;
 			}
 
-			/* 滚动触发动画 */
-			.reveal {
-				opacity: 0;
-				transform: translateY(30px) scale(0.95);
-				transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-			}
-
-			.reveal.active {
-				opacity: 1;
-				transform: translateY(0) scale(1);
-			}
-
-			/* 交错延迟 */
-			.stagger-1 { transition-delay: 0.1s; }
-			.stagger-2 { transition-delay: 0.2s; }
-			.stagger-3 { transition-delay: 0.3s; }
-			.stagger-4 { transition-delay: 0.4s; }
-			.stagger-5 { transition-delay: 0.5s; }
-			.stagger-6 { transition-delay: 0.6s; }
-
-		/* Header Section - 琥珀金主题 */
+			/* Header区域 */
 			.archive-header {
-				padding: 10rem 0 6rem;
+				padding: 10rem 0 4rem;
 				position: relative;
+				z-index: 1;
 				overflow: hidden;
-				background:
-					radial-gradient(at 20% 20%, rgba(255, 179, 71, 0.15) 0, transparent 50%),
-					radial-gradient(at 80% 80%, rgba(212, 175, 55, 0.1) 0, transparent 50%),
-					var(--bg-abyss);
+				background: linear-gradient(180deg,
+					rgba(15, 13, 26, 0.95) 0%,
+					rgba(15, 13, 26, 0.8) 50%,
+					transparent 100%);
 			}
 
-			/* 动态网格背景 - 金色 */
-			.archive-header::before {
-				content: '';
-				position: absolute;
-				inset: 0;
-				background-image:
-					linear-gradient(rgba(255, 179, 71, 0.04) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
-				background-size: 50px 50px;
-				-webkit-mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
-				mask-image: radial-gradient(circle at 50% 50%, black, transparent 80%);
-				animation: gridPulse 4s ease-in-out infinite;
-			}
-
-			/* 扫描线 - 金色 */
+			/* 扫描线效果 */
 			.archive-header::after {
 				content: '';
 				position: absolute;
-				top: 0; left: 0; width: 100%; height: 100%;
-				background: linear-gradient(to bottom, transparent, rgba(255, 179, 71, 0.04), transparent);
-				background-size: 100% 400%;
-				animation: scan 10s linear infinite;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(to bottom,
+					transparent 0%,
+					rgba(255, 179, 71, 0.03) 50%,
+					transparent 100%);
+				background-size: 100% 4px;
+				animation: scan 8s linear infinite;
 				pointer-events: none;
 			}
 
+			@keyframes scan {
+				0% { transform: translateY(-100%); }
+				100% { transform: translateY(100vh); }
+			}
+
 			.header-container {
-				max-width: 1100px;
+				max-width: 1200px;
 				margin: 0 auto;
-				padding: 0 1.5rem;
+				padding: 0 2rem;
 				position: relative;
 				z-index: 2;
 			}
 
-			.header-subtitle {
-				font-family: 'Cascadia Code', monospace;
-				color: var(--amber-gold);
-				font-size: 0.9rem;
-				letter-spacing: 0.4em;
+			/* 系统状态指示器 */
+			.system-indicator {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.75rem;
+				padding: 0.5rem 1rem;
+				background: rgba(255, 179, 71, 0.1);
+				border: 1px solid rgba(255, 179, 71, 0.2);
+				border-radius: 100px;
 				margin-bottom: 1.5rem;
-				display: block;
-				text-shadow: 0 0 10px rgba(255, 179, 71, 0.4);
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: var(--amber-gold);
+				letter-spacing: 0.1em;
+			}
+
+			.pulse-ring {
+				width: 8px;
+				height: 8px;
+				background: var(--amber-gold);
+				border-radius: 50%;
+				position: relative;
+			}
+
+			.pulse-ring::before,
+			.pulse-ring::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: var(--amber-gold);
+				border-radius: 50%;
+				animation: pulseRing 2s ease-out infinite;
+			}
+
+			.pulse-ring::after {
+				animation-delay: 1s;
+			}
+
+			@keyframes pulseRing {
+				0% { transform: scale(1); opacity: 0.8; }
+				100% { transform: scale(4); opacity: 0; }
 			}
 
 			.header-title {
-				font-size: 4rem;
+				font-family: 'Orbitron', sans-serif;
+				font-size: clamp(2.5rem, 6vw, 4rem);
 				font-weight: 800;
 				margin: 0;
-				color: var(--text-primary);
-				letter-spacing: -0.03em;
-				background: linear-gradient(135deg, #fff 0%, var(--amber-gold) 50%, var(--amber-dark) 100%);
+				background: linear-gradient(135deg,
+					#fff 0%,
+					var(--amber-gold) 30%,
+					var(--amber-dark) 60%,
+					var(--amber-bronze) 100%);
 				-webkit-background-clip: text;
 				-webkit-text-fill-color: transparent;
-				filter: drop-shadow(0 0 30px rgba(255, 179, 71, 0.2));
+				background-clip: text;
+				filter: drop-shadow(0 0 30px rgba(255, 179, 71, 0.3));
+				letter-spacing: -0.02em;
 			}
 
-			/* Folder Grid */
-			.archive-main {
-				max-width: 1100px;
+			.header-subtitle {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.9rem;
+				color: rgba(255, 255, 255, 0.5);
+				margin-top: 1rem;
+				letter-spacing: 0.05em;
+			}
+
+			/* ===== 蜂巢容器 ===== */
+			.hive-container {
+				max-width: 1200px;
 				margin: 0 auto;
-				padding: 4rem 1.5rem 10rem;
+				padding: 2rem;
+				position: relative;
+				z-index: 1;
 			}
 
-			.folder-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-				gap: 2.5rem;
+			/* 蜂巢网格 */
+			.hex-grid {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 1rem;
+				padding: 2rem 0;
 			}
 
-			.folder-card {
-				background: rgba(255, 255, 255, 0.015);
-				border: 1px solid rgba(255, 255, 255, 0.05);
-				border-radius: var(--radius-lg);
-				padding: 2.5rem;
+			/* 蜂巢行错位 */
+			.hex-row {
+				display: flex;
+				justify-content: center;
+				gap: 1rem;
+				margin-bottom: -1.5rem;
+			}
+
+			.hex-row:nth-child(even) {
+				margin-left: 5.5rem;
+			}
+
+			/* ===== 六边形卡片 ===== */
+			.hex-card {
+				width: 280px;
+				height: 320px;
+				position: relative;
+				cursor: pointer;
+				perspective: 1000px;
+				transform-style: preserve-3d;
+			}
+
+			.hex-card-inner {
+				width: 100%;
+				height: 100%;
+				position: relative;
+				transform-style: preserve-3d;
+				transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+			}
+
+			.hex-card:hover .hex-card-inner {
+				transform: rotateY(180deg);
+			}
+
+			/* 六边形形状 */
+			.hex-front,
+			.hex-back {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				backface-visibility: hidden;
+				clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 				display: flex;
 				flex-direction: column;
-				gap: 2rem;
-				transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-				text-decoration: none;
-				position: relative;
-				overflow: hidden;
+				align-items: center;
+				justify-content: center;
+				padding: 2rem;
+				transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+			}
+
+			/* 正面 - 文件夹外观 */
+			.hex-front {
+				background:
+					linear-gradient(135deg,
+						rgba(255, 179, 71, 0.1) 0%,
+						rgba(212, 175, 55, 0.05) 50%,
+						rgba(205, 127, 50, 0.1) 100%),
+					rgba(15, 13, 26, 0.95);
+				border: 2px solid var(--hex-border);
 				backdrop-filter: blur(10px);
 			}
 
-			.folder-card::before {
+			/* 液态流动边框效果 */
+			.hex-front::before {
 				content: '';
 				position: absolute;
-				top: 0; left: 0; width: 100%; height: 2px;
-				background: linear-gradient(90deg, transparent, var(--amber-gold), transparent);
-				transform: translateX(-100%);
-				transition: 0.5s;
+				inset: -2px;
+				background: conic-gradient(
+					from var(--angle, 0deg),
+					transparent 0%,
+					var(--amber-gold) 10%,
+					var(--amber-dark) 25%,
+					transparent 35%,
+					transparent 65%,
+					var(--amber-bronze) 75%,
+					var(--amber-gold) 90%,
+					transparent 100%
+				);
+				clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+				z-index: -1;
+				opacity: 0;
+				transition: opacity 0.3s;
+				animation: liquidRotate 3s linear infinite;
 			}
 
-			.folder-card:hover {
-				background: rgba(255, 255, 255, 0.03);
-				border-color: rgba(255, 179, 71, 0.25);
-				transform: translateY(-10px) scale(1.02);
-				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 179, 71, 0.15);
+			@keyframes liquidRotate {
+				0% { --angle: 0deg; }
+				100% { --angle: 360deg; }
 			}
 
-			.folder-card:hover::before {
-				transform: translateX(100%);
+			@property --angle {
+				syntax: '<angle>';
+				initial-value: 0deg;
+				inherits: false;
 			}
 
+			.hex-card:hover .hex-front::before {
+				opacity: 1;
+			}
+
+			.hex-card:hover .hex-front {
+				border-color: transparent;
+				box-shadow:
+					0 0 40px rgba(255, 179, 71, 0.2),
+					inset 0 0 40px rgba(255, 179, 71, 0.05);
+			}
+
+			/* 背面 - 文件预览 */
+			.hex-back {
+				background: rgba(15, 13, 26, 0.98);
+				border: 2px solid var(--hex-border-hover);
+				transform: rotateY(180deg);
+				overflow: hidden;
+			}
+
+			.hex-back::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: linear-gradient(180deg,
+					transparent 0%,
+					rgba(255, 179, 71, 0.03) 50%,
+					transparent 100%);
+				animation: dataFlow 3s ease-in-out infinite;
+			}
+
+			@keyframes dataFlow {
+				0%, 100% { transform: translateY(-100%); }
+				50% { transform: translateY(100%); }
+			}
+
+			/* 文件夹图标 */
 			.folder-icon {
-				width: 56px;
-				height: 56px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background: rgba(255, 179, 71, 0.05);
-				border: 1px solid rgba(255, 179, 71, 0.15);
-				border-radius: var(--radius-md);
-				color: var(--amber-gold);
-				transition: var(--transition-base);
+				width: 64px;
+				height: 64px;
+				margin-bottom: 1.5rem;
+				position: relative;
 			}
 
-			.folder-card:hover .folder-icon {
-				background: var(--amber-gold);
-				color: #000;
-				box-shadow: 0 0 25px var(--amber-gold);
+			.folder-icon svg {
+				width: 100%;
+				height: 100%;
+				stroke: var(--amber-gold);
+				stroke-width: 1.5;
+				fill: none;
+				filter: drop-shadow(0 0 10px var(--amber-glow));
+				transition: all 0.4s;
 			}
 
-			.folder-info h2 {
-				font-size: 1.5rem;
-				margin-bottom: 0.8rem;
-				color: var(--text-primary);
-				font-weight: 700;
+			.hex-card:hover .folder-icon svg {
+				stroke: var(--amber-dark);
+				filter: drop-shadow(0 0 20px var(--amber-glow));
+				transform: scale(1.1);
 			}
 
-			.folder-meta {
-				display: flex;
-				align-items: center;
-				gap: 1rem;
-				font-family: 'Cascadia Code', monospace;
-				font-size: 0.85rem;
-				color: var(--text-muted);
+			/* 分类名称 */
+			.hex-title {
+				font-family: 'Orbitron', sans-serif;
+				font-size: 1.1rem;
+				font-weight: 600;
+				color: #fff;
+				text-align: center;
+				margin-bottom: 0.5rem;
+				letter-spacing: 0.02em;
+				line-height: 1.3;
 			}
 
-			.post-count {
-				color: var(--primary-cyan);
-				font-weight: 700;
-			}
-
-			.folder-footer {
-				margin-top: auto;
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
+			/* 文件数量 */
+			.hex-count {
+				font-family: 'JetBrains Mono', monospace;
 				font-size: 0.8rem;
-				color: var(--text-muted);
-				font-family: 'Cascadia Code', monospace;
-				padding-top: 1.5rem;
-				border-top: 1px solid rgba(255, 255, 255, 0.05);
+				color: var(--amber-gold);
+				background: rgba(255, 179, 71, 0.1);
+				padding: 0.3rem 0.8rem;
+				border-radius: 100px;
+				border: 1px solid rgba(255, 179, 71, 0.2);
 			}
 
-			.explore-text {
-				color: var(--primary-cyan);
-				opacity: 0.6;
-				display: flex;
+			/* 背面内容 */
+			.back-content {
+				text-align: center;
+				z-index: 1;
+			}
+
+			.back-title {
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				color: var(--amber-gold);
+				margin-bottom: 1rem;
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+			}
+
+			.back-stats {
+				font-size: 2rem;
+				font-weight: 700;
+				color: #fff;
+				margin-bottom: 0.5rem;
+			}
+
+			.back-label {
+				font-size: 0.8rem;
+				color: rgba(255, 255, 255, 0.5);
+				margin-bottom: 1.5rem;
+			}
+
+			.enter-btn {
+				display: inline-flex;
 				align-items: center;
 				gap: 0.5rem;
-				transition: var(--transition-base);
+				padding: 0.6rem 1.2rem;
+				background: linear-gradient(135deg, var(--amber-gold), var(--amber-dark));
+				color: #000;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.75rem;
+				font-weight: 600;
+				border-radius: 100px;
+				text-decoration: none;
+				transition: all 0.3s;
+				box-shadow: 0 4px 15px rgba(255, 179, 71, 0.3);
 			}
 
-			.folder-card:hover .explore-text {
-				opacity: 1;
-				gap: 1rem;
+			.enter-btn:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 8px 25px rgba(255, 179, 71, 0.5);
 			}
 
+			/* 滚动显示动画 */
+			.hex-card {
+				opacity: 0;
+				transform: translateY(30px) scale(0.9);
+				animation: hexReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+			}
+
+			@keyframes hexReveal {
+				to {
+					opacity: 1;
+					transform: translateY(0) scale(1);
+				}
+			}
+
+			/* 交错延迟 */
+			.hex-card:nth-child(1) { animation-delay: 0.1s; }
+			.hex-card:nth-child(2) { animation-delay: 0.2s; }
+			.hex-card:nth-child(3) { animation-delay: 0.3s; }
+			.hex-card:nth-child(4) { animation-delay: 0.4s; }
+			.hex-card:nth-child(5) { animation-delay: 0.5s; }
+			.hex-card:nth-child(6) { animation-delay: 0.6s; }
+			.hex-card:nth-child(7) { animation-delay: 0.7s; }
+			.hex-card:nth-child(8) { animation-delay: 0.8s; }
+			.hex-card:nth-child(9) { animation-delay: 0.9s; }
+			.hex-card:nth-child(10) { animation-delay: 1.0s; }
+			.hex-card:nth-child(11) { animation-delay: 1.1s; }
+			.hex-card:nth-child(12) { animation-delay: 1.2s; }
+
+			/* 底部信息 */
+			.archive-footer {
+				text-align: center;
+				padding: 4rem 2rem;
+				color: rgba(255, 255, 255, 0.3);
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 0.8rem;
+				position: relative;
+				z-index: 1;
+			}
+
+			/* 响应式 */
 			@media (max-width: 768px) {
-				.archive-header { padding: 8rem 0 4rem; }
-				.header-title { font-size: 2.8rem; }
-				.folder-grid { grid-template-columns: 1fr; }
-				.archive-main { padding-bottom: 5rem; }
+				.hex-row:nth-child(even) {
+					margin-left: 0;
+				}
+
+				.hex-card {
+					width: 160px;
+					height: 185px;
+				}
+
+				.hex-front,
+				.hex-back {
+					padding: 1rem;
+				}
+
+				.folder-icon {
+					width: 40px;
+					height: 40px;
+					margin-bottom: 0.75rem;
+				}
+
+				.hex-title {
+					font-size: 0.85rem;
+				}
+
+				.hex-count {
+					font-size: 0.7rem;
+					padding: 0.2rem 0.5rem;
+				}
+
+				.back-stats {
+					font-size: 1.5rem;
+				}
 			}
 		</style>
 	</head>
 	<body>
 		<div class="noise-overlay"></div>
+		<canvas id="constellation-canvas"></canvas>
 		<Header />
 
 		<div class="archive-header">
-			<canvas id="particle-canvas"></canvas>
 			<div class="header-container">
-				<span class="header-subtitle">FILE_SYSTEM / VOL_01</span>
-				<h1 class="header-title">Archives.</h1>
+				<div class="system-indicator">
+					<span class="pulse-ring"></span>
+					<span>FILE_SYSTEM // ONLINE</span>
+				</div>
+				<h1 class="header-title">Archives_</h1>
+				<p class="header-subtitle">{categories.length} directories // {posts.length} entries indexed</p>
 			</div>
 		</div>
 
-		<main class="archive-main">
-			<div class="folder-grid">
+		<main class="hive-container">
+			<div class="hex-grid" id="hexGrid">
 				{categories.map((category, index) => (
-					<a
-						href={`/blog/category/${category}`}
-						class={`folder-card reveal stagger-${Math.min(index + 1, 6)}`}
-					>
-						<div class="folder-icon">
-							<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-							</svg>
-						</div>
-						<div class="folder-info">
-							<h2>{category}</h2>
-							<div class="folder-meta">
-								<span>ENTRIES: <span class="post-count">{categoryData[category].count}</span></span>
+					<div class="hex-card" style={`animation-delay: ${index * 0.1}s`}>
+						<div class="hex-card-inner">
+							<div class="hex-front">
+								<div class="folder-icon">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+										<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+										<path d="M12 11v8M8 15h8" stroke-linecap="round" opacity="0.5"/>
+									</svg>
+								</div>
+								<div class="hex-title">{category}</div>
+								<div class="hex-count">{categoryData[category].count} files</div>
+							</div>
+							<div class="hex-back">
+								<div class="back-content">
+									<div class="back-title">Directory Info</div>
+									<div class="back-stats">{categoryData[category].count}</div>
+									<div class="back-label">entries</div>
+									<a href={`/blog/category/${category}`} class="enter-btn">
+										OPEN
+										<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+											<polyline points="9 18 15 12 9 6"/>
+										</svg>
+									</a>
+								</div>
 							</div>
 						</div>
-						<div class="folder-footer">
-							<span>LAST_MOD: {categoryData[category].latestDate.toISOString().split('T')[0]}</span>
-							<span class="explore-text">
-								READ_DIR 
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-									<line x1="5" y1="12" x2="19" y2="12"></line>
-									<polyline points="12 5 19 12 12 19"></polyline>
-								</svg>
-							</span>
-						</div>
-					</a>
+					</div>
 				))}
 			</div>
 		</main>
 
+		<div class="archive-footer">
+			<p>// END OF FILE SYSTEM //</p>
+		</div>
+
 		<Footer />
 
 		<script>
-			// ===== 粒子网络背景动画 =====
-			const canvas = document.getElementById('particle-canvas');
-			const ctx = canvas.getContext('2d');
-			let particles = [];
-			let mouse = { x: null, y: null, radius: 150 };
-			let animationId = null;
-			let isActive = true;
+			// ===== 星座连线Canvas动画 =====
+			const canvas = document.getElementById('constellation-canvas') as HTMLCanvasElement;
+			const ctx = canvas.getContext('2d')!;
+			let width: number, height: number;
 
-			function resizeCanvas() {
-				const header = document.querySelector('.archive-header');
-				if (header) {
-					canvas.width = header.offsetWidth;
-					canvas.height = header.offsetHeight;
-				}
-			}
+			type StarColor = { r: number; g: number; b: number };
+			type MouseState = { x: number | null; y: number | null; radius: number };
 
 			// 琥珀金色系
-			const amberColors = [
+			const starColors: StarColor[] = [
 				{ r: 255, g: 179, b: 71 },   // 琥珀
 				{ r: 212, g: 175, b: 55 },   // 暗金
-				{ r: 205, g: 127, b: 50 }    // 青铜
+				{ r: 205, g: 127, b: 50 },   // 青铜
+				{ r: 255, g: 215, b: 0 },    // 金色
 			];
 
-			class Particle {
+			class Star {
+				x: number;
+				y: number;
+				vx: number;
+				vy: number;
+				size: number;
+				color: StarColor;
+				opacity: number;
+				pulse: number;
+
 				constructor() {
-					this.x = Math.random() * canvas.width;
-					this.y = Math.random() * canvas.height;
-					this.vx = (Math.random() - 0.5) * 0.5;
-					this.vy = (Math.random() - 0.5) * 0.5;
-					this.size = Math.random() * 2 + 1;
-					this.color = amberColors[Math.floor(Math.random() * amberColors.length)];
+					this.x = Math.random() * width;
+					this.y = Math.random() * height;
+					this.vx = (Math.random() - 0.5) * 0.3;
+					this.vy = (Math.random() - 0.5) * 0.3;
+					this.size = Math.random() * 2 + 0.5;
+					this.color = starColors[Math.floor(Math.random() * starColors.length)];
+					this.opacity = Math.random() * 0.5 + 0.3;
+					this.pulse = Math.random() * Math.PI * 2;
 				}
 
-				update() {
+				update(mouse: MouseState) {
 					this.x += this.vx;
 					this.y += this.vy;
+					this.pulse += 0.02;
 
-					if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-					if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+					// 边界循环
+					if (this.x < 0) this.x = width;
+					if (this.x > width) this.x = 0;
+					if (this.y < 0) this.y = height;
+					if (this.y > height) this.y = 0;
 
-					if (mouse.x != null) {
-						let dx = mouse.x - this.x;
-						let dy = mouse.y - this.y;
-						let distance = Math.sqrt(dx * dx + dy * dy);
+					// 鼠标交互 - 星座重组
+					if (mouse.x !== null && mouse.y !== null) {
+						const dx = mouse.x - this.x;
+						const dy = mouse.y - this.y;
+						const distance = Math.sqrt(dx * dx + dy * dy);
+
 						if (distance < mouse.radius) {
 							const force = (mouse.radius - distance) / mouse.radius;
-							const directionX = dx / distance;
-							const directionY = dy / distance;
-							this.x -= directionX * force * 2;
-							this.y -= directionY * force * 2;
+							this.x -= dx * force * 0.02;
+							this.y -= dy * force * 0.02;
 						}
 					}
 				}
 
 				draw() {
+					const pulseOpacity = this.opacity + Math.sin(this.pulse) * 0.2;
 					ctx.beginPath();
 					ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-					ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.5)`;
+					ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${pulseOpacity})`;
+					ctx.fill();
+
+					// 光晕
+					ctx.beginPath();
+					ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+					ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${pulseOpacity * 0.2})`;
 					ctx.fill();
 				}
 			}
 
-			function initParticles() {
-				particles = [];
-				const particleCount = Math.min(50, Math.floor((canvas.width * canvas.height) / 15000));
-				for (let i = 0; i < particleCount; i++) {
-					particles.push(new Particle());
+			let stars: Star[] = [];
+			let mouse: MouseState = { x: null, y: null, radius: 150 };
+			let animationId: number;
+
+			function resize() {
+				width = canvas.width = window.innerWidth;
+				height = canvas.height = window.innerHeight;
+			}
+
+			function initStars() {
+				stars = [];
+				const starCount = Math.min(80, Math.floor((width * height) / 12000));
+				for (let i = 0; i < starCount; i++) {
+					stars.push(new Star());
 				}
 			}
 
-			function connectParticles() {
-				const maxDistance = 100;
-				for (let i = 0; i < particles.length; i++) {
-					for (let j = i + 1; j < particles.length; j++) {
-						let dx = particles[i].x - particles[j].x;
-						let dy = particles[i].y - particles[j].y;
-						let distance = Math.sqrt(dx * dx + dy * dy);
+			function drawConstellations() {
+				const maxDistance = 120;
+
+				for (let i = 0; i < stars.length; i++) {
+					let connections = 0;
+					for (let j = i + 1; j < stars.length && connections < 3; j++) {
+						const dx = stars[i].x - stars[j].x;
+						const dy = stars[i].y - stars[j].y;
+						const distance = Math.sqrt(dx * dx + dy * dy);
 
 						if (distance < maxDistance) {
-							const opacity = (1 - distance / maxDistance) * 0.25;
-							// 混合两个粒子的颜色
-							const c1 = particles[i].color;
-							const c2 = particles[j].color;
-							const r = Math.round((c1.r + c2.r) / 2);
-							const g = Math.round((c1.g + c2.g) / 2);
-							const b = Math.round((c1.b + c2.b) / 2);
+							const opacity = (1 - distance / maxDistance) * 0.3;
+							const gradient = ctx.createLinearGradient(stars[i].x, stars[i].y, stars[j].x, stars[j].y);
+							gradient.addColorStop(0, `rgba(${stars[i].color.r}, ${stars[i].color.g}, ${stars[i].color.b}, ${opacity})`);
+							gradient.addColorStop(1, `rgba(${stars[j].color.r}, ${stars[j].color.g}, ${stars[j].color.b}, ${opacity})`);
+
 							ctx.beginPath();
-							ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-							ctx.lineWidth = 1;
-							ctx.moveTo(particles[i].x, particles[i].y);
-							ctx.lineTo(particles[j].x, particles[j].y);
+							ctx.strokeStyle = gradient;
+							ctx.lineWidth = 0.8;
+							ctx.moveTo(stars[i].x, stars[i].y);
+							ctx.lineTo(stars[j].x, stars[j].y);
 							ctx.stroke();
+							connections++;
 						}
 					}
 				}
 			}
 
-			function animateParticles() {
-				if (!isActive) return;
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
+			function animate() {
+				ctx.clearRect(0, 0, width, height);
 
-				particles.forEach(particle => {
-					particle.update();
-					particle.draw();
+				// 绘制连线
+				drawConstellations();
+
+				// 绘制星星
+				stars.forEach(star => {
+					star.update(mouse);
+					star.draw();
 				});
 
-				connectParticles();
-				animationId = requestAnimationFrame(animateParticles);
+				animationId = requestAnimationFrame(animate);
 			}
 
-			const header = document.querySelector('.archive-header');
-			header.addEventListener('mousemove', (e) => {
-				const rect = header.getBoundingClientRect();
-				mouse.x = e.clientX - rect.left;
-				mouse.y = e.clientY - rect.top;
+			// 鼠标事件
+			window.addEventListener('mousemove', (e: MouseEvent) => {
+				mouse.x = e.clientX;
+				mouse.y = e.clientY;
 			});
 
-			header.addEventListener('mouseleave', () => {
+			window.addEventListener('mouseleave', () => {
 				mouse.x = null;
 				mouse.y = null;
 			});
 
-			resizeCanvas();
-			initParticles();
-			animateParticles();
-
 			window.addEventListener('resize', () => {
-				resizeCanvas();
-				initParticles();
+				resize();
+				initStars();
 			});
 
+			// 初始化
+			resize();
+			initStars();
+			animate();
+
+			// 页面可见性控制
 			document.addEventListener('visibilitychange', () => {
-				isActive = document.visibilityState === 'visible';
-				if (isActive && !animationId) animateParticles();
+				if (document.visibilityState === 'hidden') {
+					cancelAnimationFrame(animationId);
+				} else {
+					animate();
+				}
 			});
-
-			// ===== 滚动触发动画 =====
-			const revealElements = document.querySelectorAll('.reveal');
-
-			const revealObserver = new IntersectionObserver((entries) => {
-				entries.forEach(entry => {
-					if (entry.isIntersecting) {
-						entry.target.classList.add('active');
-						revealObserver.unobserve(entry.target);
-					}
-				});
-			}, {
-				threshold: 0.1,
-				rootMargin: '0px 0px -50px 0px'
-			});
-
-			revealElements.forEach(el => revealObserver.observe(el));
 		</script>
 	</body>
 </html>
