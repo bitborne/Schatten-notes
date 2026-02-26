@@ -1,11 +1,11 @@
 @font-face {
     font-family: CascadiaCode;
-    src: url(Cascadia-Code-Regular.ttf)
+    src: url(/fonts/Cascadia-Code-Regular.ttf)
 }
 
 @font-face {
     font-family: "LXGW WenKai";
-    src: url(LXGWWenKai-Regular.ttf)
+    src: url(/fonts/LXGWWenKai-Regular.ttf)
 }
 
 html {

@@ -75,6 +75,8 @@
   /* --- H2 标题 (Fusion Glass) --- */
   /* 背景：青色到透明径向渐变 */
   --h2-bg-image: radial-gradient(ellipse at center bottom, rgba(0, 243, 255, 0.15), transparent 70%);
+  --h2-bg-image-hover: radial-gradient(ellipse at center bottom, rgba(0, 243, 255, 0.25), transparent 70%);
+  --h2-border-bottom-hover: rgba(0, 243, 255, 0.5);
 
   /* 其他变量 */
   --code-block-bg: rgba(15, 17, 26, 0.6); /* 深蓝背景 */
