@@ -204,18 +204,27 @@ const posts = (await getCollection('blog')).sort(
 				opacity: 0.6;
 			}
 
-			/* 红色通道 - 上半部分 */
+			/* 红色通道 - 上半部分（默认静态偏移） */
 			.hero-title::before {
 				color: #ff2a6d;
 				clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
-				animation: rgbGlitchRed 0.15s steps(2) infinite;
+				transform: translateX(calc(var(--rgb-offset-x, 0px) - 2px)) translateY(calc(var(--rgb-offset-y, 0px) - 1px));
 			}
 
-			/* 蓝色通道 - 下半部分 */
+			/* 蓝色通道 - 下半部分（默认静态偏移） */
 			.hero-title::after {
 				color: #05d9e8;
 				clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
-				animation: rgbGlitchBlue 0.12s steps(2) infinite;
+				transform: translateX(calc(var(--rgb-offset-x, 0px) + 2px)) translateY(calc(var(--rgb-offset-y, 0px) + 1px));
+			}
+
+			/* 故障爆发状态 - 通过JS间歇性触发 */
+			.hero-title.glitching::before {
+				animation: rgbGlitchRed 0.1s steps(2) infinite;
+			}
+
+			.hero-title.glitching::after {
+				animation: rgbGlitchBlue 0.08s steps(2) infinite;
 			}
 
 			/* 故障跳变动画 - 快速不规则 */
@@ -1297,6 +1306,9 @@ const posts = (await getCollection('blog')).sort(
 									// 添加解码完成类，显示RGB分离效果
 									title.classList.add('decoded');
 									setTimeout(startTypewriter, 300);
+
+									// 启动间歇性RGB故障效果
+									startIntermittentGlitch();
 								}
 
 								clearInterval(interval);
@@ -1307,6 +1319,30 @@ const posts = (await getCollection('blog')).sort(
 						}, 50);
 					}, delay);
 				});
+			}
+
+			// 间歇性故障效果 - 每3-5秒随机触发
+			function startIntermittentGlitch() {
+				if (!title) return;
+
+				function triggerGlitch() {
+					// 添加故障类，开始动画
+					title!.classList.add('glitching');
+
+					// 随机持续时间 300-800ms
+					const duration = 300 + Math.random() * 500;
+
+					setTimeout(() => {
+						title!.classList.remove('glitching');
+
+						// 随机间隔 3-5秒 后再次触发
+						const nextDelay = 3000 + Math.random() * 2000;
+						setTimeout(triggerGlitch, nextDelay);
+					}, duration);
+				}
+
+				// 首次触发延迟1秒
+				setTimeout(triggerGlitch, 1000);
 			}
 
 			// ===== 3D 倾斜卡片 =====

@@ -87,80 +87,18 @@ p { margin-bottom: 1.5em; color: var(--text-secondary); }
 	display: inline-block !important;
 }
 
+/* 代码块样式 - 由 BlogPost.astro 管理主要样式 */
 #write pre.astro-code, pre.astro-code {
-	position: relative !important;
-	padding: 2rem 0 0 0 !important;
-	border-radius: 12px !important;
-	background-color: #0f111a !important;
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
-	margin: 1.5rem 0 !important;
-	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
-	overflow: hidden !important;
-	transform: none !important;
-	transition: none !important;
+	position: relative;
+	border-radius: 10px;
+	background-color: #0f111a;
+	border: 1px solid rgba(255, 255, 255, 0.06);
+	margin: 1.5rem 0;
 }
 
-/* 2. 大型代码块 (Large Code Block) - 坚如磐石 */
-#write pre.astro-code,
-pre.astro-code {
-	position: relative !important;
-	padding: 2.5rem 0 0 0 !important;
-	border-radius: 12px !important;
-	background-color: #0f111a !important; 
-	border: 1px solid rgba(255, 255, 255, 0.1) !important; /* 锁定为低调的半透明白 */
-	margin: 2.5rem 0 !important;
-	box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5) !important;
-	overflow: hidden !important;
-	transform: none !important;
-	transition: none !important;
-}
-
-/* 暴力重置：强制清除大代码块内部所有层级的背景、动效和边框 */
-#write pre.astro-code *,
-pre.astro-code * {
-	background: transparent !important;
-	background-color: transparent !important;
-	box-shadow: none !important;
-	transform: none !important;
-	transition: none !important;
-	border: none !important;
-}
-
-pre.astro-code code {
-	display: block !important;
-	overflow-x: auto !important;
-	padding: 1rem 1.25rem !important;
-	font-size: 0.875rem !important;
-	line-height: 1.5 !important;
-}
-
-pre.astro-code::before {
-	content: attr(data-language) !important;
-	position: absolute !important;
-	top: 0 !important; left: 0 !important; right: 0 !important;
-	height: 2rem !important;
-	background: rgba(255, 255, 255, 0.02) !important;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
-	display: flex !important;
-	align-items: center !important;
-	justify-content: flex-end !important;
-	padding-right: 1rem !important;
-	font-family: 'Cascadia Code', monospace !important;
-	font-size: 0.7rem !important;
-	color: rgba(0, 243, 255, 0.5) !important;
-	text-transform: uppercase !important;
-	z-index: 10 !important;
-}
-
-pre.astro-code::after {
-	content: "" !important;
-	position: absolute !important;
-	top: 0.65rem !important; left: 1rem !important;
-	width: 8px !important; height: 8px !important;
-	border-radius: 50% !important;
-	background: #ff5f56 !important;
-	box-shadow: 14px 0 0 #ffbd2e, 28px 0 0 #27c93f !important;
-	z-index: 11 !important;
+/* 确保代码块内部元素背景透明 */
+#write pre.astro-code code {
+	background: transparent;
 }
 
 /* ========== 引用块与转换样式 ========== */

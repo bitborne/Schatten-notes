@@ -255,79 +255,143 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				border-left-color: var(--primary-cyan);
 			}
 
-			/* ===== 代码块增强 ===== */
-			:global(pre.astro-code) {
+			/* ===== 代码块增强 - 修复底部突出 ===== */
+			/* 强制重置代码块基础样式，覆盖 phycat.dark.css 的冲突 */
+			:global(#write pre.astro-code) {
 				position: relative !important;
-				padding: 2rem 0 0 0 !important;
+				padding: 0 !important;
 				border-radius: 10px !important;
 				background: #0f111a !important;
 				border: 1px solid rgba(255, 255, 255, 0.06) !important;
 				margin: 1.5rem 0 !important;
-				overflow: hidden !important;
+				overflow: auto !important;
 			}
 
-			:global(pre.astro-code::before) {
-				content: attr(data-language);
-				position: absolute;
+			/* 代码块头部栏 */
+			:global(#write pre.astro-code > .code-header) {
+				position: sticky;
 				top: 0;
 				left: 0;
 				right: 0;
-				height: 2rem;
+				height: 2.2rem;
 				background: rgba(255, 255, 255, 0.02);
 				border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 				display: flex;
 				align-items: center;
-				padding: 0 1rem 0 4rem;
+				justify-content: space-between;
+				padding: 0 0.75rem 0 5rem;
 				font-family: 'Cascadia Code', monospace;
 				font-size: 0.7rem;
 				color: var(--text-muted);
 				text-transform: uppercase;
+				z-index: 10;
 			}
 
-			/* 复制按钮 - 高对比度可见设计 */
+			/* 代码内容区域 - 覆盖 phycat.dark.css 的行内代码样式 */
+			:global(#write pre.astro-code > code),
+			:global(#write pre.astro-code code:not(.md-fencescode)) {
+				display: block !important;
+				padding: 1rem 2.5rem 1rem 1.25rem !important;
+				font-size: 0.875rem !important;
+				line-height: 1.6 !important;
+				background: transparent !important;
+				/* 覆盖 phycat.dark.css 的行内代码样式 */
+				border: none !important;
+				margin: 0 !important;
+				border-radius: 0 !important;
+				transform: none !important;
+				transition: none !important;
+				width: auto !important;
+				min-width: fit-content !important;
+			}
+
+			/* 强制覆盖 phycat.dark.css 的 hover 效果 - 增强选择器 specificity */
+			:global(#write pre.astro-code > code:hover),
+			:global(#write pre.astro-code:hover > code),
+			:global(#write pre.astro-code > code:not(.md-fencescode):hover) {
+				background: transparent !important;
+				background-color: transparent !important;
+				border: none !important;
+				transform: none !important;
+				box-shadow: none !important;
+				color: inherit !important;
+			}
+
+			/* 更强力的覆盖 - 直接针对 pre.astro-code 内部的所有 code 元素 */
+			:global(pre.astro-code code),
+			:global(pre.astro-code code:hover) {
+				background: transparent !important;
+				background-color: transparent !important;
+				border: none !important;
+				transform: none !important;
+				box-shadow: none !important;
+				color: inherit !important;
+				padding: 0 !important;
+				margin: 0 !important;
+				border-radius: 0 !important;
+			}
+
+			/* 复制按钮 - 极简设计，无背景 */
+			:global(.code-header .code-copy-btn),
 			.code-copy-btn {
-				position: absolute;
-				top: 0.35rem;
-				right: 0.5rem;
-				width: 28px;
-				height: 28px;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				background: rgba(255, 255, 255, 0.12);
-				border: 1px solid rgba(255, 255, 255, 0.2);
-				border-radius: 5px;
-				color: rgba(255, 255, 255, 0.9);
-				cursor: pointer;
-				opacity: 0.85;
-				transition: all 0.2s;
-				z-index: 20;
+				appearance: none !important;
+				-webkit-appearance: none !important;
+				-moz-appearance: none !important;
+				position: absolute !important;
+				top: 50% !important;
+				right: 0.75rem !important;
+				transform: translateY(-50%) !important;
+				width: 22px !important;
+				height: 22px !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+				background: transparent !important;
+				background-color: transparent !important;
+				border: none !important;
+				border-radius: 0 !important;
+				color: rgba(255, 255, 255, 0.5) !important;
+				cursor: pointer !important;
+				opacity: 0.6 !important;
+				transition: opacity 0.2s, transform 0.2s !important;
+				z-index: 20 !important;
+				box-shadow: none !important;
+				padding: 0 !important;
+				margin: 0 !important;
+				font-size: 14px !important;
+				line-height: 1 !important;
 			}
 
-			:global(pre.astro-code:hover) .code-copy-btn {
-				opacity: 1;
-				background: rgba(255, 255, 255, 0.18);
-			}
-
+			:global(.code-header .code-copy-btn:hover),
 			.code-copy-btn:hover {
-				background: rgba(0, 243, 255, 0.25) !important;
-				color: #fff;
-				border-color: rgba(0, 243, 255, 0.5);
-				transform: scale(1.05);
+				background: transparent !important;
+				background-color: transparent !important;
+				border: none !important;
+				border-radius: 0 !important;
+				color: rgba(255, 255, 255, 0.9) !important;
+				opacity: 1 !important;
+				transform: translateY(-50%) scale(1.1) !important;
+				box-shadow: none !important;
 			}
 
+			:global(.code-header .code-copy-btn.copied),
 			.code-copy-btn.copied {
-				background: rgba(34, 197, 94, 0.25) !important;
-				color: #4ade80;
-				border-color: rgba(74, 222, 128, 0.5);
+				background: transparent !important;
+				background-color: transparent !important;
+				border: none !important;
+				border-radius: 0 !important;
+				color: #4ade80 !important;
+				opacity: 1 !important;
+				box-shadow: none !important;
 			}
 
-			/* 代码窗口按钮 */
-			:global(pre.astro-code::after) {
+			/* 代码窗口按钮 - 固定在头部 */
+			:global(pre.astro-code > .code-header::before) {
 				content: '';
 				position: absolute;
-				top: 0.65rem;
 				left: 1rem;
+				top: 50%;
+				transform: translateY(-50%);
 				width: 8px;
 				height: 8px;
 				border-radius: 50%;
@@ -485,7 +549,8 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				});
 
 				tocLinks.forEach(link => {
-					link.classList.toggle('active', link.dataset.target === currentId);
+					const el = link as HTMLElement;
+					el.classList.toggle('active', el.dataset.target === currentId);
 				});
 			}
 
@@ -496,10 +561,26 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				const codeBlocks = document.querySelectorAll('pre.astro-code');
 
 				codeBlocks.forEach(block => {
+					// 获取语言标签
+					const lang = block.getAttribute('data-language') || 'code';
+
+					// 获取代码元素
+					const codeEl = block.querySelector('code');
+					if (!codeEl) return;
+
+					// 创建头部栏
+					const header = document.createElement('div');
+					header.className = 'code-header';
+
+					// 创建语言标签
+					const langSpan = document.createElement('span');
+					langSpan.textContent = lang;
+
+					// 创建复制按钮
 					const button = document.createElement('button');
 					button.className = 'code-copy-btn';
 					button.innerHTML = `
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
 							<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
 						</svg>
@@ -507,19 +588,19 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 					button.setAttribute('aria-label', '复制代码');
 
 					button.addEventListener('click', async () => {
-						const code = block.querySelector('code')?.textContent || '';
+						const code = codeEl.textContent || '';
 						try {
 							await navigator.clipboard.writeText(code);
 							button.classList.add('copied');
 							button.innerHTML = `
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 									<polyline points="20 6 9 17 4 12"></polyline>
 								</svg>
 							`;
 							setTimeout(() => {
 								button.classList.remove('copied');
 								button.innerHTML = `
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 										<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
 										<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
 									</svg>
@@ -530,7 +611,12 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 						}
 					});
 
-					block.appendChild(button);
+					// 组装头部栏
+					header.appendChild(langSpan);
+					header.appendChild(button);
+
+					// 将头部栏插入到代码块最前面
+					block.insertBefore(header, block.firstChild);
 				});
 			}
 
