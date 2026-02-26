@@ -1,6 +1,6 @@
 ---
 title: '0x08-TCP_server百万并发'
-description: ''
+description: '本文通过一个 TCP 服务器的实现示例，探讨了处理百万并发连接的技术要点，重点分析了 epoll I/O 多路复用模型及其在高性能网络服务器中的应用。'
 pubDate: 2026-02-20
 ---
 
@@ -228,34 +228,34 @@ int main(int argc, char* argv[]) {
 ![1753842956880-3dfaee5e-c5c3-4a77-814d-3e8ef57c9417.jpeg](./img/8J1DGhHUqLHhVjXu/1753842956880-3dfaee5e-c5c3-4a77-814d-3e8ef57c9417-578477.jpeg)
 
 ## 解决方案
-**<font style="color:#DF2A3F;">服务器和客户端都要改!!! --- 临时修改: </font>**`**<font style="color:#DF2A3F;">ulimit -n 1048576</font>**`
-
-#### <font style="color:#DF2A3F;">永久修改：</font>
+**服务器和客户端都要改!!!**
+- **临时修改:** `ulimit -n 1048576`
+- **永久修改:**
 ![1755583946026-7f7039c1-0460-4142-9236-2920b8d208e5.jpeg](./img/8J1DGhHUqLHhVjXu/1755583946026-7f7039c1-0460-4142-9236-2920b8d208e5-035449.jpeg)
 
-问题出在软限制: 只有1024 **<font style="color:#DF2A3F;"> [硬限制: 很高, 够用了]</font>**
+问题出在软限制: 只有1024 ** [硬限制: 很高, 够用了]</font>**
 
-| **<font style="color:#262626;">选项</font>** | **<font style="color:#262626;">含义</font>** | **<font style="color:#262626;">默认数值</font>** | **<font style="color:#262626;">作用</font>** |
+| **选项** | **含义** | **默认数值** | **作用** |
 | --- | --- | --- | --- |
-| `**<font style="color:#262626;">ulimit -Sn</font>**` | **soft limit****<font style="color:#DF2A3F;">（软限制）</font>** | **<font style="color:#DF2A3F;">1024</font>** | **普通会话****<font style="color:#DF2A3F;">实际生效的上限，</font>****可以临时提高** |
-| `**<font style="color:#262626;">ulimit -Hn</font>**` | **hard limit****<font style="color:#DF2A3F;">（硬限制）</font>** | **<font style="color:#DF2A3F;">1048576</font>** | **系统/管理员设定的****<font style="color:#DF2A3F;">绝对天花板</font>****, 普通用户不能超过它** |
+| `ulimit -Sn` | **soft limit**（软限制） | **1024** | 普通会话实际生效的上限，**可以临时提高** |
+| `ulimit -Hn` | **hard limit**（硬限制） | **1048576** | **系统/管理员设定的绝对天花板**, 普通用户不能超过它 |
 
 
 ![1753843810679-cac6ad43-e5b6-4388-889c-73aa57e23160.jpeg](./img/8J1DGhHUqLHhVjXu/1753843810679-cac6ad43-e5b6-4388-889c-73aa57e23160-835474.jpeg)
 
 # connect错误: cannot assign requested address
-+ **<font style="color:#DF2A3F;">地址用完了, 没法再分配了</font>**
++ <font style="color:#DF2A3F;">地址用完了, 没法再分配了</font>
 
-**一个**`**socket fd**`**, 与一个****<u><font style="color:#DF2A3F;">会话五元组</font></u>****一一对应 **
+一个`socket fd`, 与一个<u><font style="color:#DF2A3F;">会话五元组</font></u>一一对应 
 
-> `**src_ip**`**, **`**src_port**`**, **`**dst_ip**`**, **`**dst_port**`**, **`**protocol**`
+> `src_ip`, `src_port`, `dst_ip`, `dst_port`, `protocol`
 >
 
-**其中, 两个IP是固定的, 对于**`**dst_port == 8888**`**, **`**src_port**`**最多仅有约**`**28k**`**个可以使用**
+其中, 两个IP是固定的, 对于`dst_port == 8888`, `src_port`最多仅有约`28k`个可以使用
 
 ![1753850255384-81b3daa3-c291-4793-8ae9-d4cb24543ccf.jpeg](./img/8J1DGhHUqLHhVjXu/1753850255384-81b3daa3-c291-4793-8ae9-d4cb24543ccf-051994.jpeg)
 
-**客户端 **调用 `connect()` 时，内核自动从 **源端口池（32768-60999）**挑一个随机端口
+**客户端** 调用 `connect()` 时，内核自动从 **源端口池(32768-60999)** 挑一个随机端口
 
 ![1753853090454-0310aeda-e17c-4db4-9dca-1fb83f579bde.jpeg](./img/8J1DGhHUqLHhVjXu/1753853090454-0310aeda-e17c-4db4-9dca-1fb83f579bde-855177.jpeg)
 
@@ -268,22 +268,22 @@ int main(int argc, char* argv[]) {
 限制连接速率 --- `usleep(1 * 1000)`
 
 # 高并发下, `connect`超时
-1. `**<font style="color:#DF2A3F;">cat /proc/sys/fs/file-max</font>**`**<font style="color:#DF2A3F;"> 这个值</font>**
+1. `cat /proc/sys/fs/file-max` 这个值
 
-9223372036854775807
+`9223372036854775807`
 
-> `**/proc/sys/fs/file-max**`**是整个 Linux 系统 能同时打开 所有文件、套接字、管道等描述符 的 全局硬上限**
+> `/proc/sys/fs/file-max`是整个 Linux 系统 能同时打开 所有文件、套接字、管道等描述符 的 全局硬上限
 >
-> **(我的三台Debian: 都默认**`**9223372036854775807**`**)**
+> **(我的三台Debian: 都默认**`9223372036854775807`**)**
 >
 
-2. `**<font style="color:#DF2A3F;">cat /proc/sys/net/nf_conntrack_max</font>**`**<font style="color:#DF2A3F;">这个值, 一般是需要改的</font>**
+2. `cat /proc/sys/net/nf_conntrack_max`这个值, 一般是需要改的
 
 **<u>Linux 防火墙/ NAT 模块 里 “连接跟踪表” 的最大槽位数</u>**
 
-`   我的`server端`: 262144   ` ---> 可能造成连接瓶颈
+**我的server端: 262144    ---> 可能造成连接瓶颈**
 
-> `**/proc/sys/net/nf_conntrack_max**`** 表示当前系统能够跟踪的最大连接数，是 Linux 内核中连接跟踪系统的一个关键参数。当系统的跟踪表达到这个最大值时，新的连接将无法被跟踪，从而可能成为连接的瓶颈**
+> `/proc/sys/net/nf_conntrack_max` 表示当前系统能够跟踪的最大连接数，是 Linux 内核中连接跟踪系统的一个关键参数。当系统的跟踪表达到这个最大值时，新的连接将无法被跟踪，从而可能成为连接的瓶颈
 >
 
 **检查模块是否加载:**
@@ -292,7 +292,7 @@ int main(int argc, char* argv[]) {
 lsmod | grep nf_conntrack
 ```
 
-+ `**/proc/sys/net/nf_conntrack_max**`** 不存在**
++ `/proc/sys/net/nf_conntrack_max` 不存在
     - 说明没有加载 `nf_conntrack` 模块, 此时超时原因不是这个值
     - 可以使用命令`modprobe nf_conntrack`, 临时手动加载
 
@@ -302,13 +302,12 @@ lsmod | grep nf_conntrack
 sysctl -w net.netfilter.nf_conntrack_max=1048576
 ```
 
-:::tips
-**<font style="color:#DF2A3F;">注: 正常情况下</font>**
 
-1. <font style="color:#DF2A3F;">不会在同一台服务器上开这么多端口去监听, 而是采用负载均衡, 服务端内核防火墙不会有这么多压力</font>
-2. <font style="color:#DF2A3F;">单个客户端一般也不会发出这么多长连接, 主要关注服务端的防火墙的</font>`<font style="color:#DF2A3F;">nf_conntrack_max</font>`
+**注: 正常情况下**
 
-:::
+1. 不会在同一台服务器上开这么多端口去监听, 而是采用负载均衡, 服务端内核防火墙不会有这么多压力
+2. 单个客户端一般也不会发出这么多长连接, 主要关注服务端的防火墙的 `nf_conntrack_max`
+
 
 # 永久修改系统参数
 在`/etc/sysctl.conf`下面添你修改的值
@@ -331,20 +330,20 @@ sysctl -p
 # 百万并发达成✌️--- 系统默认`tcp`内存参数
 ![1753874829216-adba45d7-c4e7-4f52-a239-f6264f08d671.jpeg](./img/8J1DGhHUqLHhVjXu/1753874829216-adba45d7-c4e7-4f52-a239-f6264f08d671-554202.jpeg)
 
-## `top`分析
-+ **内存用量约**`**3.63 GB**`****
+## top 分析
++ **内存用量约**`3.63 GB`
 
 ![1753874843431-bc2ef2e5-b014-4206-bf63-082a8e2d0f57.jpeg](./img/8J1DGhHUqLHhVjXu/1753874843431-bc2ef2e5-b014-4206-bf63-082a8e2d0f57-748603.jpeg)
 
 # 内存管理: 调参 ---- 尝试减少内存占用
-+ `**tcp_mem**`：**整个** TCP 协议栈**可用的总内存**
-+ `**tcp_rmem**`：每个 TCP 连接的**接收缓冲区**
-+ `**tcp_wmem**`：每个 TCP 连接的**发送缓冲区**
-+ **我的 16GB 服务器需要预留：**
-    - **系统运行：**2GB
-    - **应用内存：**2GB
-    - **TCP 专用：**12GB
-+ **<font style="color:#DF2A3F;">设置原则：high ≤ 总内存 × 80%</font>**
++ `tcp_mem`：整个 TCP 协议栈可用的总内存
++ `tcp_rmem`：每个 TCP 连接的接收缓冲区
++ `tcp_wmem`：每个 TCP 连接的发送缓冲区
++ 我的 16GB 服务器需要预留：
+    - 系统运行：2GB
+    - 应用内存：2GB
+    - TCP 专用：12GB
++ <font style="color:#DF2A3F;">设置原则：high ≤ 总内存 × 80%</font>
 
 ```plain
 net.ipv4.tcp_mem = 1572864 2097152 4194304    # 6GB / 8GB / 16GB
@@ -393,21 +392,21 @@ min      default       max
 ![1753894446805-21b05ce6-fa27-486d-a105-d7fafd592bf9.jpeg](./img/8J1DGhHUqLHhVjXu/1753894446805-21b05ce6-fa27-486d-a105-d7fafd592bf9-082444.jpeg)
 
 ## htop分析
-+ **绿色条：**应用程序实际使用的内存
-+ **蓝色条：**Buffers
-+ **橙色/黄色条：**Cache
++ **绿色条：** 应用程序实际使用的内存
++ **蓝色条：** Buffers
++ **橙色/黄色条：** Cache
 
-**<font style="color:#C1E77E;">总内存用量(绿色部分) </font>**`**<font style="color:#C1E77E;">4.13GB</font>**`<font style="color:#DF2A3F;">, 比内存调参前的</font>`<font style="color:#DF2A3F;">3.63 GB</font>`<font style="color:#DF2A3F;">增加了</font>`<font style="color:#DF2A3F;">0.5 GB</font>`<font style="color:#DF2A3F;">, </font>**<font style="color:#DF2A3F;">增长约</font>**`**<font style="color:#DF2A3F;">14%</font>**`**<font style="color:#DF2A3F;">内存用量</font>**
+总内存用量(绿色部分) `4.13GB`, 比内存调参前的`3.63 GB`增加了`0.5 GB`, 增长约`14%`内存用量
 
-+ **<font style="color:#74B602;">平均每条连接: </font>**`**<font style="color:#74B602;">4.33KB</font>**`
++ 平均每条连接: `4.33KB`
 
 ![1753894600509-03ce7f05-867b-4995-8099-53c784952232.jpeg](./img/8J1DGhHUqLHhVjXu/1753894600509-03ce7f05-867b-4995-8099-53c784952232-162951.jpeg)
 
-## <font style="color:#DF2A3F;">💥</font><font style="color:#DF2A3F;">断开连接 : CPU爆红</font>
+## 💥<font style="color:#DF2A3F;">断开连接 : CPU爆红
 ![1753895750091-79e175aa-71de-4026-9738-310d3614cb69.jpeg](./img/8J1DGhHUqLHhVjXu/1753895750091-79e175aa-71de-4026-9738-310d3614cb69-938605.jpeg)
 
 # 第三次百万并发: `tcp`内存参数为系统默认值
-**<font style="color:#74B602;">内存用量: </font>**`**<font style="color:#74B602;">3.64GB</font>**`**<font style="color:#74B602;">, 平均每条连接仅占用 </font>**`**<font style="color:#74B602;">3.8KB</font>**`
+内存用量: `3.64GB`, 平均每条连接仅占用 `3.8KB`
 
 ![1753930985210-d1f1b1b0-f301-43ab-9ccc-9438e57996cb.jpeg](./img/8J1DGhHUqLHhVjXu/1753930985210-d1f1b1b0-f301-43ab-9ccc-9438e57996cb-969332.jpeg)
 

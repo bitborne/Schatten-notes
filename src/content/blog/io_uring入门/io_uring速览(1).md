@@ -1,6 +1,6 @@
 ---
 title: 'io_uring速览(1)'
-description: ''
+description: '本文是 io_uring 的核心设计解析，重点介绍了如何通过共享内存（Ring Buffer）最大化减少用户态与内核态之间的上下文切换，并详细拆解了 SQ、CQ 等核心结构体。'
 pubDate: 2026-02-20
 ---
 

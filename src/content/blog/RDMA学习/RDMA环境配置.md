@@ -1,6 +1,6 @@
 ---
 title: 'RDMA环境配置'
-description: ''
+description: '本文详细指导了如何使用 Soft-iWARP (siw) 在普通网卡上软件模拟 RDMA 设备，包括内核模块加载、设备绑定以及在 Arch Linux 环境下的具体配置步骤。'
 pubDate: 2026-02-20
 ---
 

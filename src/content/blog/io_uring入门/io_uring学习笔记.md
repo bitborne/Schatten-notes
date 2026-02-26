@@ -1,6 +1,6 @@
 ---
 title: 'io_uring学习笔记'
-description: ''
+description: '本文记录了 io_uring 的学习历程，通过对比 epoll 剖析了 Proactor 模式的优势，并提供了基于 liburing 实现高性能 TCP 服务器的实践指南。'
 pubDate: 2026-02-20
 ---
 

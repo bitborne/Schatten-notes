@@ -1,6 +1,6 @@
 ---
 title: 'eBPF内核用户态共用头文件'
-description: ''
+description: '本文介绍了在 eBPF 开发中，如何通过合理的头文件包含顺序或手动 typedef 来防止内核态与用户态共用头文件时出现的类型重定义问题。'
 pubDate: 2026-02-23
 ---
 

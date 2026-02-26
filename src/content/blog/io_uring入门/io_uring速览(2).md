@@ -1,6 +1,6 @@
 ---
 title: 'io_uring速览(2)'
-description: ''
+description: '本文进一步深入探讨了 io_uring 的数据结构，详细分析了 Submission Queue (SQ) 和 Completion Queue (CQ) 的运行机制以及内核与用户态的交互细节。'
 pubDate: 2026-02-20
 ---
 

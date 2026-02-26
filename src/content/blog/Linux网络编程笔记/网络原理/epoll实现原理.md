@@ -1,6 +1,6 @@
 ---
 title: 'epoll实现原理'
-description: ''
+description: '本文深入剖析了 epoll 的底层实现原理，重点讲解了 eventpoll 和 epitem 结构体、红黑树与就绪队列的节点共用机制，以及 epoll_create/ctl/wait 的内部工作流程。'
 pubDate: 2026-02-20
 ---
 
@@ -12,7 +12,7 @@ pubDate: 2026-02-20
 
 **epitem 结构体 : 描述每一个节点 (既是红黑树的节点, 又是就绪队列的节点)**
 
-+ 即使添加到就绪队列, 也没有从整集中移除 ---> `节点`**<font style="color:#DF2A3F;"> 由 </font>**`红黑树`**<font style="color:#DF2A3F;"> 和 </font>**`队列` 共用</font>**
++ 即使添加到就绪队列, 也没有从整集中移除 ---> `节点`**<font style="color:#DF2A3F;"> 由 </font>**`红黑树`**<font style="color:#DF2A3F;"> 和 </font>**`队列` **<font style="color:#DF2A3F;">共用</font>**
 
 **eventpoll 结构体 : 整集, 描述整棵红黑树**
 
@@ -33,31 +33,52 @@ pubDate: 2026-02-20
 >
 
 ## epoll_create
-1. **创建一个 **`**struct eventpoll**`
-2. **为**`**epollevent**`这个结构体分配一个`**epfd**`
+1. **创建一个**`struct eventpoll`
+2. **为**`epollevent`这个结构体分配一个`epfd`
 
 ## epoll_ctl
-ADD : 如果事件存在, 直接返回 (已存在)
+- DD : 如果事件存在, 直接返回 (已存在)
 
-DEL : 如果存在, 直接删除, 如果不存在, 返回 (不存在)
+![1756696393335-afc8dac6-7b18-48bc-b0e6-2a4614ba4b62.jpeg](./img/0UIuQmlltF00FgdZ/1756696393335-afc8dac6-7b18-48bc-b0e6-2a4614ba4b62-407534.jpeg)
 
-MOD : 查找, 重新赋值
+- DEL : 如果存在, 直接删除, 如果不存在, 返回 (不存在)
+
+- MOD : 查找, 重新赋值
 
 ## epoll_wait
 **参数 :**
 
-**<font style="color:#DF2A3F;">epfd, event, length, timeout</font>**
+**epfd, event, length, timeout**
+
+---
+
+# epoll_callback 的执行时机
+**当 I/O 设备 (如网卡) 产生硬件中断 -> 内核协议栈 -> 唤醒等待队列中的进程**
+
++ 对于 epoll 来说, 就是执行 `epoll_callback`
++ 将对应的 `epitem`  节点插入到 `rdlist`  就绪队列中
+
+# LT vs ET
+## 水平触发 (Level Triggered)
+**只要就绪队列不为空, `epoll_wait` 就会一直返回事件**
+
+## 边缘触发 (Edge Triggered)
+**只有状态发生变化时, `epoll_wait` 才返回一次事件**
+
++ **要求 : 必须一次性读完 (while 循环 read 直到 EAGAIN)**
++ **优点 : 减少了 `epoll_wait` 的调用次数, 效率更高**
+
 
 #### <font style="color:#DF2A3F;">timeout < 0 --> 一直等待</font>
 **pthread_cond_wait()**
 
-+ **就绪队列非空的时候 **`pthread_cond_signal()`唤醒一下
++ 就绪队列非空的时候`pthread_cond_signal()`唤醒一下
 
 #### <font style="color:#DF2A3F;">timeout != 0 --> 等待固定长度事件</font>
 **pthread_cond_timedwait()**
 
 #### <font style="color:#DF2A3F;">timeout == 0 --> 不用等待, 立刻返回</font>
-![1756696393335-afc8dac6-7b18-48bc-b0e6-2a4614ba4b62.jpeg](./img/0UIuQmlltF00FgdZ/1756696393335-afc8dac6-7b18-48bc-b0e6-2a4614ba4b62-407534.jpeg)
+
 
 # 协议栈如何通知到 epoll 模块
 > epoll 函数: '3 + 1'
@@ -67,11 +88,11 @@ MOD : 查找, 重新赋值
 
 ## epoll_callback
 1. **三次握手完成时, 调用一次:**
-+ `epoll_event_callback(table->ep, listener->fd, EPOLLIN)` 通知: ** listenfd 触发一个 EPOLLIN 事件 **
++ `epoll_event_callback(table->ep, listener->fd, EPOLLIN)` 通知:  listenfd 触发一个 EPOLLIN 事件
 2. **数据来临时 （PSH 包）, 调用一次**
 
-通知 fd 触发一个 EPOLLIN
+- 通知 fd 触发一个 EPOLLIN
 
 3. **接收到 FIN 包的时候, 调用一次**
 
-通知 fd 触发一个 EPOLLIN
+- 通知 fd 触发一个 EPOLLIN

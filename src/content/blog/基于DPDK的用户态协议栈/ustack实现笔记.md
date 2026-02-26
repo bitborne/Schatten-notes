@@ -1,6 +1,6 @@
 ---
 title: 'ustack实现笔记'
-description: ''
+description: '本文分享了基于 DPDK 实现用户态协议栈 ustack 的实践笔记，探讨了 ARP 协议的处理、发送队列的设置以及如何解决收不到数据等常见问题。'
 pubDate: 2026-02-20
 ---
 
@@ -50,17 +50,17 @@ netsh interface ipv4 add neighbors "<Idx或连接名>" <目标IP> <目标MAC>
 ![1755961375851-b6ee1c59-5601-4bdb-a54a-a225d990bf8c.jpeg|650](./img/qDT5TxoaXbUQDqyZ/1755961375851-b6ee1c59-5601-4bdb-a54a-a225d990bf8c-669397.jpeg)
 
 ## 源地址与目的地址的调换
-1. **以太网头: **MAC地址
-2. **IP头: **IP地址
-3. **UDP头: **端口号
+1. **以太网头:** MAC地址
+2. **IP头:** IP地址
+3. **UDP头:** 端口号
 
-**<font style="color:#DF2A3F;">地址数据类型转换API</font>**
+**地址数据类型转换API**
 
-```go
+```c
 #include <arpa/inet.h> 
-地址类型转换 
-inet_pton(ip)		->	(struct in_addr) binary_addr
-inet_ntop(addr_in)	->	(char*) IP
+// 地址类型转换 
+inet_pton(ip)   //->	(struct in_addr) binary_addr
+inet_ntop(addr_in)  //->	(char*) IP
 ```
 
 ![1755964460353-7ae70cea-3869-4111-829a-79368dee487d.jpeg|625](./img/qDT5TxoaXbUQDqyZ/1755964460353-7ae70cea-3869-4111-829a-79368dee487d-819756.jpeg)
@@ -68,16 +68,16 @@ inet_ntop(addr_in)	->	(char*) IP
 ## 配置好发送队列和mbuf, 装填好数据
 还是收不到包, 原因是:
 
-**<font style="color:#DF2A3F;">IP头的 total_len 字段 长度不对</font>**
+**IP头的 total_len 字段 长度不对**
 
-+ **<font style="color:#DF2A3F;">需要进行 </font>**`**<font style="color:#DF2A3F;">htons()</font>**`**<font style="color:#DF2A3F;"> 网络字节序的转化</font>**
++ **需要进行 **`htons()`** 网络字节序的转化**
 
 ![1756029348012-96b9168b-5a60-4e6d-881c-7bf9d7273d23.jpeg](./img/qDT5TxoaXbUQDqyZ/1756029348012-96b9168b-5a60-4e6d-881c-7bf9d7273d23-322550.jpeg)
 
 ![1756029427673-3dc680e8-060c-4caf-a6cd-e6f694914d55.jpeg](./img/qDT5TxoaXbUQDqyZ/1756029427673-3dc680e8-060c-4caf-a6cd-e6f694914d55-131104.jpeg)
 
 ## TCP 与 UDP 头
-**<font style="color:#DF2A3F;">问 : 为什么 UDP 头有 </font>**`dgram_len`**<font style="color:#DF2A3F;"> 字段代表 UDP 包的长度, 而 TCP 头没有 TCP 的长度字段</font>**
+*问 : 为什么 UDP 头有 `dgram_len` 字段代表 UDP 包的长度, 而 TCP 头没有 TCP 的长度字段*
 
 > 1. **IP 层的 fragment offset**  
 只在“一份 IP 报文被切成多片”时起作用——  
@@ -92,8 +92,10 @@ inet_ntop(addr_in)	->	(char*) IP
 >
 > **因此：**
 >
-> + IP fragment offset 解决的是**“同一份 IP 报文内部的分片重组”**`**--> 一份IP报文被切成碎片**`
-> + TCP seq **(字节序号) **解决的是**“多条 IP 报文之间的字节流顺序、完整性、重传”**`**--> 多份IP报文的顺序**`
+> + **IP fragment offset 解决的是**: 
+>   - **同一份 IP 报文内部的分片重组** (一份IP报文被切成碎片)
+> + **TCP seq (字节序号) 解决的是**:
+>   - **多条 IP 报文之间的字节流顺序、完整性、重传** (多份IP报文的顺序)
 >
 
 #### 为什么 TCP 不需要“长度字段”
@@ -128,8 +130,8 @@ inet_ntop(addr_in)	->	(char*) IP
 + 收件人收到后，把包裹再算一遍指纹，如果跟包裹上写的不一样，就说明运输途中被压坏、掉件或串包，直接拒收
 
 ## 小问题：VScode 索引/宏冲突
-1. **<font style="color:#DF2A3F;">uint16_t 被当成函数</font>**
-2. **<font style="color:#DF2A3F;">EXIT_FAILURE 找不到</font>**
+1. **uint16_t 被当成函数**
+2. **EXIT_FAILURE 找不到**
 
 ![1756092351177-ccbd0a44-7285-441d-8911-b9a75f175b6e.jpeg|575](./img/qDT5TxoaXbUQDqyZ/1756092351177-ccbd0a44-7285-441d-8911-b9a75f175b6e-318075.jpeg)
 
@@ -145,11 +147,11 @@ VS Code 不会自动刷新索引，执行一次：
 # 实现三次握手
 收到 `SYN`,  `seq_num = <u>ntohl</u>( tcp_hdr->sent_seq )`
 
-回复 `SYN | ACK`, `**<font style="color:#DF2A3F;">ack_num</font>**<font style="color:#DF2A3F;"> = </font><u><font style="color:#DF2A3F;">htonl</font></u><font style="color:#DF2A3F;">( seq_num + 1 )</font>`
+回复 `SYN | ACK`, `ack_num = htonl( seq_num + 1 )`
 
 ![1756524061105-69ba2173-1d97-4eb7-8f0b-8f3ce195c431.jpeg|675](./img/qDT5TxoaXbUQDqyZ/1756524061105-69ba2173-1d97-4eb7-8f0b-8f3ce195c431-527700.jpeg)
 
-## 为什么出现 <font style="color:#DF2A3F;">Error rte_pktbuf_alloc (TCP)</font>
+## 为什么出现 Error rte_pktbuf_alloc (TCP)</font>
 ```go
  RTE_TCP_CWR_FLAG 0x80 < Congestion Window Reduced 
  RTE_TCP_ECE_FLAG 0x40 < ECN-Echo 
@@ -163,28 +165,28 @@ VS Code 不会自动刷新索引，执行一次：
 
 最后发来的
 
-+ `FLAGS = 0x10` --> `**ACK**`
-+ `**ack_num =  12346**`** (我们之前发回的**`**SYN+ACK**`**的**`**seq = 12345**`**)**
-+ **<font style="color:#DF2A3F;">说明他最后一直在发 ACK, 我们每次接收的时候, 都会</font>**`**<font style="color:#DF2A3F;">alloc mbuffer</font>**`**<font style="color:#DF2A3F;">, 最后</font>**`**<font style="color:#DF2A3F;">mbuf</font>**`**<font style="color:#DF2A3F;">不够用了, 出错</font>**
++ `FLAGS = 0x10` --> `ACK`
++ `ack_num =  12346` (我们之前发回的`SYN+ACK`的`seq = 12345`)
++ 说明他最后一直在发 ACK, 我们每次接收的时候, 都会`alloc mbuffer`, 最后`mbuf`不够用了, 出错
 
 ### 问: 最后一次握手持续发来 ACK 包, 原因是? 
-第一次我们回了 `SYN + ACK`
 
+- 第一次我们回了 `SYN + ACK`
 + 往后, 他发一次 `ACK`, 我们就回一次`SYN+ACK` ...
-+ **根本原因是: 我们一直发**`**SYN+ACK**`**, 导致了他一直回 **`**ACK**`
++ 根本原因是: 我们一直发`SYN+ACK`, 导致了他一直回 `ACK`
 
-陷入死循环
+- **陷入死循环**
 
-**<font style="color:#DF2A3F;">所以我们需要判断是否收到最后一次 ACK, 并停止发 SYN+ACK</font>**
+- **所以我们需要判断是否收到最后一次 ACK, 并停止发 SYN+ACK**
 
 ### TCP 状态迁移
 ![1756525364447-a562fa49-30b8-4619-91be-8286a90db9be.jpeg](./img/qDT5TxoaXbUQDqyZ/1756525364447-a562fa49-30b8-4619-91be-8286a90db9be-177485.jpeg)
 
-**TCP 状态初始化为 **`**LISTEN**`
+TCP 状态初始化为 `LISTEN`
 
 ![1756526644023-fc33f3d8-96b3-4e99-bcf4-5ad2eae11134.jpeg](./img/qDT5TxoaXbUQDqyZ/1756526644023-fc33f3d8-96b3-4e99-bcf4-5ad2eae11134-740203.jpeg)
 
-判断是 `SYN` 包, 且状态为 `LISTEN`, 才发回我们的 `SYN+ACK `包
+判断是 `SYN` 包, 且状态为 `LISTEN`, 才发回我们的 `SYN+ACK`包
 
 这样, 就不会一直给它发 `SYN+ACK` 了
 
@@ -229,19 +231,19 @@ DPDK 把这 8 位直接读出来，放进 `uint8_t data_off`
 ## 延迟确认
 + 接收方, 确保数据完整
 
-eg: 收到数据, 200ms 后才发送确认消息 (后面的数据要**<font style="color:#DF2A3F;">全部重传</font>**) --> `**<font style="color:#DF2A3F;">高端: KCP 协议 选择性重传</font>**`
+eg: 收到数据, 200ms 后才发送确认消息 (后面的数据要全部重传) --> `高端: KCP 协议 选择性重传`
 
-> <font style="color:#DF2A3F;">1-400 , 401-800 , 801-1200 目前已经收到1-400 和 801-1200 的seq_num包, 但没有收到 401-800</font>
+> 1-400 , 401-800 , 801-1200 目前已经收到1-400 和 801-1200 的seq_num包, 但没有收到 401-800
 >
-> **<font style="color:#DF2A3F;">此时应当发送的 ack_num --> 400</font>**
+> 此时应当发送的 ack_num --> 400
 >
-> **<font style="color:#DF2A3F;">也就是说, 400 以后的数据, 都要重传 --> 超时重传</font>**
+> 也就是说, 400 以后的数据, 都要重传 --> 超时重传
 >
 
 ## 滑动窗口
 + 用于形容 数据发送方 如何
 
-**<font style="color:#DF2A3F;">中间的窗口部分, 指的是: 已发送, 未确认</font>**
+**中间的窗口部分, 指的是: 已发送, 未确认**
 
 + 随着我们这边数据的发送, 右指针后移
 + 随着我们这边接受到确认消息, 左指针后移
@@ -250,10 +252,10 @@ eg: 收到数据, 200ms 后才发送确认消息 (后面的数据要**<font styl
 ## 慢启动 + 拥塞控制
 形容发送方 控制发送数据的节奏
 
-+ 前半部分, 指数级增长: **<font style="color:#DF2A3F;">慢启动</font>**
++ 前半部分, 指数级增长: 慢启动
 
-发现数据不能在规定时间内收到 `**往返时间: RTT**`
+发现数据不能在规定时间内收到 `往返时间: RTT`
 
-说明已经 **<font style="color:#DF2A3F;">'堵车了' --> 那就少发 --> 拥塞控制</font>**
+说明已经 '堵车了' --> 那就少发 --> 拥塞控制
 
 ![1756540071018-29253302-d79c-4894-88e1-416770ce8adf.jpeg](./img/qDT5TxoaXbUQDqyZ/1756540071018-29253302-d79c-4894-88e1-416770ce8adf-145774.jpeg)

@@ -1,6 +1,6 @@
 ---
 title: 'DPDK开发环境配置'
-description: ''
+description: '本文记录了 DPDK 开发环境的配置过程，包括开启网卡多队列、修改虚拟机 VMX 和 XML 配置以及在 Arch Linux 下的 KVM 虚拟机配置技巧。'
 pubDate: 2026-02-20
 ---
 
@@ -23,7 +23,7 @@ cat /proc/interrupts
 
 **<font style="color:#DF2A3F;">再打开虚拟机</font>**
 
-**输入命令: **`lspci -k | grep -A3 -i ethernet`
+**输入命令:** `lspci -k | grep -A3 -i ethernet`
 
 + 可以看到网卡类型切换成功
 
@@ -57,18 +57,20 @@ sudo virsh edit ubuntu-mini  # 替换为你的虚拟机名称
 
 - `queues='6'`：队列数，建议等于你的 vCPU 数（你有 6 个核）
   
-- `iommu='on'`：DPDK 需要 IOMMU 支持（还需在虚拟机 XML 的 `<features>` 中添加 `<iommu model='intel'/>` 或 `'amd'`）
+- `iommu='on'`：DPDK 需要 IOMMU 支持
+- 还需在虚拟机 XML 的 `<features>` 中添加 
+`<iommu model='intel'/>` 或 `'amd'`
 
 # Huge Page 巨页 的配置
-1. 修改 `grub`启动参数，启用**多队列**和**巨页支持**：
+1. 修改 `grub`启动参数，启用多队列和巨页支持：
 
 ```bash
 vim /etc/default/grub
 ```
 
-找到** **`**GRUB_CMDLINE_LINUX**`，添加三个参数
+找到 `GRUB_CMDLINE_LINUX`，添加三个参数
 
-`**"... default_hugepagesz=1G hugepagesz=2M hugepages=1024 ..."**`
+`"... default_hugepagesz=1G hugepagesz=2M hugepages=1024 ..."`
 
 ```plain
 最后要执行下面的命令, 使其生效
@@ -78,12 +80,12 @@ update-grub
 # 安装编译DPDK源码
 一开始先跟着视频用19年的版本(19.08.2), 等以后熟悉了自己用别的
 
-**地址: **[DPDK](https://core.dpdk.org/download/)** **`[**https://core.dpdk.org/download/**](https://core.dpdk.org/download/)`
+地址: [DPDK](https://core.dpdk.org/download/) `[https://core.dpdk.org/download/](https://core.dpdk.org/download/)`
 
-**建议: 安装到 **`**~/src/**`** 目录下, 不要放在**`**samba**`**的共享目录内**
+建议: 安装到 `~/src/` 目录下, 不要放在`samba`的共享目录内
 
-1. **使用**`**tar -xf**`**解压**
-2. **解压后进入其中的**`**usertools**`**目录, 运行**`<u>./dpdk-setup.sh</u>`
+1. 使用`tar -xf`解压
+2. 解压后进入其中的`usertools`目录, 运行`./dpdk-setup.sh`
 
 ### <font style="color:#DF2A3F;">编译时报错: numa.h: No such file or directory</font>
 ![1755586144884-e2ed7ef7-f376-4ca8-97bb-ea8e0fe0f762.jpeg](./img/drGrtA4xQmU3sYB7/1755586144884-e2ed7ef7-f376-4ca8-97bb-ea8e0fe0f762-106340.jpeg)

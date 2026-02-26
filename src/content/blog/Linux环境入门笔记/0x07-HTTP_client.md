@@ -1,6 +1,6 @@
 ---
 title: '0x07-HTTP_client'
-description: ''
+description: '本文详细介绍了 Linux 网络编程中常用的地址结构体（如 sockaddr_in, addrinfo 等）及其用法，并展示了创建 TCP 客户端连接的基本步骤。'
 pubDate: 2026-02-20
 ---
 

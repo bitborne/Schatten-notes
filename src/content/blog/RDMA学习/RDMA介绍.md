@@ -1,6 +1,6 @@
 ---
 title: 'RDMA介绍'
-description: ''
+description: '本文简要介绍了 RDMA 技术的优势、核心标准（IB, RoCE, iWARP）及其基本概念（如 WQ, QP, CQ 等），并详细对比了 RDMA 与传统 SOCKET、DPDK 在性能和 CPU 消耗上的差异。'
 pubDate: 2026-02-20
 ---
 

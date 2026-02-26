@@ -1,6 +1,6 @@
 ---
 title: '百万并发与WebSocket'
-description: ''
+description: '本文探讨了 Reactor 模式的实现原理，分享了在百万并发场景下结合 WebSocket 进行高性能 WebServer 开发的实践经验，并分析了 send 过程中的错误处理与内存管理问题。'
 pubDate: 2026-02-20
 ---
 
@@ -18,13 +18,13 @@ IO管理 --> 事件管理
 
 **根据遇到事件的类型 --> 判断当前fd应该执行什么回调函数 (callback)**
 
-**<font style="color:#DF2A3F;">可以做成一个结构体 </font>**`**<font style="color:#DF2A3F;">struct Conn</font>**`**<font style="color:#DF2A3F;">, 维护一个</font>**`**<font style="color:#DF2A3F;">Conn</font>**`**<font style="color:#DF2A3F;">数组, 下标就是</font>**`**<font style="color:#DF2A3F;">fd</font>**`
+可以做成一个结构体 `struct Conn`, 维护一个`Conn`数组, 下标就是`fd`
 
 ![1754470498325-d9c9a700-badf-4c78-aa39-19754c0483e1.jpeg](./img/7v8gFQbJ0V4gve1e/1754470498325-d9c9a700-badf-4c78-aa39-19754c0483e1-552194.jpeg)
 
 ## `reactor.c`和普通`epoll.c`的区别
 + 读写分离, 遇到读事件 就读, 遇到写事件 就写
-+ 维护一个 `connList`, 每个元素`conn`独立, 都有各自的`rbuffer``wbuffer`
++ 维护一个 `connList`, 每个元素`conn`独立, 都有各自的`rbuffer` `wbuffer`
 
 ## 不切EPOLLOUT (不send) 测试百万并发<font style="color:rgb(148, 220, 6);">✓</font>
 ![1754475595381-663f2f2b-a80b-4cc9-b407-2aa5b1a73e12.jpeg](./img/7v8gFQbJ0V4gve1e/1754475595381-663f2f2b-a80b-4cc9-b407-2aa5b1a73e12-383128.jpeg)
@@ -34,7 +34,7 @@ IO管理 --> 事件管理
 ![1754475714620-84de010d-ef09-4411-b8ac-f0a6536ae38d.jpeg](./img/7v8gFQbJ0V4gve1e/1754475714620-84de010d-ef09-4411-b8ac-f0a6536ae38d-201800.jpeg)
 
 ## 开启send后测百万并发
-1. `<font style="color:rgb(148, 220, 6);">send</font>`<font style="color:rgb(148, 220, 6);">没有正确的错误处理, 缓冲区满了要关闭连接</font>
+1. `send`没有正确的错误处理, 缓冲区满了要关闭连接
 
 ```c
 int len = send(clientfd, connList[clientfd].wbuffer, connList[clientfd].wlength, 0);
@@ -45,7 +45,7 @@ int len = send(clientfd, connList[clientfd].wbuffer, connList[clientfd].wlength,
   }
 ```
 
-2. <font style="color:rgb(148, 220, 6);">客户端内存爆炸了</font>
+2. 客户端内存爆炸了
 
 ![1754483228028-b030ae4d-0ca8-4b01-a6c3-112ae75ece73.jpeg](./img/7v8gFQbJ0V4gve1e/1754483228028-b030ae4d-0ca8-4b01-a6c3-112ae75ece73-675421.jpeg)
 
@@ -110,16 +110,16 @@ int recv_cb(int clientfd) {
 ### `send_cb`: 也给业务逻辑腾位置
 + 回声服务器的逻辑: `send`完立刻切换读事件
 
-**<font style="color:#DF2A3F;">WebServer:  必须把对方请求的文件完整send过去, 才能切读事件</font>**
+WebServer:  必须把对方请求的文件完整send过去, 才能切读事件
 
-**<font style="color:#DF2A3F;">具体代码等完善后再传进来</font>**
+具体代码等完善后再传进来
 
-:::danger
-**自己写的**`**send_cb**`**+**`**http_response**`**整个逻辑实现大文件传输 !!! (超内核缓冲区)**
 
-** --- 摸底的时候一定要说**
+**自己写的**`send_cb`**+**`http_response`**整个逻辑实现大文件传输**
 
-:::
+
+
+
 
 #### 状态机的三个状态
 ```c
@@ -131,18 +131,18 @@ enum {
 ```
 
 #### 具体逻辑
-1. **先**`**send**`**响应头+尽可能**`**send**`**一部分文件, **`**send**`**后调整 状态机**
-    - **如果**`**BUFFER_SIZE**`**直接装完了**`**响应头 + 整个文件**`** ==> END**
-    - **如果已读长度**`**c->length == BUFFER_SIZE**`**, 也就是****<u>文件可能还有剩下</u>**** ==> CONTINUE**
-2. **下一次监控到**`**EPOLLOUT**`**, 进入**`**send_cb**`
-    - **如果状态是**`**CONTINUE**`**, 在**`**http_response**`**内循环调用**`**sendfile**`**直接传完整个文件, 然后**`**END**`
-    - **如果状态是**`**END**`**, 这个时候再清空**`**wbuffer**`**缓冲区 + ****<font style="color:#DF2A3F;">切换为读事件</font>**
+1. 先`send`响应头+尽可能`send`一部分文件, `send`后调整 状态机
+    - 如果`BUFFER_SIZE`直接装完了`响应头 + 整个文件` ==> END
+    - 如果已读长度`c->length == BUFFER_SIZE`, 也就是<u>文件可能还有剩下</u> ==> CONTINUE
+2. 下一次监控到`EPOLLOUT`, 进入`send_cb`
+    - 如果状态是`CONTINUE`, 在`http_response`内循环调用`sendfile`直接传完整个文件, 然后`END`
+    - 如果状态是`END`, 这个时候再清空`wbuffer`缓冲区 + 切换为读事件
 
 #### 大文件效果 (4MB+)
 ![1754558277375-de58d33d-da46-47bb-8d7e-0085e8cd195d.jpeg](./img/7v8gFQbJ0V4gve1e/1754558277375-de58d33d-da46-47bb-8d7e-0085e8cd195d-327078.jpeg)
 
 ## `wrk`: 压测工具测 QPS
-本地测试: 简单请求和响应: **<font style="color:#DF2A3F;">QPS = 5.5 w+</font>**
+本地测试: 简单请求和响应: **QPS = 5.5 w+**
 
 ![1754562589572-1de701b3-5fcf-4b64-b423-e0913b7a59e6.jpeg](./img/7v8gFQbJ0V4gve1e/1754562589572-1de701b3-5fcf-4b64-b423-e0913b7a59e6-428285.jpeg)
 
@@ -168,7 +168,7 @@ enum {
     - 像微信聊天：谁想发就发
 
 ### 头部开销
-**HTTP：**每次请求都带完整的头部
+**HTTP：** 每次请求都带完整的头部
 
 ```plain
 GET /chat HTTP/1.1
@@ -178,7 +178,7 @@ Accept: */*
 (每次请求都要重复这些信息)
 ```
 
-**WebSocket：**建立后只需2-10字节的帧头
+**WebSocket：** 建立后只需2-10字节的帧头
 
 **[轻量级帧头] + [实际数据]**
 

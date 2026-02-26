@@ -1,6 +1,6 @@
 ---
 title: 'XDP学习'
-description: ''
+description: '本文介绍了 XDP (eXpress Data Path) 的基本概念与特点，通过对比 XDP 与 TC 阐述了其极致性能优势，并展示了一个简单的 XDP Filter 数据包过滤与统计示例。'
 pubDate: 2026-02-23
 ---
 

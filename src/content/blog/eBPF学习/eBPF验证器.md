@@ -1,6 +1,6 @@
 ---
 title: 'eBPF验证器'
-description: ''
+description: '本文通过两个实战案例深入浅出地讲解了 eBPF Verifier 的运行机制，分享了如何突破验证器限制实现内核端数据累加，从而达成 1000% 的性能优化提升。'
 pubDate: 2026-02-23
 ---
 

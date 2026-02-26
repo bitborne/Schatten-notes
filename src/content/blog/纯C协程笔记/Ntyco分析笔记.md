@@ -1,6 +1,6 @@
 ---
 title: 'Ntyco分析笔记'
-description: ''
+description: '本文是对开源协程库 Ntyco 的深度源码分析笔记，涵盖了协程架构思想、调度器实现细节以及如何通过 Hook 技术实现“同步编码，异步执行”的魔法。'
 pubDate: 2026-02-20
 ---
 

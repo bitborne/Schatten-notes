@@ -1,6 +1,6 @@
 ---
 title: '0x05-MySQL'
-description: ''
+description: '本文记录了在 Ubuntu 22.04 系统上安装和配置 MySQL 数据库的全过程，包括安全设置、密码修改以及远程登录配置等实用步骤。'
 pubDate: 2026-02-20
 ---
 
@@ -201,7 +201,7 @@ sudo ufw reload
 ## 文本数据
 先装这个包: 得以使用 `mysql.h`头文件
 
-`**<font style="color:#DF2A3F;">apt install libmysqlclient-dev</font>**`
+`apt install libmysqlclient-dev`
 
 ![1752769730038-65adf9b7-0884-4f62-ab92-dae2ae6e142a.jpeg](./img/gxblwVJId4nm477g/1752769730038-65adf9b7-0884-4f62-ab92-dae2ae6e142a-299552.jpeg)
 
@@ -243,10 +243,10 @@ sudo ufw reload
 ### 什么是预处理语句（Prepared Statement）
 预处理语句是 MySQL 提供的一种高效、安全的 SQL 执行方式，具有以下特点：
 
-1. **SQL与数据分离：**SQL模板与参数值分开处理
-2. **预编译：**SQL语句先被数据库解析和编译
-3. **参数绑定：**通过占位符（`?`）动态绑定参数
-4. **高效复用：**同一语句可多次执行，只需改变参数值
+1. **SQL与数据分离：** SQL模板与参数值分开处理
+2. **预编译：** SQL语句先被数据库解析和编译
+3. **参数绑定：** 通过占位符（`?`）动态绑定参数
+4. **高效复用：** 同一语句可多次执行，只需改变参数值
 
 #### `stmt` 的具体作用
 在您的代码中，`stmt` 作为预处理语句句柄，承担了以下职责：
@@ -274,9 +274,8 @@ mysql_stmt_bind_param(stmt, &param);
 
 + **<font style="color:#DF2A3F;">把上面的 </font>**`param`**<font style="color:#DF2A3F;"> 和 SQL 里的第 1 个 </font>**`?`**<font style="color:#DF2A3F;"> 绑定在一起。</font>**
 
->     - 现在服务器知道了：  
+- **现在服务器知道了：**  
 “一会儿客户端会送一个 LONG_BLOB 过来，但具体字节流请他自己用 `send_long_data` 发”
->
 
 3. **真正地把二进制数据流进服务器**
 

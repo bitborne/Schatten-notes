@@ -1,6 +1,6 @@
 ---
 title: '0x00-开发环境：Ubuntu22.04'
-description: ''
+description: '本文记录了 Ubuntu 22.04 开发环境的搭建过程，包括换源、安装 OpenSSH、配置静态 IP、Samba 服务以及安装 GCC/G++ 编译器等关键步骤。'
 pubDate: 2026-02-20
 ---
 
