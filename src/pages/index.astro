@@ -677,7 +677,7 @@ const posts = (await getCollection('blog')).sort(
 			const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 
 			title.innerHTML = text.split('').map((char: string, i: number) => {
-				if (char === ' ') return '<span class="char">&nbsp;</span>';
+				// if (char === ' ') return '<span class="char">&nbsp;</span>';
 				return `<span class="char" data-char="${char}" data-index="${i}">${char}</span>`;
 			}).join('');
 
