@@ -16,271 +16,275 @@ const posts = (await getCollection('blog')).sort(
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
-			/* 全局动画定义 */
-			@keyframes scan {
-				0% { transform: translateY(-100%); }
-				100% { transform: translateY(100%); }
+			/* ===== 液态金属配色系统 ===== */
+			:root {
+				--liquid-bg: #0f0d1a;
+				--liquid-purple: #6366f1;
+				--liquid-pink: #ec4899;
+				--liquid-cyan: #06b6d4;
+				--liquid-amber: #f59e0b;
+				--glass-bg: rgba(255, 255, 255, 0.03);
+				--glass-border: rgba(255, 255, 255, 0.08);
+				--text-primary: #f8fafc;
+				--text-secondary: #94a3b8;
+				--text-muted: #64748b;
 			}
 
+			/* 全局动画定义 */
 			@keyframes float {
-				0%, 100% { transform: translateY(0); }
+				0%, 100% { transform: translateY(0px); }
 				50% { transform: translateY(-10px); }
 			}
 
-			@keyframes fadeIn {
-				from { opacity: 0; transform: translateY(20px); }
-				to { opacity: 1; transform: translateY(0); }
-			}
-
 			@keyframes pulse-glow {
-				0%, 100% { opacity: 0.3; }
-				50% { opacity: 0.6; }
+				0%, 100% { opacity: 0.4; }
+				50% { opacity: 0.8; }
 			}
 
-			/* 噪音纹理蒙版 */
+			@keyframes breathe {
+				0%, 100% { transform: scale(1); opacity: 0.6; }
+				50% { transform: scale(1.05); opacity: 1; }
+			}
+
+			@keyframes gradient-shift {
+				0% { background-position: 0% 50%; }
+				50% { background-position: 100% 50%; }
+				100% { background-position: 0% 50%; }
+			}
+
+			/* 噪点覆盖 */
 			.noise-overlay {
 				position: fixed;
 				inset: 0;
 				z-index: 9999;
 				pointer-events: none;
-				opacity: 0.04;
+				opacity: 0.03;
 				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 			}
 
-			/* ===== 极光之夜配色变量 ===== */
-			:root {
-				--aurora-green: #39ff14;
-				--aurora-cyan: #00f5d4;
-				--aurora-blue: #00bbf9;
-				--aurora-purple: #9b5de5;
-				--aurora-bg: #1a1423;
-			}
-
-			/* Hero Section - 极光之夜 */
+			/* Hero Section - 全屏沉浸 */
 			.hero {
-				padding: 12rem 0 8rem;
+				min-height: 100vh;
+				display: flex;
+				align-items: center;
+				justify-content: center;
 				position: relative;
 				overflow: hidden;
-				background:
-					radial-gradient(at 0% 20%, rgba(57, 255, 20, 0.1) 0, transparent 50%),
-					radial-gradient(at 100% 0%, rgba(0, 245, 212, 0.08) 0, transparent 45%),
-					radial-gradient(at 50% 100%, rgba(155, 93, 229, 0.1) 0, transparent 50%),
-					radial-gradient(at 80% 80%, rgba(0, 187, 249, 0.06) 0, transparent 40%),
-					var(--aurora-bg);
+				background: var(--liquid-bg);
 			}
 
-			/* 科技感网格背景装饰 - 极光色系 */
-			.hero::before {
-				content: '';
+			/* 流体Canvas背景 */
+			#fluid-canvas {
 				position: absolute;
 				inset: 0;
-				background-image:
-					linear-gradient(rgba(57, 255, 20, 0.03) 1px, transparent 1px),
-					linear-gradient(90deg, rgba(0, 245, 212, 0.02) 1px, transparent 1px);
-				background-size: 60px 60px;
-				-webkit-mask-image: radial-gradient(circle at 50% 40%, black, transparent 90%);
-				mask-image: radial-gradient(circle at 50% 40%, black, transparent 90%);
-				pointer-events: none;
-			}
-
-			/* 扫描线效果 - 极光渐变 */
-			.hero::after {
-				content: '';
-				position: absolute;
-				top: 0; left: 0; right: 0; height: 100%;
-				background: linear-gradient(to bottom,
-					transparent 0%,
-					rgba(57, 255, 20, 0.02) 30%,
-					rgba(0, 245, 212, 0.02) 50%,
-					rgba(155, 93, 229, 0.02) 70%,
-					transparent 100%);
-				background-size: 100% 200%;
-				animation: scan 8s linear infinite;
-				pointer-events: none;
-				z-index: 2;
-			}
-
-			.hero-container {
-				max-width: 1100px;
-				margin: 0 auto;
-				padding: 0 1.5rem;
-				position: relative;
-				z-index: 10;
+				z-index: 0;
+				will-change: transform, opacity;
 			}
 
 			.hero-content {
-				animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-			}
-
-			.hero-subtitle {
-				font-family: 'Cascadia Code', monospace;
-				background: linear-gradient(90deg, var(--aurora-green), var(--aurora-cyan));
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				font-size: 0.85rem;
-				letter-spacing: 0.4em;
-				margin-bottom: 2rem;
-				display: block;
-				filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.3));
-				opacity: 0.9;
-			}
-
-			.hero-title {
-				font-size: clamp(3rem, 8vw, 4.5rem);
-				line-height: 1.1;
-				margin-bottom: 2.5rem;
-				font-weight: 800;
-				letter-spacing: -0.04em;
-				animation: float 6s ease-in-out infinite;
-			}
-
-			.title-gradient {
-				background: linear-gradient(135deg, #fff 0%, var(--aurora-green) 30%, var(--aurora-cyan) 60%, var(--aurora-blue) 100%);
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				filter: drop-shadow(0 0 40px rgba(57, 255, 20, 0.2));
-			}
-
-			.hero-description {
-				font-size: 1.15rem;
-				color: var(--text-secondary);
-				line-height: 1.8;
-				margin-bottom: 4rem;
-				max-width: 650px;
-				border-left: 2px solid rgba(255, 0, 110, 0.2);
-				padding-left: 1.5rem;
-			}
-
-			.hero-actions {
-				display: flex;
-				gap: 1.5rem;
-			}
-
-			/* 按钮样式增强 */
-			.btn {
-				padding: 0.8rem 2rem;
-				border-radius: var(--radius-sm);
-				font-weight: 600;
-				font-size: 0.95rem;
-				transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				text-decoration: none;
+				max-width: 1000px;
+				margin: 0 auto;
+				padding: 2rem;
+				text-align: center;
 				position: relative;
-				overflow: hidden;
+				z-index: 10;
+				will-change: transform, opacity;
 			}
 
-			.btn::before {
+			/* 渐变叠加层 */
+			.hero::after {
 				content: '';
 				position: absolute;
-				top: 0; left: -100%; width: 100%; height: 100%;
-				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-				transition: 0.5s;
-			}
-
-			.btn:hover::before { left: 100%; }
-
-			/* 主按钮 - 极光渐变 */
-			.btn:first-child {
-				background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
-				color: #000;
-				box-shadow: 0 0 25px rgba(57, 255, 20, 0.3);
-				border: none;
-			}
-
-			.btn:first-child:hover {
-				transform: translateY(-3px);
-				box-shadow: 0 0 40px rgba(57, 255, 20, 0.5), 0 0 60px rgba(0, 245, 212, 0.3);
-			}
-
-			/* 次按钮 - 紫色边框 */
-			.btn-secondary {
-				background: rgba(155, 93, 229, 0.05);
-				color: #fff;
-				border: 1px solid rgba(155, 93, 229, 0.3);
-			}
-
-			.btn-secondary:hover {
-				background: rgba(155, 93, 229, 0.1);
-				border-color: var(--aurora-purple);
-				box-shadow: 0 0 20px rgba(155, 93, 229, 0.3);
-				transform: translateY(-3px);
-			}
-
-			/* Section Containers */
-			.section-container {
-				max-width: 1100px;
-				margin: 0 auto;
-				padding: 8rem 1.5rem;
-			}
-
-			/* 滚动触发动画基础类 */
-			.reveal {
-				opacity: 0;
-				transform: translateY(30px);
-				transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-			}
-
-			.reveal.active {
-				opacity: 1;
-				transform: translateY(0);
-			}
-
-			/* 交错动画延迟 */
-			.stagger-1 { transition-delay: 0.1s; }
-			.stagger-2 { transition-delay: 0.2s; }
-			.stagger-3 { transition-delay: 0.3s; }
-			.stagger-4 { transition-delay: 0.4s; }
-
-			/* 粒子画布 */
-			#particle-canvas {
-				position: absolute;
 				inset: 0;
+				background: radial-gradient(ellipse at 50% 50%, transparent 0%, var(--liquid-bg) 70%);
 				z-index: 1;
 				pointer-events: none;
 			}
 
-			/* 磁吸按钮 */
-			.magnetic-btn {
-				transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-			}
-
-			/* 打字机效果 */
-			.typewriter-container {
-				font-size: 1.15rem;
-				color: var(--text-secondary);
-				line-height: 1.8;
-				margin-bottom: 4rem;
-				max-width: 650px;
-				border-left: 2px solid rgba(0, 243, 255, 0.1);
-				padding-left: 1.5rem;
+			/* 故障艺术解码标题 - 增强对比度 */
+			.hero-subtitle {
 				font-family: 'Cascadia Code', monospace;
-				min-height: 3.5em;
+				font-size: 0.85rem;
+				color: #22d3ee;
+				letter-spacing: 0.4em;
+				text-transform: uppercase;
+				margin-bottom: 2rem;
+				opacity: 0;
+				animation: fadeIn 1s ease forwards 0.5s;
+				text-shadow:
+					0 0 10px rgba(34, 211, 238, 0.5),
+					0 0 20px rgba(34, 211, 238, 0.3),
+					0 0 40px rgba(34, 211, 238, 0.1);
 			}
 
-			.typewriter-text {
-				display: inline;
+			@keyframes fadeIn {
+				to { opacity: 1; }
 			}
 
-			.typewriter-cursor {
+			.hero-title {
+				font-size: clamp(3rem, 10vw, 6rem);
+				font-weight: 800;
+				line-height: 1.1;
+				margin-bottom: 2rem;
+				position: relative;
+			}
+
+			.hero-title .char {
 				display: inline-block;
-				width: 2px;
-				height: 1.2em;
-				background-color: var(--aurora-green);
-				margin-left: 2px;
-				vertical-align: middle;
-				animation: cursorBlink 1s step-end infinite;
-				box-shadow: 0 0 8px var(--aurora-green);
+				background: linear-gradient(135deg, var(--text-primary) 0%, var(--liquid-purple) 50%, var(--liquid-pink) 100%);
+				background-size: 200% 200%;
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+				opacity: 0;
+				transform: translateY(20px) scale(0.9);
+				filter: blur(10px);
 			}
 
-			.typewriter-cursor.typing {
-				animation: none;
+			.hero-title .char.decoded {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+				filter: blur(0);
+				transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+				text-shadow:
+					0 0 20px rgba(99, 102, 241, 0.3),
+					0 0 40px rgba(99, 102, 241, 0.1);
+				-webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
 			}
 
-			@keyframes cursorBlink {
-				0%, 50% { opacity: 1; }
-				51%, 100% { opacity: 0; }
+			/* 故障效果 */
+			.hero-title .char.glitch {
+				animation: glitch 0.3s ease;
+			}
+
+			@keyframes glitch {
+				0%, 100% { transform: translate(0); }
+				20% { transform: translate(-2px, 2px); }
+				40% { transform: translate(2px, -2px); }
+				60% { transform: translate(-2px, -2px); }
+				80% { transform: translate(2px, 2px); }
+			}
+
+			/* 玻璃拟态描述卡片 - 增强对比度 */
+			.hero-description {
+				max-width: 600px;
+				margin: 0 auto 3rem;
+				padding: 1.5rem 2rem;
+				background: rgba(15, 13, 26, 0.7);
+				backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
+				border: 1px solid rgba(99, 102, 241, 0.2);
+				border-radius: 24px;
+				position: relative;
+				overflow: hidden;
+				box-shadow:
+					0 8px 32px rgba(0, 0, 0, 0.4),
+					inset 0 1px 0 rgba(255, 255, 255, 0.05);
+			}
+
+			.hero-description::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+				transition: left 0.5s;
+			}
+
+			.hero-description:hover::before {
+				left: 100%;
+			}
+
+			.hero-description p {
+				margin: 0;
+				font-size: 1.15rem;
+				color: #e2e8f0;
+				line-height: 1.8;
+				text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+			}
+
+			/* 磁吸按钮组 */
+			.hero-actions {
+				display: flex;
+				gap: 1.5rem;
+				justify-content: center;
+				perspective: 1000px;
+			}
+
+			.magnetic-btn {
+				position: relative;
+				padding: 1rem 2.5rem;
+				font-size: 0.95rem;
+				font-weight: 600;
+				border-radius: 16px;
+				text-decoration: none;
+				transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s;
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5rem;
+				cursor: pointer;
+				border: none;
+				overflow: hidden;
+			}
+
+			.magnetic-btn-primary {
+				background: linear-gradient(135deg, var(--liquid-purple), var(--liquid-pink));
+				color: white;
+				box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+			}
+
+			.magnetic-btn-primary:hover {
+				box-shadow: 0 15px 50px rgba(99, 102, 241, 0.5), 0 0 30px rgba(236, 72, 153, 0.3);
+			}
+
+			.magnetic-btn-secondary {
+				background: var(--glass-bg);
+				backdrop-filter: blur(10px);
+				border: 1px solid var(--glass-border);
+				color: var(--text-primary);
+			}
+
+			.magnetic-btn-secondary:hover {
+				background: rgba(255, 255, 255, 0.05);
+				border-color: var(--liquid-purple);
+				box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+			}
+
+			/* 向下滚动指示 */
+			.scroll-indicator {
+				position: absolute;
+				bottom: 3rem;
+				left: 50%;
+				transform: translateX(-50%);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 0.5rem;
+				color: var(--text-muted);
+				font-size: 0.75rem;
+				letter-spacing: 0.2em;
+				text-transform: uppercase;
+				z-index: 10;
+				animation: breathe 2s ease-in-out infinite;
+			}
+
+			.scroll-indicator svg {
+				width: 24px;
+				height: 24px;
+				animation: float 2s ease-in-out infinite;
+			}
+
+			/* 内容区块 */
+			.section {
+				padding: 8rem 1.5rem;
+				position: relative;
+			}
+
+			.section-container {
+				max-width: 1100px;
+				margin: 0 auto;
 			}
 
 			.section-header {
@@ -288,229 +292,226 @@ const posts = (await getCollection('blog')).sort(
 				justify-content: space-between;
 				align-items: flex-end;
 				margin-bottom: 4rem;
-				border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 				padding-bottom: 1rem;
+				border-bottom: 1px solid var(--glass-border);
 			}
 
 			.section-title {
 				font-size: 1.4rem;
-				font-family: 'Cascadia Code', monospace;
 				font-weight: 700;
-				color: var(--text-primary);
 				display: flex;
 				align-items: center;
-				gap: 1.2rem;
+				gap: 1rem;
 				margin: 0;
-				border: none; /* 覆盖全局样式 */
-				padding: 0;
 			}
 
 			.section-title::before {
-				content: '//';
-				background: linear-gradient(135deg, var(--aurora-green), var(--aurora-cyan));
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				font-size: 1.2rem;
-				opacity: 0.9;
+				content: '';
+				display: inline-block;
+				width: 8px;
+				height: 8px;
+				border-radius: 50%;
+				background: linear-gradient(135deg, var(--liquid-purple), var(--liquid-pink));
+				box-shadow: 0 0 15px var(--liquid-purple);
 			}
 
-			/* 文章列表卡片：极致玻璃质感 */
-			.post-item {
+			/* 3D 倾斜卡片 */
+			.posts-grid {
 				display: grid;
-				grid-template-columns: 140px 1fr;
-				gap: 3rem;
-				padding: 2.5rem;
-				margin-bottom: 2rem;
-				background: rgba(255, 255, 255, 0.01);
-				border: 1px solid rgba(255, 255, 255, 0.03);
-				border-radius: var(--radius-md);
-				transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-				text-decoration: none;
-				position: relative;
-				backdrop-filter: blur(5px);
+				grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+				gap: 2rem;
+				perspective: 2000px;
 			}
 
-			.post-item::after {
+			.tilt-card {
+				background: var(--glass-bg);
+				backdrop-filter: blur(20px);
+				border: 1px solid var(--glass-border);
+				border-radius: 20px;
+				padding: 2rem;
+				text-decoration: none;
+				color: inherit;
+				display: flex;
+				flex-direction: column;
+				gap: 1rem;
+				transition: transform 0.1s ease-out, box-shadow 0.3s;
+				transform-style: preserve-3d;
+				position: relative;
+				overflow: hidden;
+			}
+
+			.tilt-card::before {
 				content: '';
 				position: absolute;
 				inset: 0;
-				border-radius: inherit;
-				background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(57, 255, 20, 0.12), transparent 45%);
+				background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.15), transparent 50%);
 				opacity: 0;
 				transition: opacity 0.3s;
-				pointer-events: none;
 			}
 
-			.post-item:hover {
-				background: rgba(255, 255, 255, 0.03);
-				border-color: rgba(57, 255, 20, 0.25);
-				transform: scale(1.02) translateX(5px);
-				box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(57, 255, 20, 0.1);
+			.tilt-card:hover::before {
+				opacity: 1;
 			}
 
-			.post-item:hover::after { opacity: 1; }
+			.tilt-card:hover {
+				box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), 0 0 30px rgba(99, 102, 241, 0.1);
+			}
 
 			.post-date {
 				font-family: 'Cascadia Code', monospace;
-				font-size: 0.85rem;
-				color: var(--text-muted);
-				display: flex;
-				flex-direction: column;
-				justify-content: flex-start;
+				font-size: 0.8rem;
+				color: var(--liquid-cyan);
+				opacity: 0.8;
 			}
 
 			.post-title {
-				font-size: 1.6rem;
-				color: var(--text-primary);
-				margin-bottom: 1rem;
+				font-size: 1.3rem;
 				font-weight: 700;
-				transition: var(--transition-base);
+				color: var(--text-primary);
+				transition: color 0.3s;
 			}
 
-			.post-item:hover .post-title { color: var(--aurora-green); }
+			.tilt-card:hover .post-title {
+				color: var(--liquid-purple);
+			}
 
 			.post-description {
-				font-size: 1rem;
+				font-size: 0.95rem;
 				color: var(--text-secondary);
 				line-height: 1.6;
 				margin: 0;
 			}
 
-			/* 专业领域展示 */
-			.expertise-grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-				gap: 2.5rem;
+			/* 技能气泡 */
+			.skills-bubbles {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 1rem;
+				justify-content: center;
 			}
 
-			.expertise-card {
-				padding: 3rem;
-				background: rgba(255, 255, 255, 0.015);
-				border: 1px solid rgba(255, 255, 255, 0.04);
-				border-radius: var(--radius-lg);
-				transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-				position: relative;
-				overflow: hidden;
+			.skill-bubble {
+				padding: 0.75rem 1.5rem;
+				background: var(--glass-bg);
+				border: 1px solid var(--glass-border);
+				border-radius: 100px;
+				font-family: 'Cascadia Code', monospace;
+				font-size: 0.85rem;
+				color: var(--text-secondary);
+				transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+				cursor: default;
 			}
 
-			.expertise-card::before {
+			.skill-bubble:hover {
+				transform: translateY(-3px) scale(1.05);
+				background: rgba(99, 102, 241, 0.1);
+				border-color: var(--liquid-purple);
+				color: var(--liquid-purple);
+				box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+			}
+
+			/* 环境光晕层 - 修复版 */
+			.ambient-glow {
+				position: absolute;
+				inset: 0;
+				background:
+					radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 70%),
+					radial-gradient(ellipse 60% 40% at 80% 60%, rgba(236, 72, 153, 0.08) 0%, transparent 60%);
+				z-index: 0;
+				pointer-events: none;
+			}
+
+			/* 网格背景纹理 */
+			.section::before {
 				content: '';
 				position: absolute;
-				top: 0; left: 0; width: 100%; height: 4px;
-				background: var(--accent-color, var(--primary-cyan));
-				opacity: 0.3;
-			}
-
-			.expertise-card:hover {
-				transform: translateY(-10px);
-				background: rgba(255, 255, 255, 0.04);
-				border-color: var(--accent-color, var(--neon-cyan));
-				box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 40px var(--glow-color, rgba(0, 243, 255, 0.15));
-			}
-
-			.expertise-card.ebpf { --accent-color: var(--aurora-green); --glow-color: rgba(57, 255, 20, 0.2); }
-			.expertise-card.network { --accent-color: var(--aurora-cyan); --glow-color: rgba(0, 245, 212, 0.2); }
-			.expertise-card.io { --accent-color: var(--aurora-blue); --glow-color: rgba(0, 187, 249, 0.2); }
-
-			.expertise-icon {
-				font-size: 0.75rem;
-				font-family: 'Cascadia Code', monospace;
-				color: var(--accent-color);
-				margin-bottom: 2rem;
-				display: block;
-				letter-spacing: 0.1em;
-			}
-
-			.expertise-title { 
-				font-size: 1.75rem; 
-				margin-bottom: 1.5rem;
-				font-weight: 800;
-			}
-
-			.expertise-bar {
-				width: 50px; height: 3px;
-				margin-bottom: 2rem;
-				background: var(--accent-color);
-				box-shadow: 0 0 10px var(--accent-color);
+				inset: 0;
+				background-image:
+					linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+					linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+				background-size: 50px 50px;
+				pointer-events: none;
+				z-index: 0;
 			}
 
 			@media (max-width: 768px) {
-				.hero { padding: 8rem 0 4rem; }
-				.hero-title { font-size: 2.8rem; }
-				.post-item { grid-template-columns: 1fr; gap: 1rem; padding: 2rem; }
-				.hero-actions { flex-direction: column; }
-				.section-container { padding: 4rem 1.5rem; }
+				.hero { padding: 6rem 1rem; }
+				.hero-actions { flex-direction: column; align-items: center; }
+				.posts-grid { grid-template-columns: 1fr; }
+				.section { padding: 4rem 1rem; }
 			}
 		</style>
 	</head>
 	<body>
 		<div class="noise-overlay"></div>
 		<Header />
-		
+
 		<main>
+			<!-- Hero Section -->
 			<section class="hero">
-				<canvas id="particle-canvas"></canvas>
-				<div class="hero-container">
-					<div class="hero-content">
-						<span class="hero-subtitle">CONNECTED // KERNEL_SPACE</span>
-						<h1 class="hero-title">
-							<span class="title-gradient">Tracing the Kernel,<br>One Syscall at a Time.</span>
-						</h1>
-						<div class="typewriter-container">
-							<span class="typewriter-prefix" style="color: var(--primary-cyan); opacity: 0.7;">$ </span>
-							<span class="typewriter-text"></span>
-							<span class="typewriter-cursor"></span>
-						</div>
-						<div class="hero-actions">
-							<a href="/blog" class="btn magnetic-btn">读取文章库</a>
-							<a href="/about" class="btn btn-secondary magnetic-btn">核心配置</a>
-						</div>
+				<canvas id="fluid-canvas"></canvas>
+				<div class="hero-content">
+					<span class="hero-subtitle">System.kernel_space // Developer</span>
+					<h1 class="hero-title" data-text="Schatten's Lab">Schatten's Lab</h1>
+					<div class="hero-description">
+						<p>底层技术探索者。专注于 Linux 高性能网络与系统编程。在这里记录技术攻坚，分享代码美学。</p>
 					</div>
-				</div>
-			</section>
-
-			<section class="section-container reveal">
-				<div class="section-header">
-					<h2 class="section-title">RECENT_LOGS</h2>
-					<a href="/blog" style="font-size: 0.85rem; color: var(--primary-cyan); font-family: 'Cascadia Code'; font-weight: 600;">VIEW_ALL_POSTS -></a>
-				</div>
-				<div class="posts-list">
-					{posts.map((post, index) => (
-						<a href={`/blog/${post.id}/`} class={`post-item reveal stagger-${Math.min(index + 1, 4)}`}>
-							<div class="post-date">
-								<FormattedDate date={post.data.pubDate} />
-							</div>
-							<div class="post-content">
-								<h3 class="post-title">{post.data.title}</h3>
-								<p class="post-description">{post.data.description || 'No metadata provided.'}</p>
-							</div>
+					<div class="hero-actions">
+						<a href="/blog" class="magnetic-btn magnetic-btn-primary">
+							探索文章
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<line x1="5" y1="12" x2="19" y2="12"></line>
+								<polyline points="12 5 19 12 12 19"></polyline>
+							</svg>
 						</a>
-					))}
+						<a href="/about" class="magnetic-btn magnetic-btn-secondary">
+							关于我
+						</a>
+					</div>
+				</div>
+				<div class="scroll-indicator">
+					<span>Scroll</span>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M12 5v14M19 12l-7 7-7-7"/>
+					</svg>
 				</div>
 			</section>
 
-			<section class="section-container reveal">
-				<div class="section-header">
-					<h2 class="section-title">EXPERTISE_DOMAINS</h2>
+			<!-- 最近文章 -->
+			<section class="section">
+				<div class="ambient-glow"></div>
+				<div class="section-container" style="position: relative; z-index: 1;">
+					<div class="section-header">
+						<h2 class="section-title">最新日志</h2>
+						<a href="/blog" style="font-size: 0.9rem; color: var(--liquid-purple); text-decoration: none;">查看全部 →</a>
+					</div>
+					<div class="posts-grid">
+						{posts.map((post) => (
+							<a href={`/blog/${post.id}/`} class="tilt-card" data-tilt>
+								<div class="post-date">
+									<FormattedDate date={post.data.pubDate} />
+								</div>
+								<h3 class="post-title">{post.data.title}</h3>
+								<p class="post-description">{post.data.description || '暂无描述'}</p>
+							</a>
+						))}
+					</div>
 				</div>
-				<div class="expertise-grid">
-					<div class="expertise-card ebpf reveal stagger-1">
-						<span class="expertise-icon">PATH: /sys/kernel/debug/tracing</span>
-						<div class="expertise-bar"></div>
-						<h3 class="expertise-title">eBPF & Tracing</h3>
-						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">内核级观测与 XDP 高性能处理。通过代码直接与内核对话。</p>
+			</section>
+
+			<!-- 技术领域 -->
+			<section class="section" style="background: rgba(0,0,0,0.2);">
+				<div class="section-container">
+					<div class="section-header">
+						<h2 class="section-title">技术领域</h2>
 					</div>
-					<div class="expertise-card network reveal stagger-2">
-						<span class="expertise-icon">PATH: /dev/infiniband/uverbs</span>
-						<div class="expertise-bar"></div>
-						<h3 class="expertise-title">Kernel Network</h3>
-						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">深入 RDMA、DPDK 等用户态协议栈，挑战数据包吞吐的极限。</p>
-					</div>
-					<div class="expertise-card io reveal stagger-3">
-						<span class="expertise-icon">PATH: /include/linux/io_uring.h</span>
-						<div class="expertise-bar"></div>
-						<h3 class="expertise-title">Async I/O</h3>
-						<p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">专注 io_uring、异步协程调度与高性能并发模型的设计与实现。</p>
+					<div class="skills-bubbles">
+						<span class="skill-bubble">eBPF / 内核追踪</span>
+						<span class="skill-bubble">RDMA / 高性能网络</span>
+						<span class="skill-bubble">io_uring / 异步 I/O</span>
+						<span class="skill-bubble">XDP / 数据包处理</span>
+						<span class="skill-bubble">DPDK / 用户态网络</span>
+						<span class="skill-bubble">性能调优</span>
 					</div>
 				</div>
 			</section>
@@ -519,251 +520,278 @@ const posts = (await getCollection('blog')).sort(
 		<Footer />
 
 		<script>
-			// 简单的鼠标跟随光效
-			const items = document.querySelectorAll('.post-item');
-			items.forEach(item => {
-				item.addEventListener('mousemove', (e) => {
-					const rect = item.getBoundingClientRect();
-					const x = ((e.clientX - rect.left) / rect.width) * 100;
-					const y = ((e.clientY - rect.top) / rect.height) * 100;
-					item.style.setProperty('--x', `${x}%`);
-					item.style.setProperty('--y', `${y}%`);
-				});
-			});
+			// ===== 流体Canvas背景 =====
+			const canvas = document.getElementById('fluid-canvas') as HTMLCanvasElement;
+			const ctx = canvas.getContext('2d')!;
+			let width: number, height: number;
+			let particles: FluidParticle[] = [];
+			let mouse = { x: 0, y: 0, active: false, timer: 0 as unknown as ReturnType<typeof setTimeout> };
+			let animationId: number;
 
-			// ===== 粒子网络背景动画 =====
-			const canvas = document.getElementById('particle-canvas');
-			const ctx = canvas.getContext('2d');
-			let particles = [];
-			let mouse = { x: null, y: null, radius: 150 };
-			let animationId = null;
-			let isActive = true;
-
-			function resizeCanvas() {
-				const hero = document.querySelector('.hero');
-				if (hero) {
-					canvas.width = hero.offsetWidth;
-					canvas.height = hero.offsetHeight;
-				}
-			}
-
-			// 极光之夜色系
-			const neonColors = [
-				{ r: 57, g: 255, b: 20 },    // 极光绿
-				{ r: 0, g: 245, b: 212 },    // 冰蓝
-				{ r: 0, g: 187, b: 249 },    // 天蓝
-				{ r: 155, g: 93, b: 229 }    // 极光紫
+			// 配色
+			const colors = [
+				{ r: 99, g: 102, b: 241 },   // 紫色
+				{ r: 236, g: 72, b: 153 },   // 粉色
+				{ r: 6, g: 182, b: 212 },    // 青色
+				{ r: 245, g: 158, b: 11 }    // 琥珀
 			];
 
-			class Particle {
+			function resize() {
+				width = canvas.width = window.innerWidth;
+				height = canvas.height = window.innerHeight;
+			}
+
+			class FluidParticle {
+				x!: number;
+				y!: number;
+				vx!: number;
+				vy!: number;
+				radius!: number;
+				color!: { r: number; g: number; b: number };
+				opacity!: number;
+				phase!: number;
+
 				constructor() {
-					this.x = Math.random() * canvas.width;
-					this.y = Math.random() * canvas.height;
+					this.reset();
+				}
+
+				reset() {
+					this.x = Math.random() * width;
+					this.y = Math.random() * height;
 					this.vx = (Math.random() - 0.5) * 0.5;
 					this.vy = (Math.random() - 0.5) * 0.5;
-					this.size = Math.random() * 2 + 1;
-					this.baseX = this.x;
-					this.baseY = this.y;
-					this.color = neonColors[Math.floor(Math.random() * neonColors.length)];
+					this.radius = Math.random() * 150 + 100;
+					this.color = colors[Math.floor(Math.random() * colors.length)];
+					this.opacity = Math.random() * 0.3 + 0.1;
+					this.phase = Math.random() * Math.PI * 2;
 				}
 
 				update() {
-					// 基础移动
+					// 基础流动
 					this.x += this.vx;
 					this.y += this.vy;
+					this.phase += 0.01;
 
-					// 边界检测
-					if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-					if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+					// 波动
+					this.x += Math.sin(this.phase) * 0.5;
+					this.y += Math.cos(this.phase * 0.7) * 0.3;
 
-					// 鼠标交互
-					if (mouse.x != null) {
-						let dx = mouse.x - this.x;
-						let dy = mouse.y - this.y;
-						let distance = Math.sqrt(dx * dx + dy * dy);
-						if (distance < mouse.radius) {
-							const force = (mouse.radius - distance) / mouse.radius;
-							const directionX = dx / distance;
-							const directionY = dy / distance;
-							this.x -= directionX * force * 2;
-							this.y -= directionY * force * 2;
+					// 边界循环
+					if (this.x < -this.radius) this.x = width + this.radius;
+					if (this.x > width + this.radius) this.x = -this.radius;
+					if (this.y < -this.radius) this.y = height + this.radius;
+					if (this.y > height + this.radius) this.y = -this.radius;
+
+					// 鼠标交互 - 涟漪效果
+					if (mouse.active) {
+						const dx = mouse.x - this.x;
+						const dy = mouse.y - this.y;
+						const dist = Math.sqrt(dx * dx + dy * dy);
+
+						if (dist < 300) {
+							const force = (300 - dist) / 300;
+							this.x -= dx * force * 0.02;
+							this.y -= dy * force * 0.02;
 						}
 					}
 				}
 
 				draw() {
+					const gradient = ctx.createRadialGradient(
+						this.x, this.y, 0,
+						this.x, this.y, this.radius
+					);
+
+					gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`);
+					gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity * 0.5})`);
+					gradient.addColorStop(1, 'transparent');
+
+					ctx.fillStyle = gradient;
 					ctx.beginPath();
-					ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-					ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.5)`;
+					ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 					ctx.fill();
 				}
 			}
 
 			function initParticles() {
 				particles = [];
-				const particleCount = Math.min(60, Math.floor((canvas.width * canvas.height) / 15000));
-				for (let i = 0; i < particleCount; i++) {
-					particles.push(new Particle());
+				const count = Math.min(25, Math.floor((width * height) / 40000));
+				for (let i = 0; i < count; i++) {
+					particles.push(new FluidParticle());
 				}
 			}
 
-			function connectParticles() {
-				const maxDistance = 120;
-				for (let i = 0; i < particles.length; i++) {
-					for (let j = i + 1; j < particles.length; j++) {
-						let dx = particles[i].x - particles[j].x;
-						let dy = particles[i].y - particles[j].y;
-						let distance = Math.sqrt(dx * dx + dy * dy);
+			function animate() {
+				// 使用半透明清除产生拖尾效果
+				ctx.fillStyle = 'rgba(15, 13, 26, 0.1)';
+				ctx.fillRect(0, 0, width, height);
 
-						if (distance < maxDistance) {
-							const opacity = (1 - distance / maxDistance) * 0.25;
-							// 混合两个粒子的颜色
-							const c1 = particles[i].color;
-							const c2 = particles[j].color;
-							const r = Math.round((c1.r + c2.r) / 2);
-							const g = Math.round((c1.g + c2.g) / 2);
-							const b = Math.round((c1.b + c2.b) / 2);
-							ctx.beginPath();
-							ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-							ctx.lineWidth = 1;
-							ctx.moveTo(particles[i].x, particles[i].y);
-							ctx.lineTo(particles[j].x, particles[j].y);
-							ctx.stroke();
-						}
-					}
-				}
-			}
+				// 使用 lighter 混合模式创造发光效果
+				ctx.globalCompositeOperation = 'lighter';
 
-			function animateParticles() {
-				if (!isActive) return;
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-				particles.forEach(particle => {
-					particle.update();
-					particle.draw();
+				particles.forEach(p => {
+					p.update();
+					p.draw();
 				});
 
-				connectParticles();
-				animationId = requestAnimationFrame(animateParticles);
+				ctx.globalCompositeOperation = 'source-over';
+
+				animationId = requestAnimationFrame(animate);
 			}
 
 			// 鼠标事件
-			const hero = document.querySelector('.hero');
-			hero.addEventListener('mousemove', (e) => {
-				const rect = hero.getBoundingClientRect();
-				mouse.x = e.clientX - rect.left;
-				mouse.y = e.clientY - rect.top;
-			});
+			window.addEventListener('mousemove', (e: MouseEvent) => {
+				mouse.x = e.clientX;
+				mouse.y = e.clientY;
+				mouse.active = true;
 
-			hero.addEventListener('mouseleave', () => {
-				mouse.x = null;
-				mouse.y = null;
+				clearTimeout(mouse.timer);
+				mouse.timer = setTimeout(() => {
+					mouse.active = false;
+				}, 100);
 			});
-
-			// 初始化
-			resizeCanvas();
-			initParticles();
-			animateParticles();
 
 			window.addEventListener('resize', () => {
-				resizeCanvas();
+				resize();
 				initParticles();
 			});
 
+			// 初始化
+			resize();
+			initParticles();
+			animate();
+
 			// 页面可见性控制
 			document.addEventListener('visibilitychange', () => {
-				isActive = document.visibilityState === 'visible';
-				if (isActive && !animationId) animateParticles();
+				if (document.visibilityState === 'hidden') {
+					cancelAnimationFrame(animationId);
+				} else {
+					animate();
+				}
 			});
 
-			// ===== 滚动触发动画 =====
-			const revealElements = document.querySelectorAll('.reveal');
+			// ===== 故障艺术解码动画 =====
+			const title = document.querySelector('.hero-title') as HTMLElement | null;
+			if (title) {
+			const text = title.dataset.text!;
+			const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 
-			const revealObserver = new IntersectionObserver((entries) => {
-				entries.forEach(entry => {
-					if (entry.isIntersecting) {
-						entry.target.classList.add('active');
-						revealObserver.unobserve(entry.target);
-					}
+			title.innerHTML = text.split('').map((char: string, i: number) => {
+				if (char === ' ') return '<span class="char">&nbsp;</span>';
+				return `<span class="char" data-char="${char}" data-index="${i}">${char}</span>`;
+			}).join('');
+
+			const charElements = title.querySelectorAll('.char');
+
+			// 依次解码每个字符
+			charElements.forEach((char: Element, index: number) => {
+				const el = char as HTMLElement;
+				const targetChar = el.dataset.char!;
+				let iterations = 0;
+				const maxIterations = 8 + Math.random() * 5;
+				const delay = 800 + index * 80;
+
+				setTimeout(() => {
+					const interval = setInterval(() => {
+						if (iterations >= maxIterations) {
+							el.textContent = targetChar;
+							el.classList.add('decoded');
+							// 随机添加故障效果
+							if (Math.random() > 0.7) {
+								el.classList.add('glitch');
+								setTimeout(() => el.classList.remove('glitch'), 300);
+							}
+							clearInterval(interval);
+						} else {
+							el.textContent = chars[Math.floor(Math.random() * chars.length)];
+							iterations++;
+						}
+					}, 50);
+				}, delay);
+			});
+			}
+
+			// ===== 3D 倾斜卡片 =====
+			const tiltCards = document.querySelectorAll('.tilt-card');
+
+			tiltCards.forEach((card: Element) => {
+				const el = card as HTMLElement;
+				el.addEventListener('mousemove', (e: MouseEvent) => {
+					const rect = el.getBoundingClientRect();
+					const x = e.clientX - rect.left;
+					const y = e.clientY - rect.top;
+					const centerX = rect.width / 2;
+					const centerY = rect.height / 2;
+
+					const rotateX = (y - centerY) / 20;
+					const rotateY = (centerX - x) / 20;
+
+					el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+					el.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+					el.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
 				});
-			}, {
-				threshold: 0.1,
-				rootMargin: '0px 0px -50px 0px'
+
+				el.addEventListener('mouseleave', () => {
+					el.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+				});
 			});
 
-			revealElements.forEach(el => revealObserver.observe(el));
-
-			// ===== 磁吸按钮效果 =====
+			// ===== 磁吸按钮 =====
 			const magneticBtns = document.querySelectorAll('.magnetic-btn');
 
-			magneticBtns.forEach(btn => {
-				btn.addEventListener('mousemove', (e) => {
-					const rect = btn.getBoundingClientRect();
+			magneticBtns.forEach((btn: Element) => {
+				const el = btn as HTMLElement;
+				el.addEventListener('mousemove', (e: MouseEvent) => {
+					const rect = el.getBoundingClientRect();
 					const x = e.clientX - rect.left - rect.width / 2;
 					const y = e.clientY - rect.top - rect.height / 2;
 
-					btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+					el.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
 				});
 
-				btn.addEventListener('mouseleave', () => {
-					btn.style.transform = 'translate(0, 0)';
+				el.addEventListener('mouseleave', () => {
+					el.style.transform = 'translate(0, 0)';
 				});
 			});
 
-			// ===== 打字机效果 =====
-			const typewriterText = document.querySelector('.typewriter-text');
-			const typewriterCursor = document.querySelector('.typewriter-cursor');
+			// ===== 视差滚动效果 =====
+			const parallaxCanvas = document.getElementById('fluid-canvas') as HTMLElement;
+			const ambientGlow = document.querySelector('.ambient-glow') as HTMLElement;
+			const heroContent = document.querySelector('.hero-content') as HTMLElement;
 
-			const textArray = [
-				'专注于 Linux 内核观测、高性能网络协议栈与系统底层调优。',
-				'Researching eBPF, RDMA, io_uring...',
-				'Tracing the Kernel, One Syscall at a Time.',
-				'探索底层极限，记录技术攻坚。'
-			];
+			window.addEventListener('scroll', () => {
+				const scrolled = window.scrollY;
+				const viewportHeight = window.innerHeight;
 
-			let textIndex = 0;
-			let charIndex = 0;
-			let isDeleting = false;
-			let isWaiting = false;
-
-			function typeWriter() {
-				const currentText = textArray[textIndex];
-
-				if (isWaiting) {
-					setTimeout(typeWriter, 2000);
-					isWaiting = false;
-					return;
+				// Hero Canvas 视差 - 向上滚动时缓慢移动并淡出
+				if (parallaxCanvas && scrolled < viewportHeight) {
+					const canvasSpeed = 0.4;
+					parallaxCanvas.style.transform = `translateY(${scrolled * canvasSpeed}px)`;
+					parallaxCanvas.style.opacity = String(1 - (scrolled / viewportHeight) * 0.8);
 				}
 
-				if (isDeleting) {
-					typewriterText.textContent = currentText.substring(0, charIndex - 1);
-					charIndex--;
-					typewriterCursor.classList.add('typing');
-				} else {
-					typewriterText.textContent = currentText.substring(0, charIndex + 1);
-					charIndex++;
-					typewriterCursor.classList.add('typing');
+				// Hero 内容视差 - 比背景移动更快，产生深度感
+				if (heroContent && scrolled < viewportHeight) {
+					const contentSpeed = 0.7;
+					heroContent.style.transform = `translateY(${scrolled * contentSpeed}px)`;
+					heroContent.style.opacity = String(1 - (scrolled / (viewportHeight * 0.6)));
 				}
 
-				let typeSpeed = isDeleting ? 30 : 80;
-
-				if (!isDeleting && charIndex === currentText.length) {
-					typeSpeed = 2000;
-					isWaiting = true;
-					isDeleting = true;
-					typewriterCursor.classList.remove('typing');
-				} else if (isDeleting && charIndex === 0) {
-					isDeleting = false;
-					textIndex = (textIndex + 1) % textArray.length;
-					typeSpeed = 500;
-					typewriterCursor.classList.remove('typing');
+				// 环境光晕视差 - 反向缓慢移动
+				if (ambientGlow) {
+					const glowSpeed = -0.15;
+					ambientGlow.style.transform = `translateY(${scrolled * glowSpeed}px)`;
 				}
+			});
 
-				setTimeout(typeWriter, typeSpeed);
+			// ===== 平滑滚动 =====
+			const scrollIndicator = document.querySelector('.scroll-indicator');
+			const firstSection = document.querySelector('.section');
+			if (scrollIndicator && firstSection) {
+				scrollIndicator.addEventListener('click', () => {
+					firstSection.scrollIntoView({ behavior: 'smooth' });
+				});
 			}
-
-			// 延迟启动打字机效果
-			setTimeout(typeWriter, 1000);
 		</script>
 	</body>
 </html>

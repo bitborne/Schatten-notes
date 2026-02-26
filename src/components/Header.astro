@@ -4,12 +4,15 @@ import HeaderLink from './HeaderLink.astro';
 ---
 
 <header class="site-header">
+	<div class="header-glow"></div>
 	<div class="header-container">
 		<div class="logo">
 			<a href="/" class="logo-link">
+				<span class="logo-bracket">[</span>
 				<span class="logo-prefix">$</span>
 				<span class="logo-text">{SITE_TITLE}</span>
 				<span class="logo-cursor">_</span>
+				<span class="logo-bracket">]</span>
 			</a>
 		</div>
 
@@ -21,11 +24,12 @@ import HeaderLink from './HeaderLink.astro';
 
 		<div class="header-actions">
 			<a href="https://github.com/bitborne" target="_blank" class="github-link" aria-label="GitHub">
-				<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+				<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
 					<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-				</svg>
+			</svg>
 			</a>
 			<button class="menu-toggle" aria-label="Toggle Menu" id="menuToggle">
+				<span></span>
 				<span></span>
 				<span></span>
 			</button>
@@ -42,27 +46,52 @@ import HeaderLink from './HeaderLink.astro';
 </header>
 
 <style>
+	/* ===== 液态金属 Header ===== */
 	.site-header {
-		position: sticky;
+		position: fixed;
 		top: 0;
+		left: 0;
+		right: 0;
 		z-index: 1000;
-		background: var(--bg-header);
-		backdrop-filter: blur(16px);
-		-webkit-backdrop-filter: blur(16px);
-		border-bottom: 1px solid var(--border-color);
+		background: rgba(15, 13, 26, 0.6);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
+	/* 顶部发光条 */
+	.header-glow {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(90deg,
+			transparent 0%,
+			rgba(99, 102, 241, 0.5) 20%,
+			rgba(236, 72, 153, 0.5) 50%,
+			rgba(99, 102, 241, 0.5) 80%,
+			transparent 100%
+		);
+		opacity: 0;
+		transition: opacity 0.4s;
+	}
+
+	.site-header.scrolled .header-glow {
+		opacity: 1;
+	}
+
 	.site-header.scrolled {
-		background: rgba(10, 12, 20, 0.95);
-		border-bottom-color: rgba(0, 243, 255, 0.15);
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+		background: rgba(15, 13, 26, 0.9);
+		border-bottom-color: rgba(99, 102, 241, 0.15);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 60px rgba(99, 102, 241, 0.1);
 	}
 
 	.header-container {
 		max-width: 1200px;
 		margin: 0 auto;
-		padding: 1.25rem 1.5rem;
+		padding: 1rem 1.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -70,172 +99,181 @@ import HeaderLink from './HeaderLink.astro';
 	}
 
 	.site-header.scrolled .header-container {
-		padding: 0.8rem 1.5rem;
+		padding: 0.75rem 1.5rem;
 	}
 
-	/* 主题配色 */
-	/* 极光之夜主题（首页） */
-	.site-header.theme-neon.scrolled {
-		border-bottom-color: rgba(57, 255, 20, 0.2);
-	}
-
-	.site-header.theme-neon .logo-prefix,
-	.site-header.theme-neon .logo-cursor {
-		color: #39ff14;
-		text-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
-	}
-
-	.site-header.theme-neon .main-nav :global(a:hover),
-	.site-header.theme-neon .main-nav :global(a.active) {
-		color: #39ff14;
-		background: rgba(57, 255, 20, 0.08);
-	}
-
-	/* 森林绿主题（分类列表页） */
-	.site-header.theme-forest.scrolled {
-		border-bottom-color: rgba(77, 182, 172, 0.2);
-	}
-
-	.site-header.theme-forest .logo-prefix,
-	.site-header.theme-forest .logo-cursor {
-		color: #4db6ac;
-		text-shadow: 0 0 10px rgba(77, 182, 172, 0.4);
-	}
-
-	.site-header.theme-forest .main-nav :global(a:hover),
-	.site-header.theme-forest .main-nav :global(a.active) {
-		color: #4db6ac;
-		background: rgba(77, 182, 172, 0.08);
-	}
-
-	.site-header.theme-amber.scrolled {
-		border-bottom-color: rgba(255, 179, 71, 0.2);
-	}
-
-	.site-header.theme-amber .logo-prefix,
-	.site-header.theme-amber .logo-cursor {
-		color: #ffb347;
-		text-shadow: 0 0 10px rgba(255, 179, 71, 0.4);
-	}
-
-	.site-header.theme-amber .main-nav :global(a:hover),
-	.site-header.theme-amber .main-nav :global(a.active) {
-		color: #ffb347;
-		background: rgba(255, 179, 71, 0.08);
-	}
-
-	.site-header.theme-morandi.scrolled {
-		border-bottom-color: rgba(107, 140, 174, 0.2);
-	}
-
-	.site-header.theme-morandi .logo-prefix,
-	.site-header.theme-morandi .logo-cursor {
-		color: #6b8cae;
-		text-shadow: 0 0 10px rgba(107, 140, 174, 0.3);
-	}
-
-	.site-header.theme-morandi .main-nav :global(a:hover),
-	.site-header.theme-morandi .main-nav :global(a.active) {
-		color: #6b8cae;
-		background: rgba(107, 140, 174, 0.08);
-	}
-
-	/* Logo Style */
+	/* ===== Logo 设计 - 液态终端风格 ===== */
 	.logo-link {
 		display: flex;
 		align-items: center;
 		font-family: 'Cascadia Code', monospace;
 		font-weight: 700;
-		font-size: 1.25rem;
-		color: var(--text-primary);
-		letter-spacing: -0.02em;
-	}
-
-	.logo-prefix {
-		color: var(--primary-cyan);
-		margin-right: 0.4em;
-		opacity: 0.8;
-	}
-
-	.logo-cursor {
-		color: var(--primary-cyan);
-		animation: blink 1s step-end infinite;
-		margin-left: 0.1em;
-	}
-
-	@keyframes blink {
-		from, to { opacity: 1; }
-		50% { opacity: 0; }
-	}
-
-	/* Navigation */
-	.main-nav {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.main-nav :global(a) {
+		font-size: 1.1rem;
+		letter-spacing: -0.01em;
+		text-decoration: none;
 		padding: 0.5rem 1rem;
-		color: var(--text-secondary);
-		font-size: 0.95rem;
-		font-weight: 500;
-		border-radius: var(--radius-sm);
-		transition: var(--transition-base);
+		background: rgba(99, 102, 241, 0.08);
+		border: 1px solid rgba(99, 102, 241, 0.15);
+		border-radius: 12px;
+		transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
 
-	.main-nav :global(a:hover) {
-		color: var(--primary-cyan);
-		background: rgba(0, 243, 255, 0.05);
-	}
-
-	.main-nav :global(a.active) {
-		color: var(--primary-cyan);
-		background: rgba(0, 243, 255, 0.1);
-	}
-
-	/* Actions */
-	.header-actions {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	.github-link {
-		color: var(--text-secondary);
-		transition: var(--transition-base);
-	}
-
-	.github-link:hover {
-		color: var(--text-primary);
+	.logo-link:hover {
+		background: rgba(99, 102, 241, 0.15);
+		border-color: rgba(236, 72, 153, 0.3);
+		box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
 		transform: translateY(-1px);
 	}
 
+	.logo-bracket {
+		color: rgba(148, 163, 184, 0.5);
+		font-weight: 400;
+	}
+
+	.logo-prefix {
+		background: linear-gradient(135deg, #6366f1, #ec4899);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		margin: 0 0.2em;
+		font-weight: 800;
+	}
+
+	.logo-text {
+		color: #f8fafc;
+		margin-right: 0.2em;
+	}
+
+	.logo-cursor {
+		color: #6366f1;
+		animation: blink 1.2s step-end infinite;
+		text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+	}
+
+	@keyframes blink {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0; }
+	}
+
+	/* ===== 导航 - 液态悬浮效果 ===== */
+	.main-nav {
+		display: flex;
+		gap: 0.25rem;
+		padding: 0.25rem;
+		background: rgba(255, 255, 255, 0.02);
+		border-radius: 100px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.main-nav :global(a) {
+		padding: 0.5rem 1.25rem;
+		color: #94a3b8;
+		font-size: 0.9rem;
+		font-weight: 500;
+		border-radius: 100px;
+		transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+		text-decoration: none;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.main-nav :global(a::before) {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+		border-radius: 100px;
+		opacity: 0;
+		transition: opacity 0.3s;
+		z-index: -1;
+	}
+
+	.main-nav :global(a:hover) {
+		color: #f8fafc;
+		transform: translateY(-1px);
+	}
+
+	.main-nav :global(a:hover::before) {
+		opacity: 1;
+	}
+
+	.main-nav :global(a.active) {
+		color: #f8fafc;
+		background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(236, 72, 153, 0.15));
+		box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+	}
+
+	/* ===== GitHub 链接 ===== */
+	.github-link {
+		color: #64748b;
+		transition: all 0.3s;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 10px;
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.github-link:hover {
+		color: #f8fafc;
+		background: rgba(99, 102, 241, 0.1);
+		border-color: rgba(99, 102, 241, 0.2);
+		box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+		transform: translateY(-2px);
+	}
+
+	/* ===== 汉堡菜单 ===== */
 	.menu-toggle {
 		display: none;
 		flex-direction: column;
 		justify-content: center;
-		gap: 6px;
-		width: 32px;
-		height: 32px;
-		background: none;
-		border: none;
+		align-items: center;
+		gap: 5px;
+		width: 40px;
+		height: 40px;
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 10px;
 		cursor: pointer;
-		padding: 4px;
+		padding: 0;
+		transition: all 0.3s;
+	}
+
+	.menu-toggle:hover {
+		background: rgba(99, 102, 241, 0.1);
+		border-color: rgba(99, 102, 241, 0.2);
 	}
 
 	.menu-toggle span {
 		display: block;
-		width: 100%;
+		width: 18px;
 		height: 2px;
-		background: var(--text-primary);
-		transition: var(--transition-base);
+		background: linear-gradient(90deg, #6366f1, #ec4899);
+		border-radius: 2px;
+		transition: all 0.3s;
 	}
 
-	/* Mobile Menu */
+	.menu-toggle.active span:nth-child(1) {
+		transform: rotate(45deg) translate(5px, 5px);
+	}
+
+	.menu-toggle.active span:nth-child(2) {
+		opacity: 0;
+	}
+
+	.menu-toggle.active span:nth-child(3) {
+		transform: rotate(-45deg) translate(5px, -5px);
+	}
+
+	/* ===== 移动端菜单 ===== */
 	.mobile-menu {
 		display: none;
-		background: var(--bg-surface);
-		border-bottom: 1px solid var(--border-color);
+		background: rgba(15, 13, 26, 0.95);
+		backdrop-filter: blur(20px);
+		border-bottom: 1px solid rgba(99, 102, 241, 0.1);
 		padding: 1rem;
 	}
 
@@ -249,47 +287,38 @@ import HeaderLink from './HeaderLink.astro';
 		gap: 0.5rem;
 	}
 
+	.mobile-nav :global(a) {
+		padding: 0.75rem 1rem;
+		border-radius: 8px;
+	}
+
+	/* ===== 响应式 ===== */
 	@media (max-width: 768px) {
 		.main-nav { display: none; }
 		.menu-toggle { display: flex; }
+		.logo-link { font-size: 1rem; padding: 0.4rem 0.8rem; }
+	}
+
+	@media (max-width: 480px) {
+		.header-container { padding: 0.75rem 1rem; }
+		.logo-text { display: none; }
+		.logo-prefix::after { content: 'S'; }
 	}
 </style>
 
 <script>
-	// 页面主题色配置
-	const path = window.location.pathname;
-	const header = document.querySelector('.site-header');
-	const logoPrefix = document.querySelector('.logo-prefix');
-	const logoCursor = document.querySelector('.logo-cursor');
-
-	// 根据页面设置主题色
-	if (path === '/' || path === '/index.html') {
-		// 首页 - 极光之夜
-		header?.classList.add('theme-neon');
-	} else if (path === '/blog' || path === '/blog/') {
-		// 归档页 - 琥珀金
-		header?.classList.add('theme-amber');
-	} else if (path.startsWith('/blog/category/')) {
-		// 分类列表页 - 森林绿
-		header?.classList.add('theme-forest');
-	} else if (path.startsWith('/blog/')) {
-		// 文章详情页 - 莫兰迪
-		header?.classList.add('theme-morandi');
-	} else if (path.startsWith('/about')) {
-		// 关于页 - 莫兰迪
-		header?.classList.add('theme-morandi');
-	}
-
 	// 滚动效果
+	const header = document.querySelector('.site-header');
+
 	window.addEventListener('scroll', () => {
-		if (window.scrollY > 50) {
+		if (window.scrollY > 30) {
 			header?.classList.add('scrolled');
 		} else {
 			header?.classList.remove('scrolled');
 		}
 	});
 
-	// 移动端菜单切换
+	// 移动端菜单
 	const menuToggle = document.getElementById('menuToggle');
 	const mobileMenu = document.getElementById('mobileMenu');
 
