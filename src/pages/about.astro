@@ -10,6 +10,9 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 	<head>
 		<BaseHead title={`关于 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 		<style>
+			/* 导入字体 - 必须放在最前面 */
+			@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 			/* ===== 档案室主题 - 复古科技风 ===== */
 			:root {
 				--archive-bg: #0c0a12;
@@ -20,9 +23,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 				--archive-glow: rgba(184, 168, 138, 0.3);
 				--terminal-green: #4ade80;
 			}
-
-			/* 导入字体 */
-			@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 			.about-container {
 				min-height: 100vh;

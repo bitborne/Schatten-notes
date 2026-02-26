@@ -36,6 +36,9 @@ const categories = Object.keys(categoryData).sort();
 	<head>
 		<BaseHead title={`归档 | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
 		<style>
+			/* 导入字体 - 必须放在最前面 */
+			@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
 			/* ===== 蜂巢归档页 - 星座连线主题 ===== */
 			:root {
 				--amber-gold: #ffb347;
@@ -46,9 +49,6 @@ const categories = Object.keys(categoryData).sort();
 				--hex-border: rgba(255, 179, 71, 0.15);
 				--hex-border-hover: rgba(255, 179, 71, 0.5);
 			}
-
-			/* 导入字体 */
-			@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 			/* 噪点覆盖 */
 			.noise-overlay {
