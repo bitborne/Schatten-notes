@@ -494,7 +494,47 @@ const categories = Object.keys(categoryData).sort();
 				}
 
 				.back-stats {
-					font-size: 1.5rem;
+					font-size: 1.25rem;
+					margin-bottom: 0.25rem;
+				}
+
+				.back-title {
+					font-size: 0.6rem;
+					margin-bottom: 0.5rem;
+				}
+
+				.back-label {
+					font-size: 0.65rem;
+					margin-bottom: 0.75rem;
+				}
+
+				.enter-btn {
+					font-size: 0.65rem;
+					padding: 0.4rem 0.8rem;
+				}
+
+				.back-content {
+					transform: scale(0.9);
+				}
+			}
+
+			/* 超小屏幕额外优化 */
+			@media (max-width: 390px) {
+				.hex-card {
+					width: 140px;
+					height: 162px;
+				}
+
+				.hex-title {
+					font-size: 0.75rem;
+				}
+
+				.back-content {
+					transform: scale(0.85);
+				}
+
+				.back-stats {
+					font-size: 1.1rem;
 				}
 			}
 		</style>
