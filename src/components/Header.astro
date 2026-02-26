@@ -203,6 +203,13 @@ import HeaderLink from './HeaderLink.astro';
 		box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
 	}
 
+	/* ===== Header 操作区 - GitHub 和菜单按钮 ===== */
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
 	/* ===== GitHub 链接 ===== */
 	.github-link {
 		color: #64748b;
@@ -301,6 +308,11 @@ import HeaderLink from './HeaderLink.astro';
 
 	@media (max-width: 480px) {
 		.header-container { padding: 0.75rem 1rem; }
+		.logo-link { font-size: 0.9rem; padding: 0.35rem 0.6rem; }
+		.logo-bracket { display: none; }
+	}
+
+	@media (max-width: 360px) {
 		.logo-text { display: none; }
 		.logo-prefix::after { content: 'S'; }
 	}

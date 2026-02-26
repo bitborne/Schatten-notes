@@ -109,9 +109,7 @@ const posts = (await getCollection('blog')).sort(
 				letter-spacing: 0.2em;
 				margin-bottom: 2rem;
 				min-height: 1.5em;
-				display: inline-flex;
-				align-items: center;
-				gap: 0.2em;
+				display: inline;
 			}
 
 			/* 粉紫色渐变文字 */
@@ -132,6 +130,18 @@ const posts = (await getCollection('blog')).sort(
 				animation: cursorBlink 1s step-end infinite, cursorGlow 2s ease-in-out infinite;
 				vertical-align: text-bottom;
 				margin-left: 2px;
+			}
+
+			/* 手机端优化 - 减小字间距避免折行 */
+			@media (max-width: 480px) {
+				.hero-subtitle {
+					font-size: 0.8rem;
+					letter-spacing: 0.1em;
+				}
+				.typewriter-cursor {
+					width: 8px;
+					height: 1.1em;
+				}
 			}
 
 			@keyframes cursorBlink {
