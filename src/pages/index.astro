@@ -52,14 +52,9 @@ const posts = (await getCollection('blog')).sort(
 				100% { background-position: 0% 50%; }
 			}
 
-			/* 噪点覆盖 */
+			/* 噪点覆盖 - 已禁用 */
 			.noise-overlay {
-				position: fixed;
-				inset: 0;
-				z-index: 9999;
-				pointer-events: none;
-				opacity: 0.03;
-				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+				display: none;
 			}
 
 			/* Hero Section - 全屏沉浸 */
@@ -73,12 +68,25 @@ const posts = (await getCollection('blog')).sort(
 				background: var(--liquid-bg);
 			}
 
-			/* 流体Canvas背景 */
+			/* 流体Canvas背景 - 高级渐变光晕 */
 			#fluid-canvas {
 				position: absolute;
 				inset: 0;
 				z-index: 0;
 				will-change: transform, opacity;
+				filter: blur(0px);
+			}
+
+			/* 额外的背景光晕层 */
+			.ambient-light {
+				position: absolute;
+				inset: 0;
+				z-index: 0;
+				background:
+					radial-gradient(ellipse 120% 80% at 20% 40%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+					radial-gradient(ellipse 100% 60% at 80% 60%, rgba(236, 72, 153, 0.08) 0%, transparent 45%),
+					radial-gradient(ellipse 80% 100% at 50% 100%, rgba(6, 182, 212, 0.06) 0%, transparent 40%);
+				pointer-events: none;
 			}
 
 			.hero-content {
@@ -596,126 +604,142 @@ const posts = (await getCollection('blog')).sort(
 				}
 			}
 
-			/* 3D 倾斜卡片 - 增强版 */
+			/* 文章卡片 - 聚光灯悬浮效果 */
 			.posts-grid {
 				display: grid;
 				grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
 				gap: 2rem;
-				perspective: 2000px;
 			}
 
-			.tilt-card {
-				background: var(--glass-bg);
+			.post-card {
+				background: linear-gradient(
+					145deg,
+					rgba(30, 28, 35, 0.6) 0%,
+					rgba(22, 20, 26, 0.8) 100%
+				);
 				backdrop-filter: blur(20px);
-				border-radius: 20px;
+				border-radius: 16px;
 				padding: 2rem;
 				text-decoration: none;
 				color: inherit;
 				display: flex;
 				flex-direction: column;
 				gap: 1rem;
-				transition: transform 0.1s ease-out, box-shadow 0.3s;
-				transform-style: preserve-3d;
 				position: relative;
 				overflow: hidden;
-				border: 1px solid transparent;
-				background-clip: padding-box;
+				border: 1px solid rgba(184, 168, 138, 0.08);
+				/* 平滑过渡 */
+				transition:
+					transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+					box-shadow 0.4s ease,
+					border-color 0.3s ease;
 			}
 
-			/* 动态流光边框 */
-			.tilt-card::before {
+			/* 聚光灯效果 - 悬停时从中心扩散 */
+			.post-card::before {
 				content: '';
-				position: absolute;
-				inset: -1px;
-				background: conic-gradient(
-					from calc(var(--rotation, 0deg)),
-					transparent 0%,
-					rgba(99, 102, 241, 0.4) 20%,
-					rgba(236, 72, 153, 0.4) 40%,
-					rgba(6, 182, 212, 0.4) 60%,
-					transparent 80%
-				);
-				border-radius: 21px;
-				z-index: -1;
-				opacity: 0;
-				transition: opacity 0.3s;
-			}
-
-			.tilt-card:hover::before {
-				opacity: 1;
-				animation: cardBorderRotate 3s linear infinite;
-			}
-
-			@keyframes cardBorderRotate {
-				from { --rotation: 0deg; }
-				to { --rotation: 360deg; }
-			}
-
-			@property --rotation {
-				syntax: '<angle>';
-				initial-value: 0deg;
-				inherits: false;
-			}
-
-			/* 内部遮罩 */
-			.tilt-card::after {
-				content: '';
-				position: absolute;
-				inset: 1px;
-				background: var(--glass-bg);
-				backdrop-filter: blur(20px);
-				border-radius: 19px;
-				z-index: -1;
-			}
-
-			/* 鼠标跟随光晕 */
-			.tilt-card .card-glow {
 				position: absolute;
 				inset: 0;
 				background: radial-gradient(
-					circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-					rgba(99, 102, 241, 0.2),
-					transparent 50%
+					circle at 50% 0%,
+					rgba(212, 175, 55, 0.15) 0%,
+					transparent 60%
 				);
 				opacity: 0;
-				transition: opacity 0.3s;
+				transition: opacity 0.4s ease;
 				pointer-events: none;
-				border-radius: 20px;
 			}
 
-			.tilt-card:hover .card-glow {
+			/* 渐变边框 */
+			.post-card::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border-radius: 16px;
+				padding: 1px;
+				background: linear-gradient(
+					180deg,
+					rgba(212, 175, 55, 0.6) 0%,
+					transparent 40%
+				);
+				-webkit-mask:
+					linear-gradient(#fff 0 0) content-box,
+					linear-gradient(#fff 0 0);
+				-webkit-mask-composite: xor;
+				mask-composite: exclude;
+				opacity: 0;
+				transition: opacity 0.4s ease;
+				pointer-events: none;
+			}
+
+			/* 悬浮状态 */
+			.post-card:hover {
+				transform: translateY(-8px);
+				box-shadow:
+					0 20px 40px rgba(0, 0, 0, 0.4),
+					0 0 0 1px rgba(212, 175, 55, 0.15),
+					0 0 60px rgba(212, 175, 55, 0.1);
+				border-color: rgba(212, 175, 55, 0.25);
+			}
+
+			.post-card:hover::before,
+			.post-card:hover::after {
 				opacity: 1;
 			}
 
-			.tilt-card:hover {
-				box-shadow:
-					0 25px 50px rgba(0, 0, 0, 0.3),
-					0 0 40px rgba(99, 102, 241, 0.15),
-					0 0 80px rgba(99, 102, 241, 0.05);
+			/* 卡片内容层级 */
+			.post-card > * {
+				position: relative;
+				z-index: 1;
+			}
+			.tilt-card .card-glow {
+				display: none;
 			}
 
+			/* ===== 文章卡片 - 奢华琥珀金版 ===== */
 			.post-date {
 				font-family: 'Cascadia Code', monospace;
-				font-size: 0.8rem;
-				color: var(--liquid-cyan);
-				opacity: 0.8;
+				font-size: 0.75rem;
+				color: #b8a88a;
+				letter-spacing: 0.05em;
+				text-transform: uppercase;
+				opacity: 0.7;
 			}
 
 			.post-title {
-				font-size: 1.3rem;
-				font-weight: 700;
-				color: var(--text-primary);
-				transition: color 0.3s;
+				font-size: 1.25rem;
+				font-weight: 600;
+				color: #f8f6f3;
+				line-height: 1.4;
+				transition: all 0.4s ease;
+				position: relative;
+			}
+
+			/* 标题悬浮时的微妙光效 */
+			.post-title::after {
+				content: '';
+				position: absolute;
+				bottom: -4px;
+				left: 0;
+				width: 0;
+				height: 1px;
+				background: linear-gradient(90deg, #d4af37, transparent);
+				transition: width 0.4s ease;
 			}
 
 			.tilt-card:hover .post-title {
-				color: var(--liquid-purple);
+				color: #fff;
+				text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+			}
+
+			.tilt-card:hover .post-title::after {
+				width: 40%;
 			}
 
 			.post-description {
-				font-size: 0.95rem;
-				color: var(--text-secondary);
-				line-height: 1.6;
+				font-size: 0.9rem;
+				color: rgba(248, 246, 243, 0.6);
+				line-height: 1.7;
 				margin: 0;
 			}
 
@@ -729,12 +753,12 @@ const posts = (await getCollection('blog')).sort(
 
 			.skill-bubble {
 				padding: 0.75rem 1.5rem;
-				background: var(--glass-bg);
-				border: 1px solid var(--glass-border);
+				background: rgba(184, 168, 138, 0.05);
+				border: 1px solid rgba(184, 168, 138, 0.15);
 				border-radius: 100px;
 				font-family: 'Cascadia Code', monospace;
 				font-size: 0.85rem;
-				color: var(--text-secondary);
+				color: rgba(248, 246, 243, 0.7);
 				transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 				cursor: default;
 				position: relative;
@@ -748,7 +772,7 @@ const posts = (await getCollection('blog')).sort(
 				transform: translateY(0);
 			}
 
-			/* 气泡内部流光 */
+			/* 气泡内部流光 - 琥珀金 */
 			.skill-bubble::before {
 				content: '';
 				position: absolute;
@@ -759,10 +783,10 @@ const posts = (await getCollection('blog')).sort(
 				background: linear-gradient(
 					90deg,
 					transparent,
-					rgba(255, 255, 255, 0.1),
+					rgba(212, 175, 55, 0.2),
 					transparent
 				);
-				transition: left 0.5s;
+				transition: left 0.6s ease;
 			}
 
 			.skill-bubble:hover::before {
@@ -770,13 +794,13 @@ const posts = (await getCollection('blog')).sort(
 			}
 
 			.skill-bubble:hover {
-				transform: translateY(-5px) scale(1.08);
-				background: rgba(99, 102, 241, 0.15);
-				border-color: var(--liquid-purple);
-				color: var(--liquid-purple);
+				transform: translateY(-5px) scale(1.05);
+				background: rgba(212, 175, 55, 0.1);
+				border-color: rgba(212, 175, 55, 0.5);
+				color: #d4af37;
 				box-shadow:
-					0 15px 40px rgba(99, 102, 241, 0.25),
-					0 0 20px rgba(99, 102, 241, 0.1);
+					0 15px 40px rgba(0, 0, 0, 0.3),
+					0 0 30px rgba(212, 175, 55, 0.15);
 			}
 
 			/* ===== 优雅Reveal动画 ===== */
@@ -890,6 +914,7 @@ const posts = (await getCollection('blog')).sort(
 	</head>
 	<body>
 		<div class="noise-overlay"></div>
+		<div class="ambient-light"></div>
 		<div class="color-temp-layer" id="colorTempLayer"></div>
 		<div class="depth-blur-top"></div>
 		<Header />
@@ -935,12 +960,11 @@ const posts = (await getCollection('blog')).sort(
 				<div class="section-container" style="position: relative; z-index: 1;">
 					<div class="section-header reveal-left">
 						<h2 class="section-title">最新日志</h2>
-						<a href="/blog" style="font-size: 0.9rem; color: var(--liquid-purple); text-decoration: none;">查看全部 →</a>
+						<a href="/blog" style="font-size: 0.9rem; color: #d4af37; text-decoration: none; transition: all 0.3s ease;">查看全部 →</a>
 					</div>
 					<div class="posts-grid">
 						{posts.map((post, index) => (
-							<a href={`/blog/${post.id}/`} class={`tilt-card reveal-up stagger-${Math.min(index + 1, 6)}`} data-tilt>
-								<div class="card-glow"></div>
+							<a href={`/blog/${post.id}/`} class={`post-card reveal-up stagger-${Math.min(index + 1, 6)}`}>
 								<div class="post-date">
 									<FormattedDate date={post.data.pubDate} />
 								</div>
@@ -984,12 +1008,12 @@ const posts = (await getCollection('blog')).sort(
 			let animationId: number;
 			let frameCount = 0;
 
-			// 配色 - 降低饱和度以突出前景
+			// 配色 - 极光星轨主题：深邃夜空 + 奢华高光
 			const colors = [
-				{ r: 80, g: 82, b: 200 },    // 柔和紫色
-				{ r: 180, g: 60, b: 120 },   // 柔和粉色
-				{ r: 5, g: 150, b: 170 },    // 柔和青色
-				{ r: 200, g: 140, b: 30 }    // 柔和琥珀
+				{ r: 212, g: 175, b: 55 },   // 奢华金 #d4af37
+				{ r: 180, g: 140, b: 60 },   // 琥珀金 #b48c3c
+				{ r: 100, g: 200, b: 220 },  // 极光青 #64c8dc
+				{ r: 150, g: 120, b: 200 },  // 星云紫 #9678c8
 			];
 
 			function resize() {
@@ -1016,11 +1040,13 @@ const posts = (await getCollection('blog')).sort(
 				reset() {
 					this.x = Math.random() * width;
 					this.y = Math.random() * height;
-					this.vx = (Math.random() - 0.5) * 0.3;
-					this.vy = (Math.random() - 0.5) * 0.3;
-					this.radius = Math.random() * 120 + 80;
+					this.vx = (Math.random() - 0.5) * 0.2;
+					this.vy = (Math.random() - 0.5) * 0.2;
+					// 更小的半径，更清晰的光点
+					this.radius = Math.random() * 40 + 30;
 					this.color = colors[Math.floor(Math.random() * colors.length)];
-					this.opacity = Math.random() * 0.15 + 0.05;
+					// 提高基础透明度，让光点更清晰明亮
+					this.opacity = Math.random() * 0.3 + 0.4;
 					this.phase = Math.random() * Math.PI * 2;
 				}
 
@@ -1039,21 +1065,45 @@ const posts = (await getCollection('blog')).sort(
 				}
 
 				draw() {
+					const r = this.color.r;
+					const g = this.color.g;
+					const b = this.color.b;
+					const alpha = this.opacity;
+
+					// 简化光晕：核心亮 + 外层柔光，更清晰
 					const gradient = ctx.createRadialGradient(
 						this.x, this.y, 0,
 						this.x, this.y, this.radius
 					);
-					gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`);
-					gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity * 0.5})`);
+
+					// 核心高亮 - 更亮更集中
+					gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha})`);
+					gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${alpha * 0.6})`);
+					gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${alpha * 0.25})`);
 					gradient.addColorStop(1, 'transparent');
+
 					ctx.fillStyle = gradient;
 					ctx.beginPath();
 					ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 					ctx.fill();
+
+					// 核心亮点 - 更亮更清晰
+					const coreGradient = ctx.createRadialGradient(
+						this.x, this.y, 0,
+						this.x, this.y, this.radius * 0.25
+					);
+					coreGradient.addColorStop(0, `rgba(255, 255, 255, ${Math.min(1, alpha * 1.2)})`);
+					coreGradient.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, ${alpha})`);
+					coreGradient.addColorStop(1, 'transparent');
+
+					ctx.fillStyle = coreGradient;
+					ctx.beginPath();
+					ctx.arc(this.x, this.y, this.radius * 0.25, 0, Math.PI * 2);
+					ctx.fill();
 				}
 			}
 
-			// 涟漪效果
+			// 光晕脉冲效果 - 优雅的能量扩散
 			class Ripple {
 				x!: number;
 				y!: number;
@@ -1062,61 +1112,87 @@ const posts = (await getCollection('blog')).sort(
 				opacity!: number;
 				color!: { r: number; g: number; b: number };
 				active!: boolean;
+				lineWidth!: number;
 
 				constructor(x: number, y: number) {
 					this.x = x;
 					this.y = y;
 					this.radius = 0;
-					this.maxRadius = 150 + Math.random() * 100;
-					this.opacity = 0.4;
+					this.maxRadius = 100 + Math.random() * 80;
+					this.opacity = 0.8;
 					this.color = colors[Math.floor(Math.random() * colors.length)];
 					this.active = true;
+					this.lineWidth = 2;
 				}
 
 				update() {
-					this.radius += 2;
-					this.opacity -= 0.008;
+					this.radius += 1.5;
+					this.opacity -= 0.012;
+					this.lineWidth = Math.max(0.5, 2 * (1 - this.radius / this.maxRadius));
 					if (this.opacity <= 0) this.active = false;
 				}
 
 				draw() {
-					ctx.strokeStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`;
-					ctx.lineWidth = 2;
+					// 精致的外圈光晕
+					const gradient = ctx.createRadialGradient(
+						this.x, this.y, this.radius * 0.6,
+						this.x, this.y, this.radius
+					);
+					gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
+					gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity * 0.4})`);
+					gradient.addColorStop(1, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
+					ctx.fillStyle = gradient;
 					ctx.beginPath();
 					ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+					ctx.fill();
+
+					// 内圈细线 - 更细更精致
+					ctx.strokeStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity * 0.8})`;
+					ctx.lineWidth = this.lineWidth * 0.6;
+					ctx.beginPath();
+					ctx.arc(this.x, this.y, this.radius * 0.85, 0, Math.PI * 2);
 					ctx.stroke();
 				}
 			}
 
-			// 音频可视化风格波形
+			// 极光带效果 - 柔和优雅的光带流动
 			class Wave {
 				y!: number;
 				amplitude!: number;
 				frequency!: number;
 				phase!: number;
 				color!: { r: number; g: number; b: number };
+				speed!: number;
 
 				constructor(y: number) {
 					this.y = y;
-					this.amplitude = 5 + Math.random() * 15;
-					this.frequency = 0.01 + Math.random() * 0.02;
+					this.amplitude = 8 + Math.random() * 12;
+					this.frequency = 0.003 + Math.random() * 0.005;
 					this.phase = Math.random() * Math.PI * 2;
 					this.color = colors[Math.floor(Math.random() * colors.length)];
+					this.speed = 0.008 + Math.random() * 0.012;
 				}
 
-				update(time: number) {
-					this.phase += 0.02;
+				update() {
+					this.phase += this.speed;
 				}
 
-				draw(time: number) {
-					ctx.strokeStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.15)`;
-					ctx.lineWidth = 1.5;
+				draw() {
+					// 更精致的渐变线条
+					const gradient = ctx.createLinearGradient(0, this.y - this.amplitude, 0, this.y + this.amplitude);
+					gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
+					gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.12)`);
+					gradient.addColorStop(1, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
+
+					ctx.strokeStyle = gradient;
+					ctx.lineWidth = 2;
+					ctx.lineCap = 'round';
 					ctx.beginPath();
 
-					for (let x = 0; x < width; x += 5) {
+					for (let x = 0; x < width; x += 3) {
 						const y = this.y +
-							Math.sin(x * this.frequency + this.phase + time * 0.001) * this.amplitude +
-							Math.sin(x * this.frequency * 2 + this.phase) * (this.amplitude * 0.5);
+							Math.sin(x * this.frequency + this.phase) * this.amplitude +
+							Math.sin(x * this.frequency * 1.5 + this.phase * 0.7) * (this.amplitude * 0.3);
 						if (x === 0) ctx.moveTo(x, y);
 						else ctx.lineTo(x, y);
 					}
@@ -1126,7 +1202,7 @@ const posts = (await getCollection('blog')).sort(
 
 			function initParticles() {
 				particles = [];
-				const count = Math.min(15, Math.floor((width * height) / 60000));
+				const count = Math.min(25, Math.floor((width * height) / 50000));
 				for (let i = 0; i < count; i++) {
 					particles.push(new FluidParticle());
 				}
@@ -1134,52 +1210,103 @@ const posts = (await getCollection('blog')).sort(
 
 			function initWaves() {
 				waves = [];
-				const waveCount = 5;
+				const waveCount = 4;
 				for (let i = 0; i < waveCount; i++) {
-					waves.push(new Wave(height * (0.3 + i * 0.1)));
+					waves.push(new Wave(height * (0.2 + i * 0.18)));
+				}
+			}
+
+			// 绘制粒子间连接线 - 精致的星座网络
+			function drawConnections() {
+				const maxDistance = 180;
+				const maxConnections = 3;
+
+				for (let i = 0; i < particles.length; i++) {
+					let connections = 0;
+					for (let j = i + 1; j < particles.length; j++) {
+						if (connections >= maxConnections) break;
+
+						const dx = particles[i].x - particles[j].x;
+						const dy = particles[i].y - particles[j].y;
+						const distance = Math.sqrt(dx * dx + dy * dy);
+
+						if (distance < maxDistance) {
+							const opacity = (1 - distance / maxDistance) * 0.15;
+							const gradient = ctx.createLinearGradient(
+								particles[i].x, particles[i].y,
+								particles[j].x, particles[j].y
+							);
+
+							const r1 = particles[i].color.r;
+							const g1 = particles[i].color.g;
+							const b1 = particles[i].color.b;
+							const r2 = particles[j].color.r;
+							const g2 = particles[j].color.g;
+							const b2 = particles[j].color.b;
+
+							gradient.addColorStop(0, `rgba(${r1}, ${g1}, ${b1}, 0)`);
+							gradient.addColorStop(0.5, `rgba(${(r1+r2)/2}, ${(g1+g2)/2}, ${(b1+b2)/2}, ${opacity})`);
+							gradient.addColorStop(1, `rgba(${r2}, ${g2}, ${b2}, 0)`);
+
+							ctx.strokeStyle = gradient;
+							ctx.lineWidth = 0.5;
+							ctx.beginPath();
+							ctx.moveTo(particles[i].x, particles[i].y);
+							ctx.lineTo(particles[j].x, particles[j].y);
+							ctx.stroke();
+							connections++;
+						}
+					}
 				}
 			}
 
 			function animate() {
 				frameCount++;
-				const time = Date.now();
 
-				// 拖尾效果
-				ctx.fillStyle = 'rgba(15, 13, 26, 0.15)';
+				// 完全清屏 - 避免累积变亮
+				ctx.clearRect(0, 0, width, height);
+
+				// 绘制半透明背景层
+				ctx.globalCompositeOperation = 'source-over';
+				ctx.fillStyle = 'rgba(15, 13, 26, 0.3)';
 				ctx.fillRect(0, 0, width, height);
 
-				// 流体粒子
-				ctx.globalCompositeOperation = 'lighter';
+				// 极光带 - 底层流动光效
+				waves.forEach(w => {
+					w.update();
+					w.draw();
+				});
+
+				// 绘制粒子连接线（在粒子下方）
+				drawConnections();
+
+				// 星点粒子 - 闪烁效果
 				particles.forEach(p => {
 					p.update();
 					p.draw();
 				});
 
-				// 涟漪效果
+				// 光晕脉冲 - 交互反馈
 				ripples = ripples.filter(r => r.active);
 				ripples.forEach(r => {
 					r.update();
 					r.draw();
 				});
 
-				// 波形
-				ctx.globalCompositeOperation = 'source-over';
-				waves.forEach(w => {
-					w.update(time);
-					w.draw(time);
-				});
-
 				animationId = requestAnimationFrame(animate);
 			}
 
-			// 鼠标移动创建涟漪
+			// 鼠标移动创建光晕 - 更精致的交互
+			let lastRippleTime = 0;
 			window.addEventListener('mousemove', (e: MouseEvent) => {
 				mouse.x = e.clientX;
 				mouse.y = e.clientY;
 				mouse.active = true;
 
-				if (frameCount % 10 === 0) {
+				const now = Date.now();
+				if (now - lastRippleTime > 200) {
 					ripples.push(new Ripple(e.clientX, e.clientY));
+					lastRippleTime = now;
 				}
 
 				clearTimeout(mouse.timer);
@@ -1355,32 +1482,7 @@ const posts = (await getCollection('blog')).sort(
 				setTimeout(triggerGlitch, 1000);
 			}
 
-			// ===== 3D 倾斜卡片 =====
-			const tiltCards = document.querySelectorAll('.tilt-card');
-
-			tiltCards.forEach((card: Element) => {
-				const el = card as HTMLElement;
-				el.addEventListener('mousemove', (e: MouseEvent) => {
-					const rect = el.getBoundingClientRect();
-					const x = e.clientX - rect.left;
-					const y = e.clientY - rect.top;
-					const centerX = rect.width / 2;
-					const centerY = rect.height / 2;
-
-					const rotateX = (y - centerY) / 20;
-					const rotateY = (centerX - x) / 20;
-
-					el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-					el.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
-					el.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
-				});
-
-				el.addEventListener('mouseleave', () => {
-					el.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-				});
-			});
-
-			// ===== 磁吸按钮 =====
+				// ===== 磁吸按钮 =====
 			const magneticBtns = document.querySelectorAll('.magnetic-btn');
 
 			magneticBtns.forEach((btn: Element) => {

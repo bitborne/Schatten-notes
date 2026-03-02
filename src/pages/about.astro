@@ -43,14 +43,9 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 				z-index: 0;
 			}
 
-			/* 噪点覆盖 */
+			/* 噪点覆盖 - 已禁用 */
 			.noise-overlay {
-				position: fixed;
-				inset: 0;
-				z-index: 9999;
-				pointer-events: none;
-				opacity: 0.02;
-				background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+				display: none;
 			}
 
 			/* ===== Hero Section - 档案标签 ===== */
@@ -528,10 +523,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 					<div class="hero-content">
 						<div class="archive-label">
 							<span class="label-stamp"></span>
-							<span>档案编号: DEV-2024-001</span>
+							<span>档案编号: DEV-2026-001</span>
 						</div>
 						<h1 class="hero-title">Schatten <span>//</span> Developer</h1>
-						<p class="hero-subtitle">底层技术探索者 | 档案最后更新: 2024</p>
+						<p class="hero-subtitle">底层技术探索者 | 档案最后更新: 2026</p>
 					</div>
 				</section>
 
@@ -611,7 +606,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 											<div class="commit-dot"></div>
 											<div class="commit-hash">commit m0n1o2p</div>
 											<div class="commit-message">chore: 持续探索中...</div>
-											<div class="commit-meta">Author: Schatten &lt;schatten@dev&gt; | Date: 2024</div>
+											<div class="commit-meta">Author: Schatten &lt;schatten@dev&gt; | Date: 2026.3.2</div>
 											<div class="commit-body">
 												记录学习轨迹，分享技术心得。探索更多底层技术的奥秘。
 											</div>
