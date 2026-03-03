@@ -1202,7 +1202,7 @@ const posts = (await getCollection('blog')).sort(
 
 			function initParticles() {
 				particles = [];
-				const count = Math.min(25, Math.floor((width * height) / 50000));
+				const count = Math.min(25, Math.max(15, Math.floor((width * height) / 50000)));
 				for (let i = 0; i < count; i++) {
 					particles.push(new FluidParticle());
 				}
