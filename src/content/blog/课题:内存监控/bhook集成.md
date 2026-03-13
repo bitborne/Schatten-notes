@@ -6,6 +6,8 @@ pubDate: '2026-03-13'
 
 # ByteHook (bhook) 集成指南 - 从零开始的 Android Native Hook 开发
 
+==DAY 1: 2026 年 3 月 10 日==
+
 > 本文面向 Android 开发零基础同学，详细记录将 ByteHook 集成到 Android 项目的完整流程，以及我们实际项目中遇到的坑和解决方案。
 
 ## 一、ByteHook 是什么？
