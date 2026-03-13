@@ -1,5 +1,5 @@
 ---
-title: 'ByteHook 原理与应用笔记'
+title: '3.ByteHook 原理与应用笔记'
 description: 'PLT Hook 技术原理介绍，基于 ByteHook 官方示例的代码剖析，以及在实际业务场景中的应用思路。'
 pubDate: '2026-03-13'
 ---

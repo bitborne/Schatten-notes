@@ -1,5 +1,5 @@
 ---
-title: 'ByteHook (bhook) 集成指南 - 从零开始的 Android Native Hook 开发'
+title: '1.ByteHook (bhook) 集成指南 - 从零开始的 Android Native Hook 开发'
 description: '本文面向 Android 开发零基础同学，详细记录将 ByteHook 集成到 Android 项目的完整流程，包括 Gradle 配置、CMake 设置、x86/x86_64 兼容性处理，以及实际项目中遇到的坑和解决方案。'
 pubDate: '2026-03-13'
 ---
