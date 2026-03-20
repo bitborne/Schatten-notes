@@ -608,3 +608,1025 @@ for (auto& sec : sections) {
 - **PLT 条目反汇编**：查看实际的跳转代码
 
 目标是能够手动解析一个函数调用，从 `.dynsym` 找到符号名，从 `.rela.plt` 找到 GOT 位置，最终计算出函数地址！
+
+---
+
+## 附录：关键术语深度解析
+
+> 在继续步骤 3 之前，必须先彻底理解这些术语。这些概念是理解 so 跳转机制的基石。
+
+### A. link_map 是什么？
+
+**定义**：`link_map` 是动态链接器（linker/loader）维护的**已加载 so 链表节点**。
+
+**数据结构**（简化）：
+
+```c
+struct link_map {
+    ElfW(Addr) l_addr;          // so 加载基地址（加载到内存后的起始地址）
+    char *l_name;               // so 文件路径（如 "/system/lib64/libc.so"）
+    ElfW(Dyn) *l_ld;            // 指向 .dynamic section（动态链接信息）
+    struct link_map *l_next;    // 链表下一个 so
+    struct link_map *l_prev;    // 链表上一个 so
+    // ... 还有更多字段用于重定位、符号查找等
+};
+```
+
+**作用**：
+1. **so 的唯一标识**：动态链接器通过 link_map 知道"这是哪个 so"
+2. **基地址记录**：so 加载到内存的地址是随机的（ASLR），link_map 记录实际地址
+3. **符号查找**：在解析重定位时，通过 link_map 找到 so 的符号表
+
+**实际例子**：
+
+```
+进程启动时加载了3个 so：
++-------------+     +-------------+     +-------------+
+|  linker     |<--->|  libc.so    |<--->|  libdemo.so |
+|  (link_map) |     |  (link_map) |     |  (link_map) |
++-------------+     +-------------+     +-------------+
+       ^                                          |
+       +------------------------------------------+
+       双向链表，linker 可以通过 l_next/l_prev 遍历所有 so
+
+link_map 中的关键信息：
+- l_addr = 0x7f8a1b0000  ← libc.so 实际加载到内存的地址
+- l_ld = 0x7f8a1f6b48    ← 指向 .dynamic section（从 Section Header 可以看到地址）
+```
+
+**在延迟绑定中的作用**：
+
+```
+第一次调用 malloc 时：
+1. PLT 代码 push GOT[1] → GOT[1] 就是 link_map 指针
+2. 调用 _dl_runtime_resolve(link_map, reloc_index)
+3. _dl_runtime_resolve 通过 link_map 找到 libc.so 的符号表
+4. 在符号表中查找 "malloc" 的实际地址
+```
+
+---
+
+### B. _dl_runtime_resolve 具体做什么？
+
+**定义**：`_dl_runtime_resolve` 是**动态链接器的核心函数**，负责**运行时符号解析**。
+
+**调用时机**：
+- 只在**第一次**调用外部函数时执行
+- 后续调用直接跳转到 GOT 中已填充的地址
+
+**完整执行流程**：
+
+```
+调用 _dl_runtime_resolve(link_map, reloc_index) 时：
+
+[步骤 1] 通过 link_map 找到 so 的 .dynamic section
+    link_map->l_ld → .dynamic section
+
+    .dynamic section 包含：
+    - DT_SYMTAB: .dynsym 的地址
+    - DT_STRTAB: .dynstr 的地址
+    - DT_JMPREL: .rela.plt 的地址
+
+[步骤 2] 通过 reloc_index 找到重定位条目
+    rela_entry = DT_JMPREL + reloc_index * sizeof(Rela)
+
+    Rela 结构：
+    - r_offset: GOT 条目的地址（需要填充的位置）
+    - r_info: 符号表索引 + 重定位类型
+    - r_addend: 加数（通常为 0）
+
+[步骤 3] 从重定位条目提取符号名
+    sym_index = ELF64_R_SYM(rela.r_info)  // 符号表索引
+    sym = DT_SYMTAB[sym_index]            // 符号条目
+    sym_name = DT_STRTAB[sym.st_name]     // 符号名字符串
+
+    例如：sym_name = "malloc"
+
+[步骤 4] 在依赖库中查找符号地址
+    遍历当前 so 的所有依赖（DT_NEEDED）：
+    - 打开依赖 so
+    - 在依赖 so 的 .dynsym 中查找 "malloc"
+    - 找到后返回符号地址（sym.st_value + 依赖 so 的基地址）
+
+    假设在 libc.so 中找到：
+    malloc_addr = 0x7f8a1c2340
+
+[步骤 5] 更新 GOT 条目
+    *(rela.r_offset) = malloc_addr
+
+    现在 GOT[n] = 0x7f8a1c2340（malloc 的实际地址）
+
+[步骤 6] 跳转到目标函数
+    jmp malloc_addr
+
+    从此之后，调用 malloc 直接跳转到 0x7f8a1c2340
+```
+
+**为什么只需要两个参数？**
+- `link_map`：告诉动态链接器"我在哪个 so 里"
+- `reloc_index`：告诉动态链接器"我要解析第几个外部函数"
+
+**性能优化**：
+- 第一次调用：慢（需要完整解析）
+- 第二次调用：快（GOT 已填充，直接跳转）
+- 这就是"延迟绑定"（Lazy Binding）的意义
+
+---
+
+### C. 重定位类型 R_AARCH64_JUMP_SLOT 是什么意思？
+
+**定义**：`R_AARCH64_JUMP_SLOT` 是 **ARM64 架构下的 PLT 重定位类型**。
+
+**重定位类型分类**：
+
+| 类型 | 用途 | 说明 |
+|------|------|------|
+| `R_AARCH64_ABS64` | 绝对地址 | 直接填充 64 位地址 |
+| `R_AARCH64_GLOB_DAT` | 全局数据 | 用于 .rela.dyn（数据重定位）|
+| `R_AARCH64_JUMP_SLOT` | 跳转槽 | 用于 .rela.plt（函数重定位）|
+| `R_AARCH64_RELATIVE` | 相对地址 | 基地址 + 偏移 |
+
+**R_AARCH64_JUMP_SLOT 的特殊之处**：
+
+```cpp
+// 重定位条目结构（Elf64_Rela）
+typedef struct {
+    uint64_t r_offset;    // GOT 条目的地址
+    uint64_t r_info;      // 类型 + 符号索引
+    int64_t  r_addend;    // 加数
+} Elf64_Rela;
+
+// r_info 的编码
+#define ELF64_R_SYM(i)    ((i) >> 32)           // 高 32 位：符号表索引
+#define ELF64_R_TYPE(i)   ((i) & 0xffffffff)    // 低 32 位：重定位类型
+
+// R_AARCH64_JUMP_SLOT = 1026 (0x402)
+```
+
+**实际处理过程**：
+
+```
+重定位条目（.rela.plt 中的一个条目）：
+- r_offset = 0x00000000000f6e50  ← GOT[3] 的地址（假设是第3个 GOT 条目）
+- r_info = 0x0000000400000402   ← 符号索引=4，类型=R_AARCH64_JUMP_SLOT
+- r_addend = 0
+
+动态链接器看到 R_AARCH64_JUMP_SLOT 时：
+1. 从 r_info 提取符号索引：4
+2. 从 .dynsym[4] 找到符号名（如 "printf"）
+3. 在其他 so 中找到 printf 的地址
+4. 将地址写入 GOT[3]（即 r_offset 指向的位置）
+5. 完成！
+```
+
+**为什么需要区分类型？**
+- 不同类型的重定位需要不同的计算方式
+- `JUMP_SLOT` 专门用于函数调用，可以直接写地址
+- `GLOB_DAT` 用于全局变量，可能需要加上基地址
+
+---
+
+### D. GOT[0]、GOT[1]、GOT[2] 为什么是特殊的？
+
+**GOT 结构**：
+```
+.got.plt section（运行时内存布局）：
++--------------+
+| GOT[0]       |  → .dynamic section 的地址（供 PLT 代码使用）
++--------------+
+| GOT[1]       |  → link_map 指针（标识当前 so）
++--------------+
+| GOT[2]       |  → _dl_runtime_resolve 函数的地址
++--------------+
+| GOT[3]       |  → 第1个外部函数的地址（初始指向 PLT 解析代码）
++--------------+
+| GOT[4]       |  → 第2个外部函数的地址
++--------------+
+| ...          |  → 更多外部函数
++--------------+
+```
+
+**详细解释**：
+
+#### GOT[0] = .dynamic section 地址
+```
+用途：
+- PLT 代码可能需要访问动态链接信息
+- 通过 GOT[0] 可以快速找到 .dynamic
+
+.dynamic section 包含：
+- DT_SYMTAB（符号表地址）
+- DT_STRTAB（字符串表地址）
+- DT_HASH（哈希表地址）
+- DT_PLTGOT（GOT 地址）
+- DT_JMPREL（PLT 重定位表地址）
+```
+
+#### GOT[1] = link_map 指针
+```
+用途：
+- 标识"当前是哪个 so"
+- _dl_runtime_resolve 的第一个参数
+
+为什么需要？
+- 多个 so 可能调用同一个外部函数
+- link_map 告诉动态链接器"我在哪个 so 里"
+- 动态链接器通过 link_map 找到该 so 的重定位表和符号表
+```
+
+#### GOT[2] = _dl_runtime_resolve 地址
+```
+用途：
+- PLT 通用解析代码跳转到这里
+- 即 _dl_runtime_resolve 函数的入口地址
+
+为什么存这个地址？
+- 不同系统的动态链接器位置不同
+- GOT[2] 在加载时由动态链接器填充
+- PLT 代码通过 "jmp *GOT[2]" 调用解析函数
+```
+
+#### GOT[3+] = 实际外部函数地址
+```
+用途：
+- 存储解析后的函数地址
+- 初始时指向 PLT 中的解析代码
+
+初始状态：
+GOT[3] = PLT 条目地址 + 6 字节（指向 push index 指令）
+
+解析后：
+GOT[3] = 0x7f8a1c2340（malloc 的实际地址）
+```
+
+---
+
+### E. GOT[n] 的 n 是什么？如何确定？
+
+**n 的定义**：
+- n 是 **GOT 条目索引**，从 0 开始
+- 每个外部函数对应一个 GOT 条目
+- n = 0,1,2 是保留的，n ≥ 3 是实际函数
+
+**如何确定 n？**
+
+#### 方法 1：通过 .rela.plt 计算
+```
+.rela.plt 是一个数组，每个元素对应一个 GOT 条目：
+- rela[0] → GOT[3]（第一个外部函数）
+- rela[1] → GOT[4]
+- rela[n] → GOT[n+3]
+
+公式：GOT 索引 = 数组索引 + 3
+```
+
+#### 方法 2：通过 r_offset 计算
+```c
+// 从重定位条目的 r_offset 可以计算 GOT 索引
+// 假设 .got.plt 起始地址是 0xf6e50
+
+GOT 条目大小 = 8 字节（64位指针）
+
+r_offset = 0xf6e50 + n * 8
+
+// 从 r_offset 反推 n：
+n = (r_offset - got_plt_start) / 8
+```
+
+#### 实际例子
+```
+从 readelf -r 输出：
+Offset          Info           Type           Sym. Value    Sym. Name
+00000000f6e50  0000000400000402 R_AARCH64_JUMP_SL 0000000000000000 malloc@LIBC
+
+计算：
+- r_offset = 0xf6e50
+- .got.plt 起始地址 = 0xf6e50（从 Section Header 可见）
+- GOT 索引 = (0xf6e50 - 0xf6e50) / 8 = 0 → 但前面有3个保留条目
+- 实际函数索引 = 0（malloc 是第一个外部函数）
+- GOT 条目 = GOT[3]
+```
+
+---
+
+### F. PLT0 是什么？通用解析代码详解
+
+**PLT0 定义**：
+- `.plt` section 的**第一个条目**（条目 0）
+- 所有外部函数第一次调用时都会跳转到 PLT0
+- PLT0 调用 `_dl_runtime_resolve`
+
+**ARM64 架构的 PLT0 代码**：
+```asm
+# .plt 起始地址：0xef890（从 Section Header 可见）
+
+# PLT0 条目（每个 so 只有一个）：
+0xef890: adrp x16, #0xf6000          # 计算 GOT 页地址
+0xef894: ldr  x17, [x16, #3600]     # 加载 GOT[2] = _dl_runtime_resolve
+0xef898: add  x16, x16, #3600        # x16 = &GOT[2]
+0xef89c: br   x17                    # 跳转到 _dl_runtime_resolve
+```
+
+**每条指令详解**：
+
+```asm
+adrp x16, #0xf6000
+# 功能：将 GOT 所在页的基地址加载到 x16
+# 说明：ARM64 使用 4KB 页，adrp 加载页基地址（低12位清零）
+# 结果：x16 = 0xf6000
+
+ldr x17, [x16, #3600]
+# 功能：从 GOT[2] 加载 _dl_runtime_resolve 地址
+# 计算：0xf6000 + 3600 = 0xf6e50 = GOT[0] 地址？不对...
+# 实际上：GOT[2] 的偏移是 16 字节（3 * 8 = 24？需要重新计算）
+# 假设 GOT[2] 在 0xf6e50 + 16 = 0xf6e60
+
+add x16, x16, #3600
+# 功能：x16 指向 GOT[2] 的地址
+# 这个地址会作为参数传递给 _dl_runtime_resolve（虽然实际上不需要）
+
+br x17
+# 功能：跳转到 x17 保存的地址，即 _dl_runtime_resolve
+```
+
+**PLT 普通条目**（每个外部函数一个）：
+```asm
+# 以 malloc 为例（假设是第1个外部函数，索引=0）：
+0xef8a0: adrp x16, #0xf6000          # 计算 GOT 页地址
+0xef8a4: ldr  x17, [x16, #3616]     # 加载 GOT[3]（malloc 的 GOT 条目）
+0xef8a8: add  x16, x16, #3616        # x16 = &GOT[3]
+0xef8ac: br   x17                    # 跳转到 GOT[3] 保存的地址
+
+# 如果 GOT[3] 未解析，它指向 0xef8b0（下一条指令）：
+0xef8b0: stp  x16, x30, [sp, #-16]!  # 保存寄存器
+0xef8b4: mov  w17, #0                # w17 = 重定位索引（0）
+0xef8b8: b    0xef890                # 跳转到 PLT0
+
+# PLT0 会调用 _dl_runtime_resolve(link_map, 0)
+```
+
+**关键洞察**：
+- 每个 PLT 条目**第一次执行**时会跳转到 PLT0
+- PLT0 调用 `_dl_runtime_resolve` 解析符号
+- 解析完成后，**GOT 条目被更新为实际地址**
+- **第二次执行**时，`br x17` 直接跳转到目标函数
+
+---
+
+## 当前进度总结
+
+### 已完成的步骤
+
+| 步骤 | 内容 | 状态 | 关键实现 |
+|------|------|------|----------|
+| **步骤 1** | ELF Header 解析 | ✅ 完成 | `elf_types.h/cpp` - 支持 32/64 位、大小端 |
+| **步骤 2** | Section Header 解析 | ✅ 完成 | `elf_sections.h/cpp` - 解析所有 Section 元数据，识别关键 Section |
+
+### 当前能力
+
+1. **可以解析任意 so 文件的 ELF Header**
+   - 识别文件类型、架构、字节序
+   - 获取 Program Header 和 Section Header 位置
+
+2. **可以列出所有 Section**
+   - 显示 Section 名称、类型、地址、偏移、大小
+   - 识别关键 Section（.dynsym、.plt、.got.plt、.rela.plt 等）
+
+3. **理解 so 跳转的理论机制**
+   - PLT/GOT 延迟绑定原理
+   - 动态链接器的工作流程
+   - C++ 热更的实现基础
+
+### 尚未完成的能力
+
+1. **未解析 .dynsym** - 无法查看具体的导出/导入函数名
+2. **未解析 .rela.plt** - 无法建立"函数名 → GOT 位置"的映射
+3. **未反汇编 PLT** - 无法查看实际的跳转指令
+4. **未实现内存映射** - 无法在运行时分析已加载的 so
+
+---
+
+## 步骤 3 目标（深度 C：完整版）
+
+基于用户要求，步骤 3 将实现：
+
+### 功能目标
+
+| 功能 | 描述 | 对比 readelf |
+|------|------|--------------|
+| **动态符号表解析** | 显示 .dynsym 中所有符号（函数名、地址、类型） | 类似 `readelf --dyn-syms` |
+| **重定位表解析** | 显示 .rela.plt 条目，建立"函数名 → GOT 偏移"映射 | 类似 `readelf -r` |
+| **PLT 反汇编** | 反汇编 .plt 条目，显示每条指令的含义 | 类似 `objdump -d --section=.plt` |
+| **函数调用追踪** | 手动追踪一个函数（如 malloc）的完整链路 | **readelf 无法做到！** |
+| **GOT 状态模拟** | 显示 GOT 条目在加载时、第一次调用后、后续调用的状态变化 | **readelf 无法做到！** |
+
+### 学习深度
+
+1. **代码层面**：详细注释每个解析步骤，说明数据结构的内存布局
+2. **文档层面**：用图示展示数据结构关系，用流程图展示解析过程
+3. **实践层面**：提供内存 dump 示例，展示实际的二进制数据
+
+### 预期输出示例
+
+```
+$ elf_reader --deep /system/lib64/libc.so malloc
+
+函数调用链路追踪: malloc
+
+[1] 符号表查找:
+    .dynsym[12]:
+        st_name  = 0x1234 ("malloc")
+        st_value = 0x00000000 (未定义，需要重定位)
+        st_info  = 0x12 (STB_GLOBAL, STT_FUNC)
+
+[2] 重定位表查找:
+    .rela.plt[7]:
+        r_offset = 0xf6e50 (GOT[10] 的地址)
+        r_info   = 0x0000000c00000402 (符号索引=12, 类型=R_AARCH64_JUMP_SLOT)
+        r_addend = 0
+
+[3] PLT 条目分析:
+    .plt[7] 地址: 0xef8c0
+    反汇编:
+        0xef8c0: adrp x16, 0xf6000    # 计算 GOT 页地址
+        0xef8c4: ldr  x17, [x16, #3648] # 加载 GOT[10]
+        0xef8c8: add  x16, x16, #3648   # x16 = &GOT[10]
+        0xef8cc: br   x17              # 跳转到 GOT[10] 保存的地址
+
+[4] GOT 条目状态:
+    加载时:   GOT[10] = 0xef8d0 (指向 PLT 解析代码)
+    解析后:   GOT[10] = 0x7f8a1c2340 (malloc 实际地址)
+
+[5] 调用流程总结:
+    第一次调用: call malloc → .plt[7] → GOT[10]=0xef8d0 → 解析代码 → _dl_runtime_resolve → 更新 GOT[10] → malloc
+    后续调用:   call malloc → .plt[7] → GOT[10]=0x7f8a1c2340 → malloc (直接跳转)
+```
+
+### 与 readelf 的区别
+
+| 能力 | readelf | 我们的 elf_reader |
+|------|---------|-------------------|
+| 显示符号表 | ✅ | ✅ |
+| 显示重定位 | ✅ | ✅ |
+| 反汇编 PLT | ❌ (需要 objdump) | ✅ |
+| 追踪单函数完整链路 | ❌ | ✅ |
+| 模拟 GOT 状态变化 | ❌ | ✅ |
+| 运行时分析已加载 so | ❌ | ✅ (步骤 4) |
+
+**我们的优势**：
+- 将分散的信息（符号表、重定位表、PLT、GOT）整合为完整的调用链路
+- 提供运行时视角，展示延迟绑定的动态过程
+- 为理解 C++ 热更和 PLT Hook 提供实践基础
+
+---
+
+**下一步行动**：
+1. 实现 `elf_symbols.h/cpp` - 解析 .dynsym 和 .dynstr
+2. 实现 `elf_relocations.h/cpp` - 解析 .rela.plt 和 .rela.dyn
+3. 实现 `elf_plt.h/cpp` - 反汇编 ARM64 PLT 条目
+4. 更新 `main.cpp` - 添加 `--deep` 选项用于深度分析单个函数
+
+---
+
+## 步骤 3：动态符号表与重定位表解析
+
+**目标**：真正读懂 .dynsym 和 .rela.plt，建立"函数名 → GOT 偏移"的完整映射
+
+**实现文件**：
+
+- `app/src/main/cpp/elf_reader/elf_symbols.h/cpp`：动态符号表解析
+- `app/src/main/cpp/elf_reader/elf_relocations.h/cpp`：重定位表解析
+- 更新 `app/src/main/cpp/elf_reader/main.cpp`
+
+**测试结果**：libc.so 共 1448 个函数符号，48 个 PLT 条目，与 GNU readelf 完全一致
+
+---
+
+### 3.1 为什么需要解析 .dynsym 和 .rela.plt？
+
+步骤 2 已经知道 `.dynsym` 的**位置**和**大小**（如地址 `0x2f8`，大小 `0x8b38`），但还不知道里面**存了哪些函数**。
+
+这两个 section 共同构成了动态链接的"地图"：
+
+```
+.dynsym（符号表）：记录函数的名字和基本信息
+    ↕ 配合（符号名字符串存储在 .dynstr 里）
+.dynstr（字符串表）：存储所有符号名的字符串池
+
+.rela.plt（重定位表）：每个外部函数在 GOT 中的位置
+    ↕ 引用（通过索引找到 .dynsym 中的对应符号）
+.dynsym（符号表）：通过索引找到函数名
+```
+
+完整的信息链路：
+```
+.rela.plt[n].r_info >> 32 = symIndex
+.dynsym[symIndex].st_name = nameOffset
+.dynstr[nameOffset] = "malloc"
+
+.rela.plt[n].r_offset = GOT[n+3] 的运行时地址
+```
+
+---
+
+### 3.2 Elf64_Sym：动态符号表条目详解
+
+**.dynsym** section 是一个 `Elf64_Sym` 结构体数组，每个元素描述一个符号（函数、变量等）。
+
+#### 3.2.1 内存布局（64-bit）
+
+```
+Elf64_Sym 大小 = 24 bytes（0x18）
+
+偏移 |  字段名   | 大小  | 含义
+-----|-----------|-------|-------
+  0  | st_name   | 4字节 | 符号名在 .dynstr 中的字节偏移（字符串索引）
+  4  | st_info   | 1字节 | 高4位=绑定类型(bind)，低4位=符号类型(type)
+  5  | st_other  | 1字节 | 可见性（通常为 0=DEFAULT）
+  6  | st_shndx  | 2字节 | 关联的 Section 索引（0=未定义=外部符号）
+  8  | st_value  | 8字节 | 符号值：若已定义=函数在本 so 中的偏移；未定义=0
+ 16  | st_size   | 8字节 | 符号大小（函数体字节数）
+```
+
+**关键观察：64位布局中 st_info/st_other/st_shndx 在 st_value 之前！**
+
+#### 3.2.2 内存布局（32-bit）⚠️ 与 64-bit 字段顺序不同！
+
+```
+Elf32_Sym 大小 = 16 bytes（0x10）
+
+偏移 |  字段名   | 大小  | 含义
+-----|-----------|-------|-------
+  0  | st_name   | 4字节 | 符号名在 .dynstr 中的字节偏移
+  4  | st_value  | 4字节 | 符号值（⚠️ 在 st_info 之前！）
+  8  | st_size   | 4字节 | 符号大小
+ 12  | st_info   | 1字节 | 绑定类型 + 符号类型（⚠️ 在末尾！）
+ 13  | st_other  | 1字节 | 可见性
+ 14  | st_shndx  | 2字节 | Section 索引
+```
+
+这个差异非常容易踩坑：32位 ELF 的 `st_value` 在 `st_info` 前面，64位的 `st_info` 在 `st_value` 前面。解析代码必须根据 `is64bit` 分支处理：
+
+```cpp
+if (is64bit) {
+    st_name  = readVal<uint32_t>(entry + 0,  isLittleEndian);
+    st_info  = readVal<uint8_t> (entry + 4,  isLittleEndian);
+    st_other = readVal<uint8_t> (entry + 5,  isLittleEndian);
+    st_shndx = readVal<uint16_t>(entry + 6,  isLittleEndian);
+    st_value = readVal<uint64_t>(entry + 8,  isLittleEndian);
+    st_size  = readVal<uint64_t>(entry + 16, isLittleEndian);
+} else {
+    st_name  = readVal<uint32_t>(entry + 0,  isLittleEndian);
+    st_value = readVal<uint32_t>(entry + 4,  isLittleEndian);  // 注意顺序！
+    st_size  = readVal<uint32_t>(entry + 8,  isLittleEndian);
+    st_info  = readVal<uint8_t> (entry + 12, isLittleEndian);
+    st_other = readVal<uint8_t> (entry + 13, isLittleEndian);
+    st_shndx = readVal<uint16_t>(entry + 14, isLittleEndian);
+}
+```
+
+#### 3.2.3 st_info 编码解析
+
+`st_info` 是一个1字节字段，用位域编码了两个信息：
+
+```
+st_info（1 byte）：
+  +---------+---------+
+  | 高 4 位  | 低 4 位  |
+  |  bind   |  type   |
+  +---------+---------+
+
+bind（绑定类型）：
+  STB_LOCAL  = 0   局部符号，文件内部可见，不参与动态链接
+  STB_GLOBAL = 1   全局符号，可被其他 so 引用（导出函数）
+  STB_WEAK   = 2   弱符号，可被同名全局符号覆盖
+
+type（符号类型）：
+  STT_NOTYPE  = 0  无类型
+  STT_OBJECT  = 1  数据对象（全局变量）
+  STT_FUNC    = 2  函数（⭐ 最重要！）
+  STT_SECTION = 3  Section 引用
+  STT_FILE    = 4  源文件名
+  STT_TLS     = 6  线程本地存储变量
+
+解码示例：
+  st_info = 0x12
+  bind = 0x12 >> 4 = 0x1 = STB_GLOBAL
+  type = 0x12 & 0x0f = 0x2 = STT_FUNC
+  → 全局导出函数
+```
+
+代码实现：
+```cpp
+sym.bind = st_info >> 4;       // 高4位
+sym.type = st_info & 0x0f;     // 低4位
+```
+
+#### 3.2.4 st_shndx 的特殊值
+
+`st_shndx`（section index）标志符号"在哪个 section 里"：
+
+```
+SHN_UNDEF = 0        未定义，需要从其他 so 中解析（外部符号）
+SHN_ABS   = 0xfff1   绝对地址，不受重定位影响
+SHN_COMMON = 0xfff2  公共块（未初始化全局变量）
+1~N           定义在本 so 的第 N 个 section 中（已定义符号）
+```
+
+**关键判断**：`shndx == SHN_UNDEF(0)` 说明是外部符号，需要从依赖库中加载，这些正是 .rela.plt 中记录的符号。
+
+---
+
+### 3.3 .dynstr：字符串表的工作原理
+
+`.dynstr` section 是一个连续的字符串池，所有符号名依次存储（以 `\0` 分隔）：
+
+```
+.dynstr 内存布局（示例）：
+偏移  内容
+0x00: '\0'          ← 第一个字节是空字符（索引0=空名称）
+0x01: 'm','a','l',...,'c','\0'  ← "malloc"（偏移=1）
+0x08: 'f','r','e','e','\0'      ← "free"（偏移=8）
+0x0d: 'p','r','i','n','t','f','\0' ← "printf"（偏移=13）
+...
+```
+
+`st_name` 是字节偏移，从 `.dynstr` 起始地址加上 `st_name` 即得到符号名：
+
+```cpp
+if (st_name < dynstrSize) {
+    sym.name = reinterpret_cast<const char*>(dynstrData + st_name);
+}
+```
+
+这里 `reinterpret_cast<const char*>` 是安全的，因为 `.dynstr` 中的字符串以 `\0` 结尾，`std::string` 构造时会自动在 `\0` 处截断。
+
+---
+
+### 3.4 SymbolInfo：我们的封装结构
+
+我们用 `SymbolInfo` 封装原始的 `Elf64_Sym` 字段，**使用简化字段名**（省略 `st_` 前缀，更易读）：
+
+```cpp
+struct SymbolInfo {
+    uint32_t index;      // 在 .dynsym 数组中的索引（0-based）
+    std::string name;    // 符号名（已从 .dynstr 解析）
+    uint8_t bind;        // 绑定类型（STB_GLOBAL=1 等）
+    uint8_t type;        // 符号类型（STT_FUNC=2 等）
+    uint8_t other;       // 可见性（通常0）
+    uint16_t shndx;      // Section 索引（0=外部，0xfff1=绝对）
+    uint64_t value;      // 符号地址/偏移（外部函数为0）
+    uint64_t size;       // 符号大小（字节）
+
+    bool isFunction()  const { return type == STT_FUNC; }
+    bool isUndefined() const { return shndx == SHN_UNDEF; }
+    bool isGlobal()    const { return bind == STB_GLOBAL; }
+    // ...
+};
+```
+
+⚠️ **重要**：`SymbolInfo` 使用简化字段名（`value`，不是 `st_value`；`size`，不是 `st_size`）。在局部变量中用 `st_value` 读取，赋值给 `sym.value`：
+
+```cpp
+st_value = readVal<uint64_t>(entry + 8, isLittleEndian);
+sym.value = st_value;   // 简化字段名
+```
+
+---
+
+### 3.5 Elf64_Rela：重定位表条目详解
+
+**.rela.plt** section 是一个 `Elf64_Rela` 结构体数组，每个元素描述一个"需要动态链接器填充的位置"。
+
+#### 3.5.1 内存布局
+
+```
+Elf64_Rela 大小 = 24 bytes（0x18）
+
+偏移 |  字段名  | 大小  | 含义
+-----|----------|-------|-------
+  0  | r_offset | 8字节 | 需要被修改的内存地址（即对应 GOT 条目的运行时地址）
+  8  | r_info   | 8字节 | 高32位=符号表索引，低32位=重定位类型
+ 16  | r_addend | 8字节 | 加数（int64_t，有符号；JUMP_SLOT 通常为0）
+```
+
+#### 3.5.2 r_info 的编码
+
+`r_info` 是8字节，实际上同时存储了两个信息：
+
+```
+r_info（8 bytes = 64 bits）：
+  +---------------------+----------------------+
+  |    高 32 位           |       低 32 位        |
+  |    符号表索引(symIndex) |  重定位类型(type)     |
+  +---------------------+----------------------+
+
+解码：
+  symIndex = (uint32_t)(r_info >> 32)          // 右移32位取高半部分
+  type     = (uint32_t)(r_info & 0xffffffff)   // 掩码取低32位
+
+示例：
+  r_info   = 0x0000001500000402
+  symIndex = 0x0000001500000402 >> 32 = 0x15 = 21
+  type     = 0x0000001500000402 & 0xffffffff = 0x402 = 1026 = R_AARCH64_JUMP_SLOT
+```
+
+代码实现：
+```cpp
+rel.info    = readVal<uint64_t>(entry + 8, isLittleEndian);
+rel.symIndex = static_cast<uint32_t>(rel.info >> 32);
+rel.type    = static_cast<uint32_t>(rel.info & 0xffffffff);
+```
+
+#### 3.5.3 重定位类型
+
+ARM64 架构下，.rela.plt 中的重定位类型几乎全是 `R_AARCH64_JUMP_SLOT`：
+
+```cpp
+enum ElfAArch64Reloc : uint32_t {
+    R_AARCH64_NONE         = 0,    // 空操作
+    R_AARCH64_ABS64        = 257,  // 填充绝对64位地址
+    R_AARCH64_COPY         = 1024, // 复制符号值到目标
+    R_AARCH64_GLOB_DAT     = 1025, // .rela.dyn 中全局变量重定位
+    R_AARCH64_JUMP_SLOT    = 1026, // .rela.plt 中函数跳转槽 ⭐ 最重要
+    R_AARCH64_RELATIVE     = 1027, // 基地址+加数（位置无关代码）
+    R_AARCH64_TLS_DTPREL64 = 1028, // TLS 动态偏移
+    R_AARCH64_TLS_TPREL64  = 1029, // TLS 静态偏移
+    R_AARCH64_TLSDESC      = 1031, // TLS 描述符
+    R_AARCH64_IRELATIVE    = 1032  // 间接相对地址（ifunc）
+};
+```
+
+---
+
+### 3.6 rela[n] → GOT[n+3] 映射关系的推导
+
+这是步骤3最核心的知识点：**重定位条目的索引与 GOT 条目索引的关系**。
+
+#### 3.6.1 直接从 r_offset 推导
+
+`.rela.plt` 中每个条目的 `r_offset` 就是"要写入的 GOT 条目的运行时地址"。
+
+从 libc.so 的测试数据可以验证：
+```
+.got.plt section 起始地址：0xf6e50（来自 Section Header 的 sh_addr）
+每个 GOT 条目大小：8 字节（64位指针）
+
+GOT[0] 地址 = 0xf6e50 + 0 * 8 = 0xf6e50
+GOT[1] 地址 = 0xf6e50 + 1 * 8 = 0xf6e58
+GOT[2] 地址 = 0xf6e50 + 2 * 8 = 0xf6e60
+GOT[3] 地址 = 0xf6e50 + 3 * 8 = 0xf6e68  ← 第一个函数的 GOT 条目
+
+rela[0].r_offset = 0xf6e68 → GOT[3]（第1个函数）
+rela[1].r_offset = 0xf6e70 → GOT[4]（第2个函数）
+rela[n].r_offset = 0xf6e50 + (n+3)*8 → GOT[n+3]
+
+公式：GOT 索引 = n + 3（n 是 .rela.plt 数组索引）
+```
+
+#### 3.6.2 为什么从 GOT[3] 开始？
+
+```
+GOT[0] = .dynamic section 地址 ← 保留给动态链接器使用
+GOT[1] = link_map 指针         ← 保留给 _dl_runtime_resolve
+GOT[2] = _dl_runtime_resolve 地址 ← 运行时解析函数
+GOT[3] = 第1个外部函数（rela[0] 对应） ← 用户代码的第一个函数
+GOT[4] = 第2个外部函数（rela[1] 对应）
+...
+GOT[n+3] = 第n+1个外部函数（rela[n] 对应）
+```
+
+这3个保留条目是由动态链接器在加载 so 时填充的，ELF 文件中初始值为0。
+
+#### 3.6.3 在代码中展示 GOT 索引
+
+```cpp
+void RelocationTable::printPLTRelocations() const {
+    for (const auto& rel : relocations) {
+        uint32_t gotIndex = 3 + rel.index;  // rela[0] → GOT[3]
+        printf("[%5d] %016lx [%3d]      %s\n",
+               rel.index,
+               (unsigned long)rel.offset,
+               gotIndex,
+               rel.symbol ? rel.symbol->name.c_str() : "???");
+    }
+}
+```
+
+---
+
+### 3.7 linkSymbols()：建立重定位↔符号的联系
+
+解析完 `.dynsym` 和 `.rela.plt` 之后，需要调用 `linkSymbols()` 把两者关联起来：
+
+```cpp
+void RelocationTable::linkSymbols(const DynamicSymbolTable& symtab) {
+    for (auto& rel : relocations) {
+        // rel.symIndex 是从 r_info 高32位解出来的符号表索引
+        rel.symbol = symtab.findByIndex(rel.symIndex);
+        // 关联后，rel.symbol->name 就是函数名
+    }
+}
+```
+
+建立关联后，一个 `RelocationInfo` 就包含了完整信息：
+
+```
+RelocationInfo {
+    index    = 21           // .rela.plt 第21个条目
+    offset   = 0xf6f78      // GOT[24] 的地址（21+3=24）
+    symIndex = 某个值        // 指向 .dynsym 中的 malloc 条目
+    type     = 1026          // R_AARCH64_JUMP_SLOT
+    addend   = 0
+    symbol   = &SymbolInfo { name="malloc", type=STT_FUNC, shndx=SHN_UNDEF }
+}
+```
+
+---
+
+### 3.8 解析流程的完整代码路径（main.cpp）
+
+```cpp
+// 步骤3完整流程
+
+// [1] 解析动态符号表
+DynamicSymbolTable symtab;
+const uint8_t* dynsymData = sections.getSectionData(sections.dynsymSection, fileData);
+const uint8_t* dynstrData = sections.getSectionData(sections.dynstrSection, fileData);
+symtab.parse(dynsymData, sections.dynsymSection->size,
+             dynstrData, sections.dynstrSection->size,
+             header.is64bit, header.isLittleEndian);
+
+// [2] 解析重定位表
+RelocationTable relocs;
+const uint8_t* relaData = sections.getSectionData(sections.relaPltSection, fileData);
+relocs.parse(relaData, sections.relaPltSection->size,
+             header.is64bit, header.isLittleEndian, true);
+
+// [3] 关联符号表（建立 symIndex → SymbolInfo 映射）
+relocs.linkSymbols(symtab);
+
+// [4] 打印结果
+symtab.printFunctions();       // 所有函数符号
+relocs.printPLTRelocations();  // PLT 重定位条目（含 GOT 索引）
+```
+
+---
+
+### 3.9 实际测试结果分析
+
+使用 `/system/lib64/libc.so` 作为测试目标：
+
+#### 3.9.1 符号数量验证
+
+```bash
+# 我们的工具
+adb shell /data/local/tmp/elf_reader /system/lib64/libc.so 2>&1 | grep -c FUNC
+# 结果：1448
+
+# GNU readelf（在电脑上执行）
+readelf --dyn-syms /system/lib64/libc.so | grep FUNC | wc -l
+# 结果：1448 ✅ 完全一致
+```
+
+libc.so 导出了 1448 个函数，每个都是 `STT_FUNC` + `STB_GLOBAL`，`shndx` 非零（定义在本 so 内部）。
+
+#### 3.9.2 PLT 重定位条目验证（libc.so 依赖的外部函数）
+
+```bash
+# 我们的工具输出片段
+PLT relocations (function jumps):
+  Entry  Offset           GOT Index  Symbol
+[    0] 0000000000f6e68 [  3]      __memcpy_chk
+[    1] 0000000000f6e70 [  4]      __memmove_chk
+...
+[   21] 0000000000f6f78 [ 24]      malloc
+...
+
+# 总条目数
+# .rela.plt section 大小 = 0x2e08 = 11784 bytes
+# 每条目大小 = 24 bytes（Elf64_Rela）
+# 条目数 = 11784 / 24 = 491 条
+```
+
+**解读**：libc.so 自身也依赖外部函数（如 linker 提供的内部函数），共491个 PLT 条目。`malloc` 在 `rela[21]`，对应 `GOT[24]`。
+
+#### 3.9.3 malloc 符号完整信息
+
+```
+在 .dynsym 中查找 "malloc"：
+  index  = 某个值（被 .rela.plt[21] 引用）
+  name   = "malloc"
+  bind   = STB_GLOBAL (1)
+  type   = STT_FUNC (2)
+  shndx  = 某个非零值（在 libc.so 内部定义）
+  value  = 函数在 libc.so 中的偏移（非零）
+  size   = 函数大小（字节）
+
+在 .rela.plt 中查找：
+  rela[21].r_offset = 0xf6f78  → GOT[24] 的地址
+  rela[21].symIndex = 上面的 index
+  rela[21].type     = R_AARCH64_JUMP_SLOT (1026)
+  rela[21].addend   = 0
+```
+
+---
+
+### 3.10 调试过程记录：printFunctions() 输出为空的问题
+
+**问题**：最初运行时 `grep FUNC` 结果为0，但 GNU readelf 有1448行 FUNC。
+
+**原因排查**：`printFunctions()` 的格式字符串缺少 `Type` 列：
+
+```cpp
+// 错误的格式（缺少 type 列，匹配不到 "FUNC"）：
+printf("%6d: %016lx %5lu %-6s %-8s %s\n",
+       sym.index, sym.value, sym.size,
+       getBindName(sym.bind), "DEFAULT", sym.name.c_str());
+
+// 修复后（添加 type 列）：
+printf("%6d: %016lx %5lu %-7s %-6s %-8s %s\n",
+       sym.index, sym.value, sym.size,
+       getTypeName(sym.type),    // ← 添加这列
+       getBindName(sym.bind), "DEFAULT", sym.name.c_str());
+```
+
+**教训**：打印格式要与表头严格对应，缺少列会导致 grep 匹配失败。
+
+---
+
+### 3.11 数据流关系图
+
+```
+文件数据 (uint8_t* fileData)
+    │
+    ├─ [sh_offset=0x2f8]──► .dynsym 原始数据
+    │                              │
+    │                     DynamicSymbolTable::parse()
+    │                              │
+    │                     symbols[] vector
+    │                     SymbolInfo {index, name, bind, type, shndx, value, size}
+    │
+    ├─ [sh_offset=0xc888]─► .dynstr 原始数据
+    │                              │
+    │                     直接作为字符串池，由 st_name 索引
+    │
+    └─ [sh_offset=0x17110]─► .rela.plt 原始数据
+                                   │
+                          RelocationTable::parse()
+                                   │
+                          relocations[] vector
+                          RelocationInfo {index, offset, symIndex, type, addend}
+                                   │
+                          linkSymbols()
+                                   │
+                          RelocationInfo.symbol ──────► SymbolInfo
+                          （此后可通过 rel.symbol->name 得到函数名）
+```
+
+---
+
+### 3.12 步骤3学习要点总结
+
+1. **符号表是查找函数的字典**：
+   - `.dynsym` 是数组，每条24字节（64位）
+   - 函数名存在 `.dynstr`，通过 `st_name` 偏移访问
+   - `st_info` 的高4位=bind（全局/局部/弱），低4位=type（函数/变量等）
+
+2. **重定位表是"需要动态链接器填充的清单"**：
+   - `.rela.plt` 每条24字节，3个字段：r_offset、r_info、r_addend
+   - `r_info` 高32位=符号索引，低32位=重定位类型
+   - `r_offset` 是 GOT 条目的运行时地址
+
+3. **GOT 布局的黄金公式**：
+   - `rela[n].r_offset = .got.plt 基址 + (n+3) * 8`
+   - 反过来：`GOT 索引 = (r_offset - got_plt_base) / 8`
+   - n+3 是因为 GOT[0/1/2] 被动态链接器保留
+
+4. **两表联动**：
+   - 先解析 `.dynsym`，再解析 `.rela.plt`，然后 `linkSymbols()` 建立关联
+   - 关联后每个 `RelocationInfo` 都持有 `const SymbolInfo*` 指针
+
+5. **32位与64位的陷阱**：
+   - `Elf64_Sym`：st_name(4) → st_info(1) → st_other(1) → st_shndx(2) → st_value(8) → st_size(8)
+   - `Elf32_Sym`：st_name(4) → **st_value(4) → st_size(4)** → st_info(1) → st_other(1) → st_shndx(2)
+   - 64位的 st_info 在 offset 4，32位的 st_info 在 offset 12，**字段顺序完全不同**！
+
+---
+
+### 3.13 下一步预告：步骤 4 PLT 反汇编
+
+步骤 4 将达到 **readelf 无法做到的深度**：反汇编 `.plt` section，查看每个 PLT 条目的实际机器指令。
+
+ARM64 架构的 PLT 条目格式固定为4条指令：
+```asm
+adrp x16, <GOT页基址>      # 计算 GOT 所在的内存页地址
+ldr  x17, [x16, <偏移>]   # 从 GOT[n] 加载函数地址到 x17
+add  x16, x16, <偏移>      # x16 = &GOT[n]（传递给 _dl_runtime_resolve）
+br   x17                   # 跳转到 x17 保存的地址
+```
+
+通过解码这4条指令，可以：
+1. 验证 PLT 条目与 GOT 条目的实际对应关系
+2. 看到机器码层面的跳转机制
+3. 理解 ADRP+LDR 如何实现位置无关代码（PIC）
