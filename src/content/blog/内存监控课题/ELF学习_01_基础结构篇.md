@@ -1,3 +1,9 @@
+---
+title: 'ELF 学习笔记 01：基础结构篇'
+description: 'ELF Reader 开发学习笔记系列之一，涵盖 ELF Header、Section Header、符号表与重定位表的解析与实现。'
+pubDate: '2026-03-10'
+---
+
 # ELF 学习笔记 01：基础结构篇
 
 > 本系列笔记记录 ELF Reader 开发过程中的学习心得，从代码实践中理解 ELF 文件结构和动态链接机制。
