@@ -1,7 +1,7 @@
 ---
 title: 'ELF 学习笔记 02：动态链接篇'
 description: 'ELF Reader 开发学习笔记系列之二，深入讲解 .dynamic 段、PT_LOAD、延迟绑定、PLT 反汇编、.rela.dyn 与 .rodata 解析。'
-pubDate: '2026-03-11'
+pubDate: '2026-03-20'
 ---
 
 # ELF 学习笔记 02：动态链接篇
