@@ -24,7 +24,13 @@ pubDate: '2026-03-16'
 
 **必须用基于 Debian 的发行版（如 Ubuntu）**，我在 Arch 上试了各种姿势都装不上 Cuttlefish，乖乖滚回 Debian 了。
 
-> *Ubuntu也可以哈*
+
+
+![image-20260323100230456](cuttlefish启动自编译安卓内核流程.assets/image-20260323100230456.png)
+
+> **我使用的是Debian13**
+>
+> **Ubuntu没测试过, 但最好使用24+的高版本, 有 apt 包管理应该不成问题**
 
 还有几个磁盘相关的坑：
 
