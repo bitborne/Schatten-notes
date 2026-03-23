@@ -42,6 +42,12 @@ pubDate: '2026-03-16'
 
 ## 二、内核编译
 
+- 提醒大家一下
+
+**先安装: cuttlefish, 直接使用包管理器, 切勿手动编译 (磁盘占用极大, 虚拟机环境下极其耗时)**
+
+https://github.com/google/android-cuttlefish/blob/main/README.md
+
 ### 2.1 修改内核参数
 
 这次主要是为了开启 `CONFIG_IDLE_PAGE_TRACKING`，用来做一些内存相关的实验。
