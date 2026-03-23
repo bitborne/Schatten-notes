@@ -97,7 +97,7 @@ https://ci.android.com/builds/submitted/15025335/kernel_virt_x86_64/latest
 
 在下面这个链接找到：
 - `aosp_cf_x86_64_phone-img-14927007.zip`
-- `cvd-host_package.tar.gz`
+- `cvd-host_package.tar.gz`, 好像是这个包里面会包含有二进制`bin/`目录, 解压出来以后务必用其启动内核
 
 https://ci.android.com/builds/submitted/14927007/aosp_cf_x86_64_phone-userdebug/latest
 
