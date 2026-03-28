@@ -1,7 +1,7 @@
 ---
 title: 'Idle Page 监控系统实现文档'
 description: '记录 Idle Page Monitor 的设计决策、实现细节和已知问题，涵盖系统架构、核心组件与踩坑经验。'
-pubDate: '2026-03-15'
+pubDate: '2026-03-27'
 ---
 
 # Idle Page 监控系统实现文档

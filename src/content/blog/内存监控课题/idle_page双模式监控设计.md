@@ -1,7 +1,7 @@
 ---
 title: 'Idle Page 双模式监控设计与实现'
 description: 'Idle Page Monitor 的双模式监控架构设计，支持 SO 代码段静态监控与堆内存动态分配监控的编译时模式选择。'
-pubDate: '2026-03-16'
+pubDate: '2026-03-28'
 ---
 
 # Idle Page 双模式监控设计与实现
