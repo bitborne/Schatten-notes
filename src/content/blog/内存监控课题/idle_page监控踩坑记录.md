@@ -1,10 +1,10 @@
 ---
-title: 'Idle Page 监控系统实现文档'
+title: 'Idle Page 监控系统初步实现文档'
 description: '记录 Idle Page Monitor 的设计决策、实现细节和已知问题，涵盖系统架构、核心组件与踩坑经验。'
 pubDate: '2026-03-27'
 ---
 
-# Idle Page 监控系统实现文档
+# Idle Page 监控初步系统实现文档
 
 本文档记录 Idle Page Monitor 的设计决策、实现细节和已知问题。
 
