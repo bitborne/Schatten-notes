@@ -1,5 +1,21 @@
 @import url(./phycat/phycat.dark.css);
 
+/* ===== 主题切换过渡动画 ===== */
+* {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* 排除特定元素避免不必要的动画 */
+pre *,
+code *,
+pre,
+code {
+  transition: none !important;
+}
+
 :root {
   /* 标题后小图标，借鉴自思源笔记主题——Savor */
   --h1-icon-shape: url("data:image/svg+xml;utf8,<svg fill='rgba(255, 176, 176, 0.5)' height='24' viewBox='0 0 32 32' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M4.8 29.714v0c-1.371 0-2.514-1.143-2.514-2.514v0c0-1.371 1.143-2.514 2.514-2.514v0c1.371 0 2.514 1.143 2.514 2.514v0c0.114 1.371-1.029 2.514-2.514 2.514z'/></svg>") no-repeat center;
@@ -103,4 +119,58 @@
   --window-border: 1px solid var(--primary-color) !important;
   --rawblock-edit-panel-bd: var(--item-hover-bg-color);
   --mermaid-theme: night;
+}
+
+/* ===== 浅色主题变量覆盖 ===== */
+[data-theme="light"] {
+  /* --- 基础背景与文字 --- */
+  --bg-color: #fafafa;
+  --text-color: #1a1a1a;
+  --text-color-secondary: #4a5568;
+
+  /* --- 核心品牌色适配 --- */
+  --primary-color: #0066cc;
+  --secondary-color: #2979ff;
+  --accent-color: #7c4dff;
+  --border-color: #e2e8f0;
+
+  /* --- 光晕特效变量 --- */
+  --glow-color: rgba(0, 102, 204, 0.4);
+  --glow-shadow-text: 0 0 8px var(--glow-color);
+  --glow-shadow-box: 0 0 8px var(--glow-color);
+  --hover-background-color: #0066cc;
+  --select-text-bg-color: rgba(0, 102, 204, 0.2);
+
+  /* --- H1 标题 --- */
+  --h1-color: var(--text-color);
+  --h1-underline-color: var(--primary-color);
+
+  /* --- H2 标题 (Fusion Glass) --- */
+  --h2-bg-image: radial-gradient(ellipse at center bottom, rgba(0, 102, 204, 0.1), transparent 70%);
+  --h2-bg-image-hover: radial-gradient(ellipse at center bottom, rgba(0, 102, 204, 0.2), transparent 70%);
+  --h2-border-bottom-hover: rgba(0, 102, 204, 0.5);
+
+  /* --- 其他变量 --- */
+  --code-block-bg: rgba(240, 242, 245, 0.8);
+  --glass-border-color: rgba(0, 102, 204, 0.15);
+
+  /* --- 代码高亮 (适配浅色主题) --- */
+  --code-keyword: #d73a49;
+  --code-variable: #24292e;
+  --code-function: #6f42c1;
+  --code-param: #22863a;
+  --code-string: #032f62;
+  --code-comment: #6a737d;
+  --code-type: #005cc5;
+  --code-property: #e36209;
+  --code-number: #005cc5;
+  --code-meta: #22863a;
+  --code-selected-bg: #c8e1ff;
+
+  /* --- UI 控件 --- */
+  --active-file-bg-color: rgba(0, 102, 204, 0.1);
+  --active-file-text-color: #0066cc;
+  --item-hover-bg-color: rgba(0, 102, 204, 0.05);
+  --menu-divider-color: rgba(0, 102, 204, 0.1);
+  --mermaid-theme: default;
 }
