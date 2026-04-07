@@ -6,6 +6,7 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import '../styles/phycat-abyss.css';
+import '../styles/theme-toggle.css';
 
 type Props = CollectionEntry<'blog'>['data'];
 
@@ -16,6 +17,23 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 <html lang="zh-CN">
 	<head>
 		<BaseHead title={title} description={description} />
+		<!-- 主题初始化脚本 - 必须在页面渲染前执行 -->
+		<script is:inline>
+			(function() {
+				// 获取保存的主题
+				const savedTheme = localStorage.getItem('blog-theme');
+
+				// 如果有保存的主题，直接使用
+				if (savedTheme) {
+					document.documentElement.setAttribute('data-theme', savedTheme);
+				} else {
+					// 否则检测系统偏好
+					const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					const theme = prefersDark ? 'dark' : 'light';
+					document.documentElement.setAttribute('data-theme', theme);
+				}
+			})();
+		</script>
 		<style>
 			/* ===== 莫兰迪配色变量（关于页面） ===== */
 			.morandi-theme {
@@ -83,6 +101,22 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				padding-left: 1.5rem;
 				padding-right: 1.5rem;
 				position: relative;
+			}
+
+			/* 主题切换按钮定位覆盖 */
+			.theme-toggle-wrapper {
+				position: absolute;
+				top: 8rem;
+				right: 1.5rem;
+				z-index: 100;
+			}
+
+			@media (max-width: 1100px) {
+				.theme-toggle-wrapper {
+					position: fixed;
+					top: 1rem;
+					right: 1rem;
+				}
 			}
 
 			.back-link {
@@ -426,6 +460,32 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 							</svg>
 							返回归档
 						</a>
+						<div class="theme-toggle-wrapper">
+							<input
+								type="checkbox"
+								id="themeToggle"
+								class="theme-toggle-input"
+								aria-label="切换主题"
+							/>
+							<label for="themeToggle" class="theme-toggle-label">
+								<span class="theme-toggle-thumb">
+									<svg class="theme-toggle-icon theme-toggle-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+									</svg>
+									<svg class="theme-toggle-icon theme-toggle-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<circle cx="12" cy="12" r="5"></circle>
+										<line x1="12" y1="1" x2="12" y2="3"></line>
+										<line x1="12" y1="21" x2="12" y2="23"></line>
+										<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+										<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+										<line x1="1" y1="12" x2="3" y2="12"></line>
+										<line x1="21" y1="12" x2="23" y2="12"></line>
+										<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+										<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+									</svg>
+								</span>
+							</label>
+						</div>
 						<div class="title-section">
 							<h1 class="article-title" id="articleTitle">{title}</h1>
 							<div class="article-meta">
@@ -643,6 +703,23 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				});
 			}
 
+			// ===== 主题切换功能 =====
+			function initThemeToggle() {
+				const toggle = document.getElementById('themeToggle');
+				if (!toggle) return;
+
+				// 根据当前主题设置 checkbox 状态
+				const currentTheme = document.documentElement.getAttribute('data-theme');
+				toggle.checked = currentTheme === 'light';
+
+				// 监听切换事件
+				toggle.addEventListener('change', function() {
+					const newTheme = this.checked ? 'light' : 'dark';
+					document.documentElement.setAttribute('data-theme', newTheme);
+					localStorage.setItem('blog-theme', newTheme);
+				});
+			}
+
 			// ===== 初始化 =====
 			document.addEventListener('DOMContentLoaded', () => {
 				calculateReadingTime();
@@ -650,6 +727,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				addCopyButtons();
 				transformAlerts();
 				highlightCurrentHeading();
+				initThemeToggle(); // 添加主题切换初始化
 			});
 		</script>
 	</body>
