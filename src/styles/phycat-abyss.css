@@ -16,6 +16,19 @@ code {
   transition: none !important;
 }
 
+/* 浅色主题下的行内代码块样式 */
+[data-theme="light"] #write code:not(.md-fencescode) {
+  background-color: rgba(0, 102, 204, 0.1);
+  color: #0056b3;
+  border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+[data-theme="light"] #write code:not(.md-fencescode):hover {
+  background-color: #0066cc;
+  color: #fff;
+  border-color: #0066cc;
+}
+
 :root {
   /* 标题后小图标，借鉴自思源笔记主题——Savor */
   --h1-icon-shape: url("data:image/svg+xml;utf8,<svg fill='rgba(255, 176, 176, 0.5)' height='24' viewBox='0 0 32 32' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M4.8 29.714v0c-1.371 0-2.514-1.143-2.514-2.514v0c0-1.371 1.143-2.514 2.514-2.514v0c1.371 0 2.514 1.143 2.514 2.514v0c0.114 1.371-1.029 2.514-2.514 2.514z'/></svg>") no-repeat center;
@@ -179,4 +192,21 @@ code {
   --item-hover-bg-color: rgba(0, 102, 204, 0.05);
   --menu-divider-color: rgba(0, 102, 204, 0.1);
   --mermaid-theme: default;
+
+  /* --- 行内代码块 --- */
+  --code-inline-bg: rgba(0, 102, 204, 0.1);
+  --code-inline-color: #0056b3;
+
+  /* --- 元素颜色 --- */
+  --element-color: #0066cc;
+  --element-color-deep: #004494;
+  --element-color-shallow: rgba(0, 102, 204, 0.3);
+  --element-color-so-shallow: rgba(0, 102, 204, 0.15);
+  --element-color-soo-shallow: rgba(0, 102, 204, 0.08);
+  --element-color-linecode: #e83e8c;
+  --element-color-linecode-background: rgba(232, 62, 140, 0.1);
+
+  /* --- TOC 侧边栏 --- */
+  --toc-bg: rgba(255, 255, 255, 0.9);
+  --toc-border: rgba(0, 0, 0, 0.08);
 }

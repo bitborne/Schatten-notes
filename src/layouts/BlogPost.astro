@@ -232,6 +232,11 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				border-radius: 12px;
 			}
 
+			[data-theme="light"] .toc-sidebar {
+				background: rgba(255, 255, 255, 0.9);
+				border-color: rgba(0, 0, 0, 0.08);
+			}
+
 			@media (max-width: 1100px) {
 				.toc-sidebar {
 					display: none;
@@ -287,6 +292,21 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				color: var(--primary-cyan);
 				background: rgba(0, 243, 255, 0.05);
 				border-left-color: var(--primary-cyan);
+			}
+
+			[data-theme="light"] .toc-link {
+				color: var(--text-secondary, #4a5568);
+			}
+
+			[data-theme="light"] .toc-link:hover {
+				color: var(--text-primary, #1a1a1a);
+				background: rgba(0, 0, 0, 0.05);
+			}
+
+			[data-theme="light"] .toc-link.active {
+				color: var(--primary-color, #0066cc);
+				background: rgba(0, 102, 204, 0.08);
+				border-left-color: var(--primary-color, #0066cc);
 			}
 
 			/* ===== 代码块增强 - 修复底部突出 ===== */

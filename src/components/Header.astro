@@ -316,6 +316,58 @@ import HeaderLink from './HeaderLink.astro';
 		.logo-text { display: none; }
 		.logo-prefix::after { content: 'S'; }
 	}
+
+	/* ===== 浅色主题覆盖 ===== */
+	[data-theme="light"] .site-header {
+		background: rgba(255, 255, 255, 0.85);
+		border-bottom-color: rgba(0, 0, 0, 0.08);
+	}
+
+	[data-theme="light"] .site-header.scrolled {
+		background: rgba(255, 255, 255, 0.95);
+	}
+
+	[data-theme="light"] .logo-text {
+		background: linear-gradient(135deg, #0066cc, #7c4dff);
+		-webkit-background-clip: text;
+		background-clip: text;
+	}
+
+	[data-theme="light"] .header-link {
+		color: #4a5568;
+	}
+
+	[data-theme="light"] .header-link:hover {
+		background: rgba(0, 102, 204, 0.08);
+		color: #0066cc;
+	}
+
+	[data-theme="light"] .header-link.active {
+		background: rgba(0, 102, 204, 0.12);
+		color: #0066cc;
+	}
+
+	[data-theme="light"] .mobile-menu-btn,
+	[data-theme="light"] .github-btn {
+		background: rgba(0, 0, 0, 0.04);
+		color: #4a5568;
+	}
+
+	[data-theme="light"] .mobile-menu-btn:hover,
+	[data-theme="light"] .github-btn:hover {
+		background: rgba(0, 102, 204, 0.1);
+		color: #0066cc;
+	}
+
+	[data-theme="light"] .header-glow {
+		background: linear-gradient(90deg,
+			transparent,
+			rgba(0, 102, 204, 0.2),
+			rgba(124, 77, 255, 0.3),
+			rgba(0, 102, 204, 0.2),
+			transparent
+		);
+	}
 </style>
 
 <script>
