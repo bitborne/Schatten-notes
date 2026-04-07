@@ -80,8 +80,9 @@
   transform: translateX(28px);
 }
 
-/* 图标容器 */
+/* 图标容器 - 绝对定位使两个图标重叠 */
 .theme-toggle-icon {
+  position: absolute;
   width: 14px;
   height: 14px;
   transition: all 0.3s ease;
@@ -91,6 +92,7 @@
 .theme-toggle-icon-moon {
   opacity: 1;
   transform: rotate(0deg) scale(1);
+  color: #a0aec0;
 }
 
 .theme-toggle-input:checked + .theme-toggle-label .theme-toggle-icon-moon {
@@ -102,6 +104,7 @@
 .theme-toggle-icon-sun {
   opacity: 0;
   transform: rotate(90deg) scale(0.5);
+  color: #f6ad55;
 }
 
 .theme-toggle-input:checked + .theme-toggle-label .theme-toggle-icon-sun {

@@ -125,8 +125,14 @@ code {
 [data-theme="light"] {
   /* --- 基础背景与文字 --- */
   --bg-color: #fafafa;
+  --bg-abyss: #f5f5f5;
+  --bg-surface: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.9);
+  --text-primary: #1a1a1a;
   --text-color: #1a1a1a;
+  --text-secondary: #4a5568;
   --text-color-secondary: #4a5568;
+  --text-muted: #6b7280;
 
   /* --- 核心品牌色适配 --- */
   --primary-color: #0066cc;
