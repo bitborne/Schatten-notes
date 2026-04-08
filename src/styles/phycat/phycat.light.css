@@ -1569,11 +1569,11 @@ kbd:hover {
 
 ::-webkit-scrollbar-thumb {
     border-radius: 10px;
-    background: var(--element-color)
+    background: rgba(0, 102, 204, 0.4)
 }
 
 ::-webkit-scrollbar-thumb:active {
-    background: var(--element-color-shallow)
+    background: rgba(0, 102, 204, 0.6)
 }
 
 ::-webkit-scrollbar {

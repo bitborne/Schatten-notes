@@ -137,8 +137,8 @@ code {
 /* ===== 浅色主题变量覆盖 ===== */
 [data-theme="light"] {
   /* --- 基础背景与文字 --- */
-  --bg-color: #fafafa;
-  --bg-abyss: #f5f5f5;
+  --bg-color: #ffffff;
+  --bg-abyss: #fafafa;
   --bg-surface: #ffffff;
   --bg-header: rgba(255, 255, 255, 0.9);
   --text-primary: #1a1a1a;
@@ -209,4 +209,298 @@ code {
   /* --- TOC 侧边栏 --- */
   --toc-bg: rgba(255, 255, 255, 0.9);
   --toc-border: rgba(0, 0, 0, 0.08);
+}
+
+/* ===== 浅色主题强制覆盖写死颜色 ===== */
+[data-theme="light"] #write {
+  color: var(--text-color, #1a1a1a) !important;
+}
+
+[data-theme="light"] #write p {
+  color: var(--text-color-secondary, #4a5568) !important;
+}
+
+[data-theme="light"] #write li section {
+  color: var(--text-color-secondary, #4a5568) !important;
+}
+
+[data-theme="light"] #write li {
+  color: var(--text-color-secondary, #4a5568) !important;
+}
+
+[data-theme="light"] #write ul,
+[data-theme="light"] #write ol {
+  color: var(--text-color-secondary, #4a5568) !important;
+}
+
+[data-theme="light"] #write h1,
+[data-theme="light"] #write h2,
+[data-theme="light"] #write h3,
+[data-theme="light"] #write h4,
+[data-theme="light"] #write h5,
+[data-theme="light"] #write h6 {
+  color: var(--text-color, #1a1a1a) !important;
+}
+
+[data-theme="light"] #write blockquote {
+  color: var(--text-color-secondary, #4a5568) !important;
+  background-color: rgba(0, 0, 0, 0.03) !important;
+  border-color: var(--border-color, #e2e8f0) !important;
+}
+
+[data-theme="light"] #write blockquote::before {
+  filter: grayscale(0.5);
+}
+
+[data-theme="light"] #write a {
+  color: var(--primary-color, #0066cc) !important;
+}
+
+[data-theme="light"] #write a:hover {
+  color: #fff !important;
+}
+
+[data-theme="light"] #write strong {
+  color: var(--primary-color, #0066cc) !important;
+}
+
+[data-theme="light"] #write em {
+  color: var(--secondary-color, #2979ff) !important;
+}
+
+[data-theme="light"] #write del {
+  color: #888 !important;
+  text-decoration-color: var(--primary-color, #0066cc) !important;
+}
+
+[data-theme="light"] #write mark {
+  color: #d63384 !important;
+  background-image: linear-gradient(to top, rgba(214, 51, 132, 0.3), transparent) !important;
+}
+
+[data-theme="light"] #write mark:hover {
+  color: #fff !important;
+}
+
+[data-theme="light"] #write figcaption {
+  color: #666 !important;
+}
+
+[data-theme="light"] #write table {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  border-color: var(--border-color, #e2e8f0) !important;
+}
+
+[data-theme="light"] #write table th {
+  background-color: rgba(0, 102, 204, 0.08) !important;
+  color: var(--primary-color, #0066cc) !important;
+  border-color: rgba(0, 102, 204, 0.15) !important;
+}
+
+[data-theme="light"] #write table td {
+  color: var(--text-color, #1a1a1a) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] #write hr {
+  background: linear-gradient(90deg, transparent, var(--primary-color, #0066cc), transparent) !important;
+}
+
+[data-theme="light"] #write hr::after {
+  border-color: var(--primary-color, #0066cc) !important;
+  background: var(--bg-color, #fafafa) !important;
+}
+
+[data-theme="light"] ::marker {
+  color: var(--primary-color, #0066cc) !important;
+}
+
+[data-theme="light"] .md-alert {
+  color: var(--text-color, #1a1a1a) !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+[data-theme="light"] .md-toc {
+  color: var(--text-color-secondary, #4a5568) !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .md-toc:hover {
+  border-color: rgba(0, 102, 204, 0.3) !important;
+}
+
+[data-theme="light"] .md-toc-item {
+  color: var(--text-color-secondary, #4a5568) !important;
+}
+
+
+[data-theme="light"] .md-toc-item:hover {
+  color: var(--text-color, #1a1a1a) !important;
+  background-color: rgba(0, 102, 204, 0.08) !important;
+}
+
+/* ===== 浅色主题代码块对比度修复 ===== */
+
+/* 行内代码块 */
+[data-theme="light"] #write code:not(.md-fences) {
+  background-color: rgba(0, 102, 204, 0.1) !important;
+  color: #0056b3 !important;
+  border: 1px solid rgba(0, 102, 204, 0.2) !important;
+}
+
+/* 围栏代码块背景 */
+[data-theme="light"] #write pre.astro-code,
+[data-theme="light"] pre.astro-code {
+  background: var(--code-block-bg, #f8f9fa) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] pre.astro-code > .code-header {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 代码高亮 - 浅色主题适配 */
+[data-theme="light"] .astro-code { color: #24292e !important; }
+[data-theme="light"] .astro-code .line { color: #24292e !important; }
+
+/* Shiki GitHub Dark 主题颜色映射到浅色 */
+[data-theme="light"] .astro-code [style*="color:#ff7b72"],
+[data-theme="light"] .astro-code [style*="color:#f97583"],
+[data-theme="light"] .astro-code [style*="color:#DF2A3F"] { color: #d73a49 !important; }
+
+[data-theme="light"] .astro-code [style*="color:#a5d6ff"],
+[data-theme="light"] .astro-code [style*="color:#9ecbff"],
+[data-theme="light"] .astro-code [style*="color:#9ECBFF"] { color: #032f62 !important; }
+
+[data-theme="light"] .astro-code [style*="color:#8b949e"] { color: #6a737d !important; }
+
+[data-theme="light"] .astro-code [style*="color:#d2a8ff"],
+[data-theme="light"] .astro-code [style*="color:#B392F0"] { color: #6f42c1 !important; }
+
+[data-theme="light"] .astro-code [style*="color:#79c0ff"],
+[data-theme="light"] .astro-code [style*="color:#79B8FF"] { color: #005cc5 !important; }
+
+[data-theme="light"] .astro-code [style*="color:#e1e4e8"],
+[data-theme="light"] .astro-code [style*="color:#c9d1d9"],
+[data-theme="light"] .astro-code [style*="color:#b1bac4"],
+[data-theme="light"] .astro-code [style*="color:#8b949e"],
+[data-theme="light"] .astro-code [style*="color:#6e7681"],
+[data-theme="light"] .astro-code [style*="color:#848d97"] { color: #24292e !important; }
+
+/* Token 类型覆盖 - 丰富配色 */
+[data-theme="light"] .astro-code .token.keyword { color: #d73a49 !important; }
+[data-theme="light"] .astro-code .token.string { color: #032f62 !important; }
+[data-theme="light"] .astro-code .token.comment { color: #6a737d !important; }
+[data-theme="light"] .astro-code .token.function { color: #6f42c1 !important; }
+[data-theme="light"] .astro-code .token.number { color: #005cc5 !important; }
+[data-theme="light"] .astro-code .token.operator { color: #24292e !important; }
+[data-theme="light"] .astro-code .token.punctuation { color: #24292e !important; }
+[data-theme="light"] .astro-code .token.builtin { color: #e36209 !important; }
+[data-theme="light"] .astro-code .token.class-name { color: #6f42c1 !important; }
+[data-theme="light"] .astro-code .token.property { color: #e36209 !important; }
+[data-theme="light"] .astro-code .token.variable { color: #24292e !important; }
+
+/* C++ 等语言的额外 token 类型 */
+[data-theme="light"] .astro-code .token.type { color: #005cc5 !important; }
+[data-theme="light"] .astro-code .token.namespace { color: #d73a49 !important; }
+[data-theme="light"] .astro-code .token.directive { color: #d73a49 !important; }
+[data-theme="light"] .astro-code .token.macro { color: #d73a49 !important; }
+[data-theme="light"] .astro-code .token.parameter { color: #24292e !important; }
+[data-theme="light"] .astro-code .token.constant { color: #005cc5 !important; }
+[data-theme="light"] .astro-code .token.symbol { color: #24292e !important; }
+[data-theme="light"] .astro-code .token.tag { color: #22863a !important; }
+[data-theme="light"] .astro-code .token.attr-name { color: #6f42c1 !important; }
+[data-theme="light"] .astro-code .token.attr-value { color: #032f62 !important; }
+[data-theme="light"] .astro-code .token.selector { color: #22863a !important; }
+[data-theme="light"] .astro-code .token.unit { color: #005cc5 !important; }
+[data-theme="light"] .astro-code .token.deleted { color: #d73a49 !important; }
+[data-theme="light"] .astro-code .token.inserted { color: #22863a !important; }
+
+/* 针对 C/C++ 特定关键字的颜色 */
+[data-theme="light"] .astro-code .token.keyword.type { color: #005cc5 !important; }
+[data-theme="light"] .astro-code .token.keyword.namespace { color: #d73a49 !important; }
+[data-theme="light"] .astro-code .token.keyword.directive { color: #d73a49 !important; }
+[data-theme="light"] .astro-code .token.keyword.control { color: #d73a49 !important; }
+
+
+
+/* 更多 GitHub Dark 浅色映射 */
+[data-theme="light"] .astro-code [style*="color:#c9d1d9"] { color: #24292e !important; }
+[data-theme="light"] .astro-code [style*="color:#b1bac4"] { color: #4a5568 !important; }
+[data-theme="light"] .astro-code [style*="color:#6e7681"] { color: #6a737d !important; }
+
+
+/* 大写颜色映射 */
+[data-theme="light"] .astro-code [style*="color:#E1E4E8"] { color: #24292e !important; }
+[data-theme="light"] .astro-code [style*="color:#C9D1D9"] { color: #24292e !important; }
+[data-theme="light"] .astro-code [style*="color:#B1BAC4"] { color: #4a5568 !important; }
+[data-theme="light"] .astro-code [style*="color:#F97583"] { color: #d73a49 !important; }
+[data-theme="light"] .astro-code [style*="color:#B392F0"] { color: #6f42c1 !important; }
+[data-theme="light"] .astro-code [style*="color:#79B8FF"] { color: #005cc5 !important; }
+[data-theme="light"] .astro-code [style*="color:#9ECBFF"] { color: #032f62 !important; }
+[data-theme="light"] .astro-code [style*="color:#FFAB70"] { color: #e36209 !important; }
+[data-theme="light"] .astro-code [style*="color:#6A737D"] { color: #6a737d !important; }
+
+
+/* ===== 强力覆盖 phycat 全局滚动条样式 ===== */
+/* 使用最高优先级选择器阻止全局滚动条样式应用到代码块 */
+html pre.astro-code::-webkit-scrollbar,
+body pre.astro-code::-webkit-scrollbar,
+#write pre.astro-code::-webkit-scrollbar {
+    height: 6px !important;
+    width: 6px !important;
+}
+
+html pre.astro-code::-webkit-scrollbar-track,
+body pre.astro-code::-webkit-scrollbar-track,
+#write pre.astro-code::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+/* 深色模式代码块滚动条 */
+html pre.astro-code::-webkit-scrollbar-thumb,
+body pre.astro-code::-webkit-scrollbar-thumb,
+#write pre.astro-code::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 3px !important;
+    box-shadow: none !important;
+}
+
+html pre.astro-code::-webkit-scrollbar-thumb:hover,
+body pre.astro-code::-webkit-scrollbar-thumb:hover,
+#write pre.astro-code::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: none !important;
+}
+
+html pre.astro-code::-webkit-scrollbar-thumb:active,
+body pre.astro-code::-webkit-scrollbar-thumb:active,
+#write pre.astro-code::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.35) !important;
+    box-shadow: none !important;
+}
+
+/* 浅色模式代码块滚动条 - 覆盖 phycat.light.css 的黄色 */
+html[data-theme="light"] pre.astro-code::-webkit-scrollbar-thumb,
+body[data-theme="light"] pre.astro-code::-webkit-scrollbar-thumb,
+[data-theme="light"] #write pre.astro-code::-webkit-scrollbar-thumb {
+    background: rgba(0, 102, 204, 0.3) !important;
+    border-radius: 3px !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="light"] pre.astro-code::-webkit-scrollbar-thumb:hover,
+body[data-theme="light"] pre.astro-code::-webkit-scrollbar-thumb:hover,
+[data-theme="light"] #write pre.astro-code::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 102, 204, 0.45) !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="light"] pre.astro-code::-webkit-scrollbar-thumb:active,
+body[data-theme="light"] pre.astro-code::-webkit-scrollbar-thumb:active,
+[data-theme="light"] #write pre.astro-code::-webkit-scrollbar-thumb:active {
+    background: rgba(0, 102, 204, 0.55) !important;
+    box-shadow: none !important;
 }
