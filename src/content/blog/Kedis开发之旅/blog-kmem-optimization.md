@@ -22,22 +22,6 @@ pubDate: 2026-03-06
 Segmentation fault (core dumped)
 ```
 
-**GDB调试现场**：
-
-```bash
-$ gdb ./kvstore core.12345
-(gdb) bt
-#0  0x00007f8b3c2a115b in mem_pool_free () at src/utils/memory_pool.c:85
-#1  0x00007f8b3c2a2200 in kvs_hash_del () at src/engines/kvs_hash.c:319
-...
-(gdb) p ptr
-$1 = (void *) 0x55a3f8b2c000  
-(gdb) x/4gx 0x55a3f8b2c000 - 16  # 查看块头
-0x55a3f8b2bff0: 0xdeadbeefdeadbeef  0x0000000000000000
-```
-
-**问题定位**：`0xdeadbeef`？这不是我设置的魔数，是**内存越界写入**导致的！
-
 翻看旧代码，我发现内存池的实现是这样的：
 
 ```c
