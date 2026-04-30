@@ -13,3 +13,7 @@ pubDate: 2026-05-01
 ## pipeline 性能 --- Redis VS Kedis
 
 ![image-20260501002952469](kedis-perf.assets/image-20260501002952469.png)
+
+## AOF 性能 --- Redis VS Kedis
+
+![image-20260501014217042](kedis-perf.assets/image-20260501014217042.png)
