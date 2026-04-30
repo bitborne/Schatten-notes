@@ -9,3 +9,7 @@ pubDate: 2026-05-01
 ## KSF 加载时间
 
 ![image-20260501001844138](kedis-perf.assets/image-20260501001844138.png)
+
+## pipeline 性能 --- Redis VS Kedis
+
+![image-20260501002952469](kedis-perf.assets/image-20260501002952469.png)
