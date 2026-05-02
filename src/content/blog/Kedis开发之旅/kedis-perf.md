@@ -33,11 +33,8 @@ pubDate: 2026-05-01
 ## RDMA vs sendfile 文件传输
 
 ### RDMA send
-
 *soft-RoCE*
-
 ![image-20260501120557336](kedis-perf.assets/image-20260501120557336.png)
 
 ### sendfile
-
 ![image-20260501120523806](kedis-perf.assets/image-20260501120523806.png)
