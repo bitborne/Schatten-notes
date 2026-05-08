@@ -6,6 +6,32 @@ pubDate: 2026-05-01
 
 # Kedis 性能数据记录（不定期更新）
 
+## 所有 QPS 相关的数据, 测试参数如下
+
+```sh
+HOST="127.0.0.1"
+KEYS=1000000
+THREADS=4
+CONN=50
+REQS_PER_CLIENT=$((KEYS / (THREADS * CONN)))
+# memtier_benchmark 默认小key小value (value大小32B)
+memtier_benchmark \
+    -s ${HOST} \
+    -p ${PORT} \
+    --command="HSET/HDEL __key__ __data__" \
+    --command-ratio=1 \
+    --command-key-pattern=P \
+    -t ${THREADS} \
+    -c ${CONN} \
+    -n ${REQS_PER_CLIENT} \
+    --random-data \
+    --key-prefix="k" \
+    --key-minimum=1 \
+    --key-maximum=${KEYS} \
+    --json-out-file="$json_file" \
+    --hide-histogram
+```
+
 ## KSF 加载时间
 
 *更新时间: 2026.4.30*
@@ -111,3 +137,39 @@ pubDate: 2026-05-01
 (2) init 时不仅分配还写入
 
 (3) 内部碎片多, size 不紧凑
+
+---
+
+## kmem vs jemalloc 的 QPS 数据
+
+*更新时间: 2026.5.6*
+
+#### jemalloc
+
+#### 未预热
+
+kedis,no,HSET,196813.2
+
+kedis,no,HDEL,201302.06
+
+### 预热后
+
+kedis,no,HSET,199344.16
+
+kedis,no,HDEL,199484.41
+
+---
+
+### kmem
+
+### 未预热
+
+kedis,no,HSET,192399.79
+
+kedis,no,HDEL,194943.97
+
+### 预热后
+
+kedis,no,HSET,197803.63
+
+kedis,no,HDEL,196702.52
