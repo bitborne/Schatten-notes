@@ -132,11 +132,13 @@ memtier_benchmark \
 
 **kmem 现象**
 
-(1) 没 trim
+(1) 分配即访问
 
-(2) init 时不仅分配还写入
+(2) 没 trim
 
-(3) 内部碎片多, size 不紧凑
+(3) init 时不仅分配还写入
+
+(4) 内部碎片多, size 不紧凑
 
 ---
 
