@@ -56,6 +56,16 @@ memtier_benchmark \
 
 ![image-20260501132850772](kedis-perf.assets/image-20260501132850772.png)
 
+## 增量同步性能
+
+*更新时间: 2026.5.1*
+
+![image-20260513162907601](kedis-perf.assets/image-20260513162907601.png)
+
+
+
+
+
 ## RDMA vs sendfile
 
 ### RDMA send
