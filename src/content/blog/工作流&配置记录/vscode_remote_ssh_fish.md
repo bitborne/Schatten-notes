@@ -26,7 +26,7 @@ pubDate: '2026-06-05'
 
 ```json
 "remote.SSH.remotePlatform": {
-    "106.75.252.110": "linux"
+    "192.168.122.22": "linux"
 }
 ```
 
@@ -36,14 +36,15 @@ pubDate: '2026-06-05'
 
 ### 2. 精简远程 fish 配置
 
-编辑远程服务器的 **`~/.config/fish/config.fish`**，保持最小配置，例如：
+编辑远程服务器的 **`~/.config/fish/config.fish`**，保持原始配置：
 
 ```fish
-# 清空默认问候语
-set fish_greeting ""
+if status is-interactive
+    # Commands to run in interactive sessions can go here
+end
 ```
 
-> 注意：**不要在非交互 shell 中执行初始化命令**（如 `starship init`、`tmux`、`fastfetch` 等），否则会破坏 VS Code 远程启动流程。
+> 注意：**不要在非交互 shell 中执行初始化命令**（如 `starship init`、`tmux`、`fastfetch` 等），否则可能会破坏 VS Code 远程启动流程。
 
 ------
 
